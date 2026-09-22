@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual Systems Lab — desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0f0e;font-family:'Space Grotesk',system-ui,sans-serif;color:#d6ded9}
+a{color:#7cf5b0;text-decoration:none}a:hover{color:#b9ffd6}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes spinr{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes blink{0%,92%,100%{opacity:1}96%{opacity:0.15}}
+.ring-slow{transform-origin:220px 220px;animation:spin 40s linear infinite}
+.ring-fast{transform-origin:220px 220px;animation:spinr 18s linear infinite}
+.cursor{animation:blink 2.4s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1280px; height: 2360px; box-sizing: border-box; background: #0b0f0e; background-image: linear-gradient(rgba(124,245,176,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(124,245,176,0.045) 1px, transparent 1px); background-size: 64px 64px; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- NAV -->
+  <div style="height: 72px; box-sizing: border-box; padding: 0 64px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1d2622; background: rgba(11,15,14,0.9);">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 28px; height: 28px; border: 1.5px solid {{accent}}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: {{accent}};"></div>
+      </div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #8f9c95;">CALGARYVISIONCENTRE.COM<span style="color: #d6ded9;">/LAB</span>&nbsp;&nbsp;·&nbsp;&nbsp;VISUAL SYSTEMS LAB</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 28px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em;">
+      <a href="#experiments" style="color: #8f9c95;">EXPERIMENTS</a>
+      <a href="#notes" style="color: #8f9c95;">NOTEBOOK</a>
+      <a href="https://calgaryvisioncentre.com" style="color: #0b0f0e; background: {{accent}}; padding: 9px 14px; border-radius: 4px; font-weight: 500;">← BACK TO CLINIC</a>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div style="height: 620px; box-sizing: border-box; padding: 72px 64px 0 64px; display: flex; gap: 48px; align-items: flex-start;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 28px; padding-top: 24px;">
+      <div style="display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; color: {{accent}};">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{accent}}; box-shadow: 0 0 12px {{accent}};"></span>
+        OPEN NOTEBOOK · STATUS: ACTIVE
+      </div>
+      <h1 style="margin: 0; font-size: 72px; line-height: 1.0; font-weight: 600; letter-spacing: -0.03em; color: #f2f6f3; max-width: 640px;">Vision, modeled from first principles.</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.55; color: #a7b3ad; max-width: 560px;">Interactive instruments built to answer questions that didn't have satisfying explanations — where optics, neurology, biomechanics and behaviour interact in real time. When something doesn't make sense, it gets modeled and tested.</p>
+      <div style="display: flex; gap: 12px; align-items: center; padding-top: 4px;">
+        <a href="#experiments" style="display: inline-flex; align-items: center; gap: 10px; background: {{accent}}; color: #0b0f0e; padding: 14px 20px; border-radius: 4px; font-weight: 600; font-size: 15px;">Enter the lab
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#0b0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#notes" style="display: inline-flex; align-items: center; gap: 10px; border: 1px solid #2a3430; color: #d6ded9; padding: 13px 20px; border-radius: 4px; font-weight: 500; font-size: 15px;">Read the notebook</a>
+      </div>
+      <div style="display: flex; gap: 40px; padding-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; color: #6f7b76;">
+        <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 22px; color: #f2f6f3; letter-spacing: 0;">12</span>INSTRUMENTS</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 22px; color: #f2f6f3; letter-spacing: 0;">02</span>AUDIENCES</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 22px; color: #f2f6f3; letter-spacing: 0;">∞</span>QUESTIONS</div>
+      </div>
+    </div>
+
+    <!-- Instrument dial -->
+    <div style="width: 480px; height: 480px; flex-shrink: 0; position: relative;">
+      <svg width="480" height="480" viewBox="-20 -20 480 480" fill="none" style="display: block;">
+        <circle cx="220" cy="220" r="214" stroke="#1d2622" stroke-width="1"/>
+        <g class="ring-slow" stroke="{{accent}}" stroke-opacity="0.6">
+          <circle cx="220" cy="220" r="196" stroke-width="1" stroke-dasharray="2 10"/>
+          <path d="M220 24 v14 M416 220 h-14 M220 416 v-14 M24 220 h14" stroke-width="2"/>
+        </g>
+        <g class="ring-fast" stroke="#f5b94a" stroke-opacity="0.75">
+          <circle cx="220" cy="220" r="150" stroke-width="1" stroke-dasharray="60 240"/>
+          <circle cx="220" cy="220" r="150" stroke-width="1" stroke-dasharray="1 6" stroke-opacity="0.35"/>
+        </g>
+        <circle cx="220" cy="220" r="112" stroke="#2a3430" stroke-width="1"/>
+        <!-- iris -->
+        <circle cx="220" cy="220" r="86" fill="#0f1613" stroke="{{accent}}" stroke-width="1.5"/>
+        <g stroke="{{accent}}" stroke-opacity="0.35" stroke-width="1">
+          <path d="M220 134 v172 M134 220 h172 M159 159 l122 122 M281 159 l-122 122"/>
+        </g>
+        <circle cx="220" cy="220" r="40" fill="#0b0f0e" stroke="{{accent}}" stroke-width="1.5"/>
+        <circle cx="206" cy="206" r="7" fill="{{accent}}" fill-opacity="0.9"/>
+        <!-- crosshair labels -->
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="#8f9c95" letter-spacing="1.5">
+          <text x="220" y="14" text-anchor="middle">SUP · CN III</text>
+          <text x="220" y="450" text-anchor="middle">INF · CN III</text>
+          <text x="-8" y="224" text-anchor="start">MED</text>
+          <text x="448" y="224" text-anchor="end">LAT · CN VI</text>
+          <text x="330" y="110" text-anchor="start">CN IV ↘</text>
+        </g>
+        <!-- readout -->
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="{{accent}}" letter-spacing="1">
+          <text x="30" y="405">GAZE 12° UP · 8° L</text>
+          <text x="30" y="422" fill="#6f7b76">DUCTIONS: FULL</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- EXPERIMENTS -->
+  <div id="experiments" style="box-sizing: border-box; padding: 40px 64px 0 64px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid #1d2622; padding-bottom: 18px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; color: {{accent}};">01 — EXPERIMENTS</div>
+        <h2 style="margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; color: #f2f6f3;">Twelve instruments. Each one answers a question. (Four shown.)</h2>
+      </div>
+      <div style="display: flex; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em;">
+        <span style="padding: 7px 12px; border-radius: 999px; border: 1px solid {{accent}}; color: {{accent}};">ALL</span>
+        <span style="padding: 7px 12px; border-radius: 999px; border: 1px solid #2a3430; color: #8f9c95;">FOR PATIENTS</span>
+        <span style="padding: 7px 12px; border-radius: 999px; border: 1px solid #2a3430; color: #8f9c95;">FOR CLINICIANS</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+
+      <!-- Card 01: Gaze simulator -->
+      <div style="height: 440px; box-sizing: border-box; background-color: #101613; border: 1px solid #1d2622; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="height: 220px; box-sizing: border-box; border-bottom: 1px solid #1d2622; background: #0c1210; display: flex; align-items: center; justify-content: center; position: relative;">
+          <svg width="420" height="180" viewBox="0 0 420 180" fill="none">
+            <g stroke="#1d2622" stroke-width="1"><path d="M0 90 H420 M210 0 V180"/></g>
+            <!-- left eye -->
+            <ellipse cx="120" cy="90" rx="84" ry="44" stroke="#2f3b36" stroke-width="1.5" fill="#0b0f0e"/>
+            <circle cx="136" cy="82" r="30" fill="#101c16" stroke="{{accent}}" stroke-width="1.5"/>
+            <circle cx="136" cy="82" r="13" fill="#0b0f0e"/>
+            <!-- right eye -->
+            <ellipse cx="300" cy="90" rx="84" ry="44" stroke="#2f3b36" stroke-width="1.5" fill="#0b0f0e"/>
+            <circle cx="292" cy="96" r="30" fill="#101c16" stroke="#f5b94a" stroke-width="1.5"/>
+            <circle cx="292" cy="96" r="13" fill="#0b0f0e"/>
+            <path d="M292 96 L316 82" stroke="#f5b94a" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <g font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1">
+              <text x="12" y="20" fill="#6f7b76">OD · TARGET</text>
+              <text x="330" y="20" fill="#f5b94a">OS · CN IV PALSY</text>
+              <text x="12" y="170" fill="{{accent}}">UP-RIGHT GAZE · HYPERTROPIA ↑ 6Δ</text>
+            </g>
+          </svg>
+          <span style="position: absolute; top: 14px; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0b0f0e; background: #f5b94a; padding: 4px 8px; border-radius: 3px;">FOR CLINICIANS</span>
+        </div>
+        <div style="flex-grow: 1; box-sizing: border-box; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #6f7b76;">LAB 01 · NEURO-OPHTHALMOLOGY</div>
+          <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: #f2f6f3;">Interactive Gaze Simulator</div>
+          <div style="font-size: 15px; line-height: 1.5; color: #a7b3ad;"><span style="color: {{accent}};">The question:</span> when an eye can't move where it should, which cranial nerve is failing — and what would the patient see?</div>
+          <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between;">
+            <a href="https://calgaryvisioncentre.com/gaze" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #0b0f0e; background: {{accent}}; padding: 10px 16px; border-radius: 4px;">Run instrument <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0b0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <button aria-label="Share this instrument" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #2a3430; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8f9c95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/><path d="M5.6 7.2l4.8-2.8M5.6 8.8l4.8 2.8"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 02: Myopia -->
+      <div style="height: 440px; box-sizing: border-box; background-color: #101613; border: 1px solid #1d2622; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="height: 220px; box-sizing: border-box; border-bottom: 1px solid #1d2622; background: #0c1210; display: flex; align-items: center; justify-content: center; position: relative;">
+          <svg width="420" height="180" viewBox="0 0 420 180" fill="none">
+            <g stroke="#1d2622" stroke-width="1"><path d="M50 20 V150 H400 M50 118 H400 M50 86 H400 M50 54 H400"/></g>
+            <g font-family="JetBrains Mono, monospace" font-size="10" fill="#6f7b76" letter-spacing="1">
+              <text x="10" y="24">0.00</text><text x="10" y="58">-1.00</text><text x="10" y="90">-2.00</text><text x="10" y="122">-3.00</text><text x="10" y="154">-4.00</text>
+              <text x="50" y="170">AGE 6</text><text x="215" y="170">10</text><text x="370" y="170">14</text>
+            </g>
+            <path d="M50 30 C 140 34, 200 60, 260 92 S 360 136, 400 146" stroke="#f5b94a" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>
+            <path d="M50 30 C 140 36, 200 52, 260 66 S 360 84, 400 90" stroke="{{accent}}" stroke-width="2" fill="none"/>
+            <circle cx="215" cy="56" r="5" fill="{{accent}}"/>
+            <path d="M215 20 V150" stroke="{{accent}}" stroke-opacity="0.5" stroke-width="1"/>
+            <g font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1">
+              <text x="225" y="30" fill="{{accent}}">WITH CONTROL</text>
+              <text x="290" y="128" fill="#f5b94a">UNTREATED</text>
+            </g>
+          </svg>
+          <span style="position: absolute; top: 14px; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0b0f0e; background: {{accent}}; padding: 4px 8px; border-radius: 3px;">FOR PATIENTS</span>
+        </div>
+        <div style="flex-grow: 1; box-sizing: border-box; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #6f7b76;">LAB 02 · PEDIATRICS</div>
+          <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: #f2f6f3;">Pediatric Myopia Risk Assessment</div>
+          <div style="font-size: 15px; line-height: 1.5; color: #a7b3ad;"><span style="color: {{accent}};">The question:</span> how likely is this child to become myopic, how fast — and what changes the curve?</div>
+          <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between;">
+            <a href="https://calgaryvisioncentre.com/myopia-risk" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #0b0f0e; background: {{accent}}; padding: 10px 16px; border-radius: 4px;">Run instrument <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0b0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <button aria-label="Share this instrument" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #2a3430; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8f9c95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/><path d="M5.6 7.2l4.8-2.8M5.6 8.8l4.8 2.8"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 03: BVD -->
+      <div style="height: 440px; box-sizing: border-box; background-color: #101613; border: 1px solid #1d2622; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="height: 220px; box-sizing: border-box; border-bottom: 1px solid #1d2622; background: #0c1210; display: flex; align-items: center; justify-content: center; position: relative;">
+          <svg width="420" height="180" viewBox="0 0 420 180" fill="none">
+            <g font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1">
+              <rect x="30" y="22" width="14" height="14" rx="2" stroke="{{accent}}" fill="{{accent}}"/><path d="M33 29l3 3 5-6" stroke="#0b0f0e" stroke-width="1.6"/><text x="56" y="33" fill="#d6ded9">HEADACHES BEHIND THE EYES</text>
+              <rect x="30" y="52" width="14" height="14" rx="2" stroke="{{accent}}" fill="{{accent}}"/><path d="M33 59l3 3 5-6" stroke="#0b0f0e" stroke-width="1.6"/><text x="56" y="63" fill="#d6ded9">NECK &amp; SHOULDER TENSION</text>
+              <rect x="30" y="82" width="14" height="14" rx="2" stroke="#2f3b36"/><text x="56" y="93" fill="#6f7b76">MOTION SICKNESS IN CARS</text>
+              <rect x="30" y="112" width="14" height="14" rx="2" stroke="{{accent}}" fill="{{accent}}"/><path d="M33 119l3 3 5-6" stroke="#0b0f0e" stroke-width="1.6"/><text x="56" y="123" fill="#d6ded9">TILTING HEAD IN PHOTOS</text>
+              <rect x="30" y="142" width="14" height="14" rx="2" stroke="#2f3b36"/><text x="56" y="153" fill="#6f7b76">SHADOWED / DOUBLE TEXT</text>
+            </g>
+            <g transform="translate(300,30)">
+              <rect x="0" y="0" width="100" height="120" rx="6" stroke="#2a3430" fill="#0b0f0e"/>
+              <text x="50" y="26" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#6f7b76" letter-spacing="1">SCORE</text>
+              <text x="50" y="72" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="40" font-weight="600" fill="{{accent}}">3</text>
+              <text x="50" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#f5b94a" letter-spacing="1">OF 5 · FLAG</text>
+            </g>
+          </svg>
+          <span style="position: absolute; top: 14px; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0b0f0e; background: {{accent}}; padding: 4px 8px; border-radius: 3px;">FOR PATIENTS</span>
+        </div>
+        <div style="flex-grow: 1; box-sizing: border-box; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #6f7b76;">LAB 03 · BINOCULAR VISION</div>
+          <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: #f2f6f3;">BVD Diagnostic Screener</div>
+          <div style="font-size: 15px; line-height: 1.5; color: #a7b3ad;"><span style="color: {{accent}};">The question:</span> could these headaches, neck pain and dizziness be a subtle vertical misalignment of the eyes?</div>
+          <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between;">
+            <a href="https://calgaryvisioncentre.com/bbfi" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #0b0f0e; background: {{accent}}; padding: 10px 16px; border-radius: 4px;">Run instrument <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0b0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <button aria-label="Share this instrument" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #2a3430; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8f9c95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/><path d="M5.6 7.2l4.8-2.8M5.6 8.8l4.8 2.8"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 04: Historical quiz -->
+      <div style="height: 440px; box-sizing: border-box; background-color: #101613; border: 1px solid #1d2622; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="height: 220px; box-sizing: border-box; border-bottom: 1px solid #1d2622; background: #0c1210; display: flex; align-items: center; justify-content: center; position: relative;">
+          <svg width="420" height="180" viewBox="0 0 420 180" fill="none">
+            <text x="30" y="30" font-family="JetBrains Mono, monospace" font-size="10" fill="#6f7b76" letter-spacing="1">CASE 07 / 1868 · VIENNA</text>
+            <text x="30" y="58" font-family="Space Grotesk, sans-serif" font-size="17" font-weight="600" fill="#f2f6f3">A painter reports the world has turned blue.</text>
+            <text x="30" y="80" font-family="Space Grotesk, sans-serif" font-size="14" fill="#a7b3ad">What has just happened to his eye?</text>
+            <g font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1">
+              <rect x="30" y="98" width="170" height="30" rx="4" stroke="#2a3430"/><text x="44" y="117" fill="#d6ded9">A · OPTIC NEURITIS</text>
+              <rect x="220" y="98" width="170" height="30" rx="4" stroke="{{accent}}" fill="{{accent}}" fill-opacity="0.12"/><text x="234" y="117" fill="{{accent}}">B · CATARACT REMOVED</text>
+              <rect x="30" y="136" width="170" height="30" rx="4" stroke="#2a3430"/><text x="44" y="155" fill="#d6ded9">C · DIGITALIS TOXICITY</text>
+              <rect x="220" y="136" width="170" height="30" rx="4" stroke="#2a3430"/><text x="234" y="155" fill="#d6ded9">D · CENTRAL SEROUS</text>
+            </g>
+          </svg>
+          <span style="position: absolute; top: 14px; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #0b0f0e; background: #d6ded9; padding: 4px 8px; border-radius: 3px;">FOR EVERYONE</span>
+        </div>
+        <div style="flex-grow: 1; box-sizing: border-box; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #6f7b76;">LAB 04 · HISTORY OF MEDICINE</div>
+          <div style="font-size: 24px; font-weight: 600; letter-spacing: -0.01em; color: #f2f6f3;">Historical Ophthalmology Quiz</div>
+          <div style="font-size: 15px; line-height: 1.5; color: #a7b3ad;"><span style="color: {{accent}};">The question:</span> could you have made the diagnosis the great ophthalmologists made — with only what they had?</div>
+          <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between;">
+            <a href="https://calgaryvisioncentre.com/quiz" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; color: #0b0f0e; background: {{accent}}; padding: 10px 16px; border-radius: 4px;">Take the quiz <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#0b0f0e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <button aria-label="Share this instrument" style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid #2a3430; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8f9c95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="3.5" r="1.8"/><circle cx="4" cy="8" r="1.8"/><circle cx="12" cy="12.5" r="1.8"/><path d="M5.6 7.2l4.8-2.8M5.6 8.8l4.8 2.8"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- NOTEBOOK -->
+  <div id="notes" style="box-sizing: border-box; padding: 56px 64px 0 64px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+
+    <!-- From Dr. Burke -->
+    <div style="height: 300px; box-sizing: border-box; border: 1px solid #1d2622; border-radius: 10px; background-color: #101613; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; color: {{accent}};">02 — FROM THE BENCH</div>
+      <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #d6ded9;">Some of these tools are for patients — a deeper look beyond prescriptions and charts. Others are intentionally technical and reflect how vision is actually analyzed in clinical practice. For clinicians, treat this as an open notebook of ideas in progress.</p>
+      <div style="margin-top: auto; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #2a3430; background: #0b0f0e; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: {{accent}};">RB</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 15px; font-weight: 600; color: #f2f6f3;">Dr. Robert Burke</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6f7b76;">OPTOMETRIST · CALGARY VISION CENTRE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes in progress -->
+    <div style="height: 300px; box-sizing: border-box; border: 1px dashed #2a3430; border-radius: 10px; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.16em; color: #f5b94a;">03 — ON THE BENCH NOW</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: #6f7b76;">UNRELEASED</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0;">
+        <div style="display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #1d2622;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6f7b76;">05</span>
+          <span style="font-size: 16px; color: #d6ded9; flex-grow: 1;">[NEXT EXPERIMENT — ONE LINE ON THE QUESTION]</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #f5b94a; border: 1px solid #f5b94a; padding: 3px 8px; border-radius: 999px;">MODELING</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #1d2622;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6f7b76;">06</span>
+          <span style="font-size: 16px; color: #d6ded9; flex-grow: 1;">[NEXT EXPERIMENT — ONE LINE ON THE QUESTION]</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #8f9c95; border: 1px solid #2a3430; padding: 3px 8px; border-radius: 999px;">SKETCH</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px; padding: 14px 0;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #6f7b76;">07</span>
+          <span style="font-size: 16px; color: #d6ded9; flex-grow: 1;">[NEXT EXPERIMENT — ONE LINE ON THE QUESTION]<span class="cursor" style="color: {{accent}};">▌</span></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #8f9c95; border: 1px solid #2a3430; padding: 3px 8px; border-radius: 999px;">IDEA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top: auto; height: 96px; box-sizing: border-box; padding: 0 64px; border-top: 1px solid #1d2622; display: flex; align-items: center; justify-content: space-between; background: rgba(11,15,14,0.9);">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #6f7b76; max-width: 760px; line-height: 1.6;">TOOLS ARE PROVIDED FOR EDUCATIONAL AND EXPLORATORY USE. THEY DO NOT REPLACE A COMPREHENSIVE EYE EXAMINATION OR INDIVIDUALIZED CARE.</div>
+    <a href="https://calgaryvisioncentre.com" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #8f9c95;">BOOK AN EXAM →</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7cf5b0","options":["#7cf5b0","#f5b94a","#7cc8ff","#ff8a7a"]},"$preview":{"width":1280,"height":2360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#7cf5b0' };
+  }
+}
+</script>
+</body>
+</html>

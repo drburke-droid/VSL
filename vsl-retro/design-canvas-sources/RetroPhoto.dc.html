@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual Systems Lab — photo CRT, interactive</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&amp;family=Silkscreen:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#2a2622;font-family:'VT323',monospace;color:#000}
+a{color:#000;text-decoration:none}a:hover{color:#000080}
+.ico{display:flex;flex-direction:column;align-items:center;gap:3px;width:74px;text-align:center}
+.ico svg{shape-rendering:crispEdges}
+.ico:hover span{background:#000080;color:#fff}
+.bev{background:#c0c0c0;border-style:solid;border-width:2px;border-color:#ffffff #808080 #808080 #ffffff}
+.win{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden}
+.menu{position:absolute;top:18px;min-width:190px;display:flex;flex-direction:column;padding:2px;box-shadow:2px 2px 0 rgba(0,0,0,.4);z-index:60}
+.menu a,.menu button{display:block;text-align:left;background:none;border:0;font:inherit;font-size:15px;line-height:1;padding:4px 18px;color:#000;cursor:pointer;width:100%;box-sizing:border-box}
+.menu a:hover,.menu button:hover{background:#000080;color:#fff}
+.menu .sep{display:block;height:1px;margin:2px 4px;background:#808080;box-shadow:0 1px 0 #fff}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:0.985}}
+.crt{animation:flicker 5s ease-in-out infinite}
+@keyframes degauss{0%{filter:hue-rotate(0) saturate(1);transform:translate(0,0)}15%{filter:hue-rotate(90deg) saturate(3);transform:translate(3px,-2px) skewX(1deg)}35%{filter:hue-rotate(-120deg) saturate(2.5);transform:translate(-3px,2px) skewX(-1deg)}60%{filter:hue-rotate(40deg) saturate(1.6);transform:translate(1px,-1px)}100%{filter:hue-rotate(0) saturate(1);transform:translate(0,0)}}
+.degauss{animation:degauss .7s ease-out 1}
+@keyframes fly1{from{transform:translate(-80px,40px)}to{transform:translate(680px,300px)}}
+@keyframes fly2{from{transform:translate(640px,380px)}to{transform:translate(-120px,60px)}}
+@keyframes fly3{from{transform:translate(-100px,320px)}to{transform:translate(700px,20px)}}
+@keyframes fly4{from{transform:translate(300px,-80px)}to{transform:translate(200px,520px)}}
+@keyframes blinkeye{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.1)}}
+.eye1{animation:fly1 9s linear infinite}.eye2{animation:fly2 12s linear infinite}.eye3{animation:fly3 10s linear infinite}.eye4{animation:fly4 14s linear infinite}
+.lid{transform-origin:16px 16px;animation:blinkeye 4s infinite}
+@keyframes cursorblink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.cur{animation:cursorblink 1s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1280px; height: 720px; box-sizing: border-box; overflow: hidden; position: relative; background: #6a6a66;" onMouseMove="{{move}}" onMouseUp="{{up}}" onMouseLeave="{{up}}">
+  <img src="/_blob/6194ea7ab0512715b6282595902dc3e3" alt="Beige CRT monitor on a desk beside a newspaper" style="position: absolute; left: 0; top: 0; width: 1280px; height: 720px; display: block;">
+
+  <svg width="0" height="0" style="position: absolute;" aria-hidden="true">
+    <filter id="barrel" filterUnits="userSpaceOnUse" x="0" y="0" width="602" height="495" color-interpolation-filters="sRGB">
+      <feImage href="/_blob/475e4b290b1c430fb61c04305c862d97" x="0" y="0" width="602" height="495" preserveAspectRatio="none" result="map"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+  <!-- screen area of the photo: 365,19 → 602×495 -->
+  <div style="position: absolute; left: 365px; top: 19px; width: 602px; height: 495px; overflow: hidden; border-radius: 16px / 14px; background: #061a1a;" onMouseDown="{{activity}}">
+
+    <!-- phosphor layer -->
+    <div class="crt" style="{{tubeStyle}}">
+      <div style="position: absolute; left: 7px; top: 24px; width: 630px; height: 464px; transform: scale(0.934); transform-origin: top left;">
+
+        <!-- BOOT -->
+        <sc-if value="{{booting}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; inset: 0; background: #000; color: #c0c0c0; font-size: 18px; line-height: 1.25; padding: 12px 14px; white-space: pre-wrap;">{{bootText}}<span class="cur">_</span></div>
+        </sc-if>
+
+        <!-- DESKTOP -->
+        <sc-if value="{{desktop}}" hint-placeholder-val="{{true}}">
+          <div class="bev" style="position: absolute; left: 10px; top: 8px; width: 610px; height: 424px; box-sizing: border-box; display: flex; flex-direction: column;">
+            <div style="height: 19px; background: #000080; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; font-family: 'Silkscreen', monospace; font-size: 8px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▬</span>
+                <span>VISION LAB MANAGER — [calgaryvisioncentre.com/lab]</span>
+              </div>
+              <div style="display: flex; gap: 2px;">
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▼</span>
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▲</span>
+              </div>
+            </div>
+            
+<div style="height: 18px; display: flex; align-items: center; gap: 14px; padding: 0 6px; font-size: 16px; line-height: 1; border-bottom: 1px solid #808080; position: relative; z-index: 50;">
+  <button onClick="{{menuFile}}" style="{{fileStyle}}"><u>F</u>ile</button>
+  <span><u>O</u>ptions</span>
+  <button onClick="{{menuWindow}}" style="{{windowStyle}}"><u>W</u>indow</button>
+  <button onClick="{{menuHelp}}" style="{{helpStyle}}"><u>H</u>elp</button>
+  <sc-if value="{{fileOpen}}" hint-placeholder-val="{{false}}">
+    <div class="bev menu" style="left: 4px;">
+      <a href="https://calgaryvisioncentre.com/gaze">Open… &nbsp;Gaze Simulator</a>
+      <a href="https://calgaryvisioncentre.com/lab">Modern index of the Lab</a>
+      <span class="sep"></span>
+      <button onClick="{{powerOff}}">Exit Vision Lab Manager…</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{windowOpen}}" hint-placeholder-val="{{false}}">
+    <div class="bev menu" style="left: 96px;">
+      <button onClick="{{cascade}}">Cascade</button>
+      <button onClick="{{tile}}">Tile</button>
+      <button onClick="{{arrange}}">Arrange Icons</button>
+      <span class="sep"></span>
+      <button onClick="{{reopenAll}}">Reopen closed groups</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{helpOpen}}" hint-placeholder-val="{{false}}">
+    <div class="bev menu" style="left: 168px;">
+      <button onClick="{{degauss}}">Degauss</button>
+      <button onClick="{{saverNow}}">Preview screensaver</button>
+      <span class="sep"></span>
+      <button onClick="{{showAbout}}">About Vision Lab Manager…</button>
+    </div>
+  </sc-if>
+</div>
+            <div style="flex-grow: 1; position: relative; background: #c0c0c0; overflow: hidden;" onMouseDown="{{closeMenus}}">
+              
+<sc-if value="{{neuro.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{neuro.style}}" onMouseDown="{{neuro.focus}}">
+    <div class="tb" onMouseDown="{{neuro.dragStart}}" style="height: 16px; background: {{neuro.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{neuro.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>NEURO &amp; BINOCULAR</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{neuro.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{neuro.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px; overflow: hidden;"><a class="ico" href="https://calgaryvisioncentre.com/gaze"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/><rect x="15" y="4" width="2" height="4" fill="#ff0000"/><rect x="15" y="24" width="2" height="4" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Gaze<br>Simulator</span></a><a class="ico" href="https://calgaryvisioncentre.com/bbfi"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="11" width="24" height="2" fill="#000"/><rect x="4" y="19" width="24" height="2" fill="#800000"/><rect x="15" y="13" width="2" height="6" fill="#ff0000"/><rect x="6" y="5" width="8" height="4" fill="#000"/><rect x="18" y="23" width="8" height="4" fill="#800000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">BVD<br>Screener</span></a><a class="ico" href="https://calgaryvisioncentre.com/quiz"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="6" y="4" width="20" height="24" fill="#ffff00" stroke="#000" stroke-width="2"/><rect x="12" y="8" width="8" height="2" fill="#000"/><rect x="18" y="10" width="2" height="4" fill="#000"/><rect x="14" y="14" width="6" height="2" fill="#000"/><rect x="14" y="16" width="2" height="2" fill="#000"/><rect x="14" y="21" width="2" height="2" fill="#000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">History<br>Quiz</span></a></div>
+    <div onMouseDown="{{neuro.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{neuro.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{neuro.restore}}" onDoubleClick="{{neuro.restore}}" class="ico" style="{{neuro.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">NEURO</span>
+  </button>
+</sc-if>
+<sc-if value="{{optics.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{optics.style}}" onMouseDown="{{optics.focus}}">
+    <div class="tb" onMouseDown="{{optics.dragStart}}" style="height: 16px; background: {{optics.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{optics.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>OPTICS &amp; LENS DESIGN</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{optics.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{optics.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px; overflow: hidden;"><a class="ico" href="https://calgaryvisioncentre.com/multifocal-cl-sim"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="24" height="24" fill="#00ffff" stroke="#000" stroke-width="2"/><rect x="9" y="9" width="14" height="14" fill="#008080"/><rect x="13" y="13" width="6" height="6" fill="#00ffff"/><rect x="0" y="15" width="32" height="2" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Multifocal<br>CL Sim</span></a><a class="ico" href="https://calgaryvisioncentre.com/multifocal-iol-sim"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="12" y="2" width="8" height="28" fill="#c0c0c0" stroke="#000" stroke-width="2"/><rect x="2" y="15" width="10" height="2" fill="#ff0000"/><rect x="20" y="15" width="10" height="2" fill="#ff0000"/><rect x="2" y="9" width="10" height="2" fill="#ff0000"/><rect x="20" y="12" width="8" height="2" fill="#ff0000"/><rect x="2" y="21" width="10" height="2" fill="#ff0000"/><rect x="20" y="18" width="8" height="2" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">IOL Range<br>Sim</span></a><a class="ico" href="https://calgaryvisioncentre.com/power-map"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/><rect x="8" y="6" width="16" height="6" fill="#00ff00"/><rect x="12" y="12" width="8" height="8" fill="#ffff00"/><rect x="10" y="20" width="12" height="6" fill="#ff8000"/><rect x="6" y="14" width="4" height="12" fill="#ff0000"/><rect x="22" y="14" width="4" height="12" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Progressive<br>Comparator</span></a><a class="ico" href="https://calgaryvisioncentre.com/glasses-fit"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="10" width="12" height="10" fill="#fff" stroke="#000" stroke-width="2"/><rect x="18" y="10" width="12" height="10" fill="#fff" stroke="#000" stroke-width="2"/><rect x="14" y="13" width="4" height="2" fill="#000"/><rect x="6" y="13" width="4" height="4" fill="#ff0000"/><rect x="24" y="12" width="4" height="4" fill="#008000"/><rect x="2" y="24" width="28" height="2" fill="#808080"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Spectacle<br>Tolerance</span></a></div>
+    <div onMouseDown="{{optics.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{optics.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{optics.restore}}" onDoubleClick="{{optics.restore}}" class="ico" style="{{optics.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">OPTICS</span>
+  </button>
+</sc-if>
+<sc-if value="{{perf.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{perf.style}}" onMouseDown="{{perf.focus}}">
+    <div class="tb" onMouseDown="{{perf.dragStart}}" style="height: 16px; background: {{perf.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{perf.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>VISUAL PERFORMANCE</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{perf.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{perf.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px; overflow: hidden;"><a class="ico" href="https://drburke-droid.github.io/csf_v2/handoff-fixes/csf-explorer.html"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="4" width="4" height="24" fill="#000"/><rect x="8" y="4" width="4" height="24" fill="#404040"/><rect x="14" y="4" width="3" height="24" fill="#808080"/><rect x="19" y="4" width="3" height="24" fill="#a0a0a0"/><rect x="24" y="4" width="2" height="24" fill="#c0c0c0"/><rect x="28" y="4" width="2" height="24" fill="#e0e0e0"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Contrast<br>Explorer</span></a><a class="ico" href="https://drburke-droid.github.io/csf_v2/handoff-fixes/spatial-freq-analyzer.html"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="14" width="2" height="4" fill="#000080"/><rect x="4" y="8" width="2" height="6" fill="#000080"/><rect x="6" y="4" width="2" height="4" fill="#000080"/><rect x="8" y="8" width="2" height="6" fill="#000080"/><rect x="10" y="14" width="2" height="6" fill="#000080"/><rect x="12" y="20" width="2" height="6" fill="#000080"/><rect x="14" y="24" width="2" height="4" fill="#000080"/><rect x="16" y="20" width="2" height="6" fill="#000080"/><rect x="18" y="14" width="2" height="6" fill="#000080"/><rect x="20" y="8" width="2" height="6" fill="#000080"/><rect x="22" y="4" width="2" height="4" fill="#000080"/><rect x="24" y="8" width="2" height="6" fill="#000080"/><rect x="26" y="14" width="2" height="6" fill="#000080"/><rect x="28" y="20" width="2" height="4" fill="#000080"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Fourier<br>Analyzer</span></a><a class="ico" href="https://calgaryvisioncentre.com/blue-light-calculator"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="4" width="28" height="20" fill="#0000ff" stroke="#000" stroke-width="2"/><rect x="6" y="8" width="20" height="12" fill="#00ffff"/><rect x="12" y="26" width="8" height="2" fill="#000"/><rect x="8" y="28" width="16" height="2" fill="#000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Blue Light<br>Calc</span></a></div>
+    <div onMouseDown="{{perf.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{perf.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{perf.restore}}" onDoubleClick="{{perf.restore}}" class="ico" style="{{perf.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">VISUAL</span>
+  </button>
+</sc-if>
+<sc-if value="{{risk.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{risk.style}}" onMouseDown="{{risk.focus}}">
+    <div class="tb" onMouseDown="{{risk.dragStart}}" style="height: 16px; background: {{risk.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{risk.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>RISK &amp; EVIDENCE</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{risk.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{risk.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px; overflow: hidden;"><a class="ico" href="https://calgaryvisioncentre.com/myopia-risk"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="2" height="24" fill="#000"/><rect x="4" y="26" width="24" height="2" fill="#000"/><rect x="8" y="22" width="4" height="2" fill="#ff0000"/><rect x="12" y="18" width="4" height="2" fill="#ff0000"/><rect x="16" y="14" width="4" height="2" fill="#ff0000"/><rect x="20" y="10" width="4" height="2" fill="#ff0000"/><rect x="24" y="6" width="4" height="2" fill="#ff0000"/><rect x="12" y="20" width="4" height="2" fill="#008000"/><rect x="16" y="18" width="4" height="2" fill="#008000"/><rect x="20" y="17" width="4" height="2" fill="#008000"/><rect x="24" y="16" width="4" height="2" fill="#008000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Myopia<br>Risk</span></a><a class="ico" href="https://calgaryvisioncentre.com/disease-calculator"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="2" width="24" height="28" fill="#fff" stroke="#000" stroke-width="2"/><rect x="8" y="7" width="16" height="2" fill="#000"/><rect x="8" y="12" width="12" height="2" fill="#808080"/><rect x="8" y="17" width="14" height="2" fill="#808080"/><rect x="8" y="22" width="10" height="2" fill="#808080"/><rect x="20" y="20" width="6" height="6" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Trial Insight<br>Engine</span></a></div>
+    <div onMouseDown="{{risk.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{risk.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{risk.restore}}" onDoubleClick="{{risk.restore}}" class="ico" style="{{risk.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">RISK</span>
+  </button>
+</sc-if>
+              
+<sc-if value="{{readme.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{readme.style}}" onMouseDown="{{readme.focus}}">
+    <div class="tb" onMouseDown="{{readme.dragStart}}" style="height: 16px; background: {{readme.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{readme.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>README.TXT — DR. BURKE</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{readme.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{readme.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; padding: 8px 10px; font-size: 15px; line-height: 1.08; display: flex; flex-direction: column; gap: 5px; overflow: hidden;">
+      <p style="margin: 0;">Welcome to the Visual Systems Lab.</p>
+      <p style="margin: 0;">Each program was built from first principles to explore a question that lacked a satisfying explanation. Some are for patients. Others are intentionally technical. When something does not make sense, it gets modeled and tested.</p>
+      <p style="margin: 0; color: #707070;">Educational use only. Not a substitute for an eye exam.</p>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 6px; padding: 0 8px 8px 8px;">
+      <a href="https://calgaryvisioncentre.com/gaze" class="bev" style="min-width: 70px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 15px; outline: 1px solid #000;">Start</a>
+      <a href="https://calgaryvisioncentre.com" class="bev" style="min-width: 70px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 15px;">Clinic</a>
+    </div>
+    <div onMouseDown="{{readme.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{readme.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{readme.restore}}" onDoubleClick="{{readme.restore}}" class="ico" style="{{readme.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">README.TXT</span>
+  </button>
+</sc-if>
+              
+<sc-if value="{{about.open}}" hint-placeholder-val="{{true}}">
+  <div class="bev win" style="{{about.style}}" onMouseDown="{{about.focus}}">
+    <div class="tb" onMouseDown="{{about.dragStart}}" style="height: 16px; background: {{about.tbBg}}; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; user-select: none;">
+      <div style="display: flex; align-items: center; gap: 4px;"><button onClick="{{about.close}}" onMouseDown="{{stop}}" class="bev" aria-label="▬" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▬</button><span>ABOUT VISION LAB MANAGER</span></div>
+      <div style="display: flex; gap: 2px;"><button onClick="{{about.min}}" onMouseDown="{{stop}}" class="bev" aria-label="▼" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▼</button><button onClick="{{about.max}}" onMouseDown="{{stop}}" class="bev" aria-label="▲" style="width: 13px; height: 11px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: inherit;">▲</button></div>
+    </div>
+    <div style="flex-grow: 1; padding: 10px 12px; display: flex; gap: 12px; align-items: flex-start;">
+      <svg width="40" height="40" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg>
+      <div style="font-size: 15px; line-height: 1.1; display: flex; flex-direction: column; gap: 4px;">
+        <div>Vision Lab Manager<br>Version 3.1</div>
+        <div>Copyright © Dr. Robert Burke<br>Calgary Vision Centre</div>
+        <div style="color: #707070;">Memory: 640K OK<br>Vision: 20/20 (corrected)</div>
+        <div style="font-family: 'Silkscreen', monospace; font-size: 7px; letter-spacing: 0.1em; padding-top: 4px;">E &nbsp;F &nbsp;P &nbsp;T &nbsp;O &nbsp;Z<br><span style="font-size: 6px;">L &nbsp;P &nbsp;E &nbsp;D &nbsp;P &nbsp;E &nbsp;C &nbsp;F &nbsp;D</span></div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; padding: 0 8px 8px 8px;"><button onClick="{{about.close}}" class="bev" style="min-width: 70px; height: 22px; font-size: 15px; font-family: inherit; cursor: pointer; outline: 1px solid #000;">OK</button></div>
+    <div onMouseDown="{{about.resizeStart}}" aria-hidden="true" style="position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; cursor: nwse-resize; background: repeating-linear-gradient(135deg, transparent 0 2px, #808080 2px 3px);"></div>
+  </div>
+</sc-if>
+<sc-if value="{{about.minimized}}" hint-placeholder-val="{{false}}">
+  <button onClick="{{about.restore}}" onDoubleClick="{{about.restore}}" class="ico" style="{{about.iconStyle}} background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;">
+    <svg width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="5" fill="#000080"/><rect x="7" y="14" width="8" height="8" fill="#008080"/><rect x="17" y="14" width="8" height="8" fill="#008080"/></svg>
+    <span style="font-size: 13px; line-height: 1; padding: 0 2px; background: #c0c0c0;">ABOUT</span>
+  </button>
+</sc-if>
+            </div>
+          </div>
+          <div style="position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 7px; color: #b2ffff; pointer-events: none;">
+            <span>{{status}}</span><span>CALGARY VISION CENTRE · 403-237-0505</span>
+          </div>
+        </sc-if>
+
+        <!-- SCREENSAVER: flying eyes -->
+        <sc-if value="{{saver}}" hint-placeholder-val="{{false}}">
+          <div style="position: absolute; inset: 0; background: #000; overflow: hidden;" onMouseDown="{{wake}}">
+            <div class="eye1" style="position: absolute; left: 0; top: 0;"><svg width="48" height="48" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/><rect class="lid" x="2" y="10" width="28" height="0" fill="#000"/></svg></div>
+            <div class="eye2" style="position: absolute; left: 0; top: 0;"><svg width="36" height="36" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="9" y="12" width="10" height="8" fill="#800000"/><rect x="12" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="eye3" style="position: absolute; left: 0; top: 0;"><svg width="60" height="60" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="13" y="12" width="10" height="8" fill="#000080"/><rect x="16" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="eye4" style="position: absolute; left: 0; top: 0;"><svg width="40" height="40" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008000"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div style="position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-family: 'Silkscreen', monospace; font-size: 8px; letter-spacing: 0.14em; color: #405050;">VISUAL SYSTEMS LAB · CLICK TO WAKE</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 1px, transparent 3px);"></div>
+      <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.28; background: repeating-linear-gradient(90deg, rgba(255,0,0,0.12) 0 1px, rgba(0,255,0,0.12) 1px 2px, rgba(0,0,255,0.12) 2px 3px);"></div>
+    </div>
+
+    <!-- OFF: a residual dot after the collapse -->
+    <sc-if value="{{offDot}}" hint-placeholder-val="{{false}}">
+      <div style="position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #b2ffff; box-shadow: 0 0 10px 4px rgba(178,255,255,0.6); pointer-events: none;"></div>
+    </sc-if>
+
+    <!-- edge treatment -->
+    <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 48%, transparent 52%, rgba(0,20,20,0.35) 82%, rgba(0,10,10,0.75) 100%);"></div>
+    <div style="position: absolute; inset: 0; pointer-events: none; border-radius: 16px / 14px; box-shadow: inset 0 14px 18px -6px rgba(0,0,0,0.75), inset 10px 0 16px -6px rgba(0,0,0,0.6), inset -6px 0 12px -6px rgba(0,0,0,0.45), inset 0 -8px 14px -6px rgba(0,0,0,0.5);"></div>
+    <div style="position: absolute; inset: 2px; pointer-events: none; border-radius: 14px / 12px; box-shadow: inset 0 0 0 1px rgba(200,235,235,0.18), inset 0 1px 0 rgba(255,255,255,0.12);"></div>
+    <div style="position: absolute; inset: -40px; pointer-events: none; opacity: 0.09; transform: scaleX(-1); filter: blur(7px); background: url(/_blob/6194ea7ab0512715b6282595902dc3e3) center / 1380px 776px no-repeat; mix-blend-mode: screen;"></div>
+    <div style="position: absolute; left: -70px; top: -150px; width: 470px; height: 330px; pointer-events: none; transform: rotate(-16deg); background: radial-gradient(ellipse at 50% 60%, rgba(255,255,255,0.16), rgba(255,255,255,0.0) 70%); border-radius: 50%;"></div>
+    <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.05; background: repeating-radial-gradient(circle at 70% 30%, rgba(255,255,255,0) 0 6px, rgba(255,255,255,0.6) 6px 7px);"></div>
+  </div>
+
+  <!-- power button on the bezel (the small dot lower-right of the tube in the photo) -->
+  <button onClick="{{togglePower}}" aria-label="Power" title="Power" style="position: absolute; left: 828px; top: 594px; width: 40px; height: 34px; background: none; border: 0; cursor: pointer; border-radius: 6px;"></button>
+  <!-- power LED glow when on -->
+  <div style="{{ledStyle}}"></div>
+
+  <!-- newspaper masthead → blog -->
+  <a href="https://calgaryvisioncentre.com/blog" aria-label="CVC Journal — read the blog" style="position: absolute; left: 206px; top: 572px; width: 460px; height: 118px; transform: rotate(9deg); transform-origin: left top; border-radius: 8px; display: block;"></a>
+  <!-- PDA → booking -->
+  <a href="https://calgaryvisioncentre.com/book-an-appointment" aria-label="Book an appointment" style="position: absolute; left: 984px; top: 656px; width: 296px; height: 64px; display: block;"></a>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(255,255,255,0.75); text-shadow: 0 1px 2px rgba(0,0,0,0.6); pointer-events: none;">DRAG · RESIZE · MINIMIZE · CLOSE THE WINDOWS · TRY THE POWER BUTTON</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+const SCALE = 0.934;
+const HOME = {
+  neuro:  { x: 6,   y: 6,   w: 246, h: 150 },
+  optics: { x: 260, y: 6,   w: 320, h: 150 },
+  perf:   { x: 6,   y: 164, w: 246, h: 150 },
+  risk:   { x: 260, y: 164, w: 200, h: 150 },
+  readme: { x: 322, y: 178, w: 274, h: 196 },
+  about:  { x: 120, y: 90,  w: 330, h: 190 }
+};
+const KEYS = ['neuro','optics','perf','risk','readme','about'];
+const WS_W = 606, WS_H = 383;
+const BOOT_LINES = [
+  'Starting VSL/OS 3.1...',
+  '',
+  'HIMEM is testing extended memory...done.',
+  'C:\\>C:\\VSL\\RETINA.SYS /load',
+  'MODE prepare visual cortex ... completed',
+  'MODE select 20/20 ............ completed',
+  '',
+  'Loading 12 programs ......... OK',
+  '640K OK',
+  '',
+  'C:\\>win'
+];
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const wins = {};
+    KEYS.forEach((k, i) => { wins[k] = Object.assign({ open: k !== 'about', min: false, max: false, z: i + 1 }, HOME[k]); });
+    this.state = { wins, top: KEYS.length, drag: null, menu: null, power: 'on', boot: 0, saver: false, degauss: false, offDot: false };
+    this.idle = null; this.bootTimer = null;
+  }
+  componentDidMount() { this.armIdle(); }
+  componentWillUnmount() { clearTimeout(this.idle); clearInterval(this.bootTimer); }
+  armIdle() {
+    clearTimeout(this.idle);
+    this.idle = setTimeout(() => { if (this.state.power === 'on') this.setState({ saver: true, menu: null }); }, 45000);
+  }
+  setWin(k, patch) {
+    const wins = Object.assign({}, this.state.wins);
+    wins[k] = Object.assign({}, wins[k], patch);
+    this.setState({ wins });
+  }
+  bringFront(k) {
+    const top = this.state.top + 1;
+    const wins = Object.assign({}, this.state.wins);
+    wins[k] = Object.assign({}, wins[k], { z: top });
+    this.setState({ wins, top });
+  }
+  renderVals() {
+    const s = this.state;
+    const v = {
+      desktop: s.power === 'on' && !s.saver,
+      booting: s.power === 'boot',
+      saver: s.saver,
+      offDot: s.offDot,
+      bootText: BOOT_LINES.slice(0, s.boot).join('\n'),
+      status: (s.power === 'on' ? '12 PROGRAMS LOADED · 640K OK' : ''),
+      fileOpen: s.menu === 'file', windowOpen: s.menu === 'window', helpOpen: s.menu === 'help',
+      fileStyle: this.menuStyle('file'), windowStyle: this.menuStyle('window'), helpStyle: this.menuStyle('help'),
+      tubeStyle: 'position:absolute;inset:0;background:#008080;filter:url(#barrel);transform-origin:50% 50%;transition:transform .35s cubic-bezier(.6,0,.9,.4),opacity .25s .3s;' +
+        (s.power === 'off' ? 'transform:scaleY(0.004);opacity:0;' : 'transform:none;opacity:1;') + (s.degauss ? 'animation:degauss .7s ease-out 1;' : ''),
+      ledStyle: 'position:absolute;left:841px;top:607px;width:6px;height:6px;border-radius:50%;pointer-events:none;' +
+        (s.power === 'off' ? 'background:#3a2a1a;' : 'background:#35e050;box-shadow:0 0 6px 2px rgba(53,224,80,.7);'),
+      stop: (e) => { e.stopPropagation(); },
+      activity: () => { this.armIdle(); },
+      wake: (e) => { e.stopPropagation(); this.setState({ saver: false }); this.armIdle(); },
+      closeMenus: () => { if (s.menu) this.setState({ menu: null }); },
+      menuFile: () => this.setState({ menu: s.menu === 'file' ? null : 'file' }),
+      menuWindow: () => this.setState({ menu: s.menu === 'window' ? null : 'window' }),
+      menuHelp: () => this.setState({ menu: s.menu === 'help' ? null : 'help' }),
+      cascade: () => this.arrange('cascade'),
+      tile: () => this.arrange('tile'),
+      arrange: () => this.arrange('home'),
+      reopenAll: () => this.arrange('reopen'),
+      showAbout: () => { this.setState({ menu: null }); this.setWin('about', { open: true, min: false }); this.bringFront('about'); },
+      degauss: () => { this.setState({ menu: null, degauss: true }); setTimeout(() => this.setState({ degauss: false }), 750); },
+      saverNow: () => this.setState({ menu: null, saver: true }),
+      powerOff: () => { this.setState({ menu: null }); this.power(false); },
+      togglePower: () => this.power(s.power === 'off'),
+      move: (e) => this.onMove(e),
+      up: () => { if (s.drag) this.setState({ drag: null }); }
+    };
+    KEYS.forEach((k) => {
+      const w = s.wins[k];
+      const isDialog = (k === 'readme' || k === 'about');
+      const geo = w.max ? { x: 0, y: 0, w: WS_W, h: WS_H } : w;
+      v[k] = {
+        open: w.open && !w.min,
+        minimized: w.open && w.min,
+        style: 'left:' + geo.x + 'px;top:' + geo.y + 'px;width:' + geo.w + 'px;height:' + geo.h + 'px;z-index:' + w.z + ';' + (isDialog ? 'box-shadow:3px 3px 0 rgba(0,0,0,.35);' : ''),
+        tbBg: (w.z === s.top ? '#000080' : '#808080'),
+        iconStyle: 'position:absolute;left:' + (8 + 80 * KEYS.indexOf(k)) + 'px;bottom:6px;z-index:5;',
+        focus: () => { if (w.z !== s.top) this.bringFront(k); },
+        dragStart: (e) => { e.preventDefault(); this.bringFront(k); this.setState({ drag: { k, mode: 'move', sx: e.clientX, sy: e.clientY, ox: geo.x, oy: geo.y, ow: geo.w, oh: geo.h } }); },
+        resizeStart: (e) => { e.preventDefault(); e.stopPropagation(); this.bringFront(k); this.setState({ drag: { k, mode: 'size', sx: e.clientX, sy: e.clientY, ox: geo.x, oy: geo.y, ow: geo.w, oh: geo.h } }); },
+        close: (e) => { e.stopPropagation(); this.setWin(k, { open: false }); },
+        min: (e) => { e.stopPropagation(); this.setWin(k, { min: true, max: false }); },
+        max: (e) => { e.stopPropagation(); this.setWin(k, { max: !w.max }); this.bringFront(k); },
+        restore: () => { this.setWin(k, { min: false }); this.bringFront(k); }
+      };
+    });
+    return v;
+  }
+  menuStyle(name) {
+    return 'background:' + (this.state.menu === name ? '#000080' : 'none') + ';color:' + (this.state.menu === name ? '#fff' : '#000') + ';border:0;font:inherit;padding:0 2px;cursor:pointer;';
+  }
+  onMove(e) {
+    const d = this.state.drag; if (!d) return;
+    const dx = (e.clientX - d.sx) / SCALE, dy = (e.clientY - d.sy) / SCALE;
+    if (d.mode === 'move') {
+      const x = Math.max(-d.ow + 40, Math.min(WS_W - 40, d.ox + dx));
+      const y = Math.max(0, Math.min(WS_H - 18, d.oy + dy));
+      this.setWin(d.k, { x: Math.round(x), y: Math.round(y), max: false });
+    } else {
+      this.setWin(d.k, { w: Math.round(Math.max(120, d.ow + dx)), h: Math.round(Math.max(60, d.oh + dy)), max: false });
+    }
+  }
+  arrange(mode) {
+    const wins = Object.assign({}, this.state.wins);
+    const groups = ['neuro','optics','perf','risk'];
+    if (mode === 'reopen') { groups.concat(['readme']).forEach((k) => { wins[k] = Object.assign({}, wins[k], HOME[k], { open: true, min: false, max: false }); }); }
+    else if (mode === 'home') { KEYS.forEach((k) => { wins[k] = Object.assign({}, wins[k], HOME[k], { min: false, max: false }); }); }
+    else {
+      const live = KEYS.filter((k) => wins[k].open && !wins[k].min);
+      live.forEach((k, i) => {
+        if (mode === 'cascade') wins[k] = Object.assign({}, wins[k], { x: 8 + i * 22, y: 8 + i * 20, w: 300, h: 190, max: false, z: this.state.top + 1 + i });
+        else {
+          const cols = live.length > 2 ? 2 : live.length, rows = Math.ceil(live.length / cols);
+          const cw = Math.floor((WS_W - 12) / cols), ch = Math.floor((WS_H - 12) / rows);
+          wins[k] = Object.assign({}, wins[k], { x: 6 + (i % cols) * cw, y: 6 + Math.floor(i / cols) * ch, w: cw - 4, h: ch - 4, max: false });
+        }
+      });
+    }
+    this.setState({ wins, menu: null, top: this.state.top + KEYS.length });
+  }
+  power(on) {
+    clearInterval(this.bootTimer);
+    if (!on) {
+      this.setState({ power: 'off', saver: false, menu: null, drag: null });
+      setTimeout(() => { if (this.state.power === 'off') this.setState({ offDot: true }); }, 350);
+      setTimeout(() => this.setState({ offDot: false }), 1500);
+    } else {
+      this.setState({ power: 'boot', boot: 0, offDot: false });
+      this.bootTimer = setInterval(() => {
+        const n = this.state.boot + 1;
+        if (n > BOOT_LINES.length) { clearInterval(this.bootTimer); this.setState({ power: 'on' }); this.armIdle(); }
+        else this.setState({ boot: n });
+      }, 260);
+    }
+  }
+}
+</script>
+</body>
+</html>

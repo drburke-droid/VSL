@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual Systems Lab — retro CRT direction</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&amp;family=Silkscreen:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#2a2622;font-family:'VT323',monospace;color:#000}
+a{color:#000;text-decoration:none}a:hover{color:#000080}
+.ico{display:flex;flex-direction:column;align-items:center;gap:3px;width:74px;text-align:center}
+.ico svg{shape-rendering:crispEdges}
+.ico:hover span{background:#000080;color:#fff}
+.bev{background:#c0c0c0;border-style:solid;border-width:2px;border-color:#ffffff #808080 #808080 #ffffff}
+.bg-photo{position:absolute;inset:-40px;background:url(/_blob/18200d707d922cc0dd8fe146b46d8e35) center 40% / cover no-repeat;filter:blur(10px) saturate(0.95) brightness(0.9);transform:scale(1.04)}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:0.985}}
+.crt{animation:flicker 5s ease-in-out infinite}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1000px; box-sizing: border-box; overflow: hidden; position: relative; background: #3a332d;">
+
+  <!-- Background photo (blurred) -->
+  <div class="bg-photo"></div>
+  <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.3) 100%);"></div>
+
+  <!-- Desk (wood, foreground, edge slightly out of focus) -->
+  <div style="position: absolute; left: 0; right: 0; top: 770px; height: 230px; background: linear-gradient(180deg, #d9c39f 0%, #cbb48e 8%, #b89f78 60%, #a08762 100%); box-shadow: 0 -2px 0 #e8d7b8, inset 0 40px 60px rgba(0,0,0,0.12);"></div>
+  <div style="position: absolute; left: 0; right: 0; top: 772px; height: 226px; opacity: 0.22; background: repeating-linear-gradient(178deg, transparent 0 9px, rgba(90,60,30,0.45) 9px 10px, transparent 10px 23px, rgba(255,255,255,0.05) 23px 24px);"></div>
+  <!-- contact shadow under base -->
+  <div style="position: absolute; left: 350px; top: 856px; width: 580px; height: 60px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,0.6), rgba(0,0,0,0) 70%); filter: blur(6px);"></div>
+  <!-- monitor's cast shadow on desk -->
+  <div style="position: absolute; left: 300px; top: 800px; width: 700px; height: 120px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,0.45), rgba(0,0,0,0) 70%); filter: blur(14px);"></div>
+
+  <!-- ===== MONITOR (17-inch class CRT, ~16.5 in wide, 1 in ≈ 51 px) ===== -->
+
+  <!-- tilt/swivel base: pedestal -->
+  <div style="position: absolute; left: 400px; top: 828px; width: 480px; height: 62px; border-radius: 40px / 22px; background: linear-gradient(180deg, #cdc3aa 0%, #b8ad93 45%, #9a8f76 100%); box-shadow: inset 0 3px 0 #e2d9c3, inset 0 -6px 8px rgba(0,0,0,0.35), 0 6px 4px rgba(0,0,0,0.35);"></div>
+  <!-- base top plate (perspective) -->
+  <div style="position: absolute; left: 430px; top: 822px; width: 420px; height: 34px; border-radius: 50%; background: linear-gradient(180deg, #ddd4bd, #c7bda4); box-shadow: inset 0 -2px 3px rgba(0,0,0,0.2);"></div>
+  <!-- neck / swivel cup -->
+  <div style="position: absolute; left: 520px; top: 792px; width: 240px; height: 44px; border-radius: 0 0 50px 50px / 0 0 30px 30px; background: linear-gradient(90deg, #8d836b 0%, #cfc5ad 30%, #ded5be 50%, #cfc5ad 70%, #8d836b 100%); box-shadow: inset 0 -8px 10px rgba(0,0,0,0.3);"></div>
+
+  <!-- top surface (seen slightly from above): vents -->
+  <div style="position: absolute; left: 236px; top: 72px; width: 808px; height: 44px; border-radius: 22px 22px 0 0 / 30px 30px 0 0; background: linear-gradient(180deg, #b9ae95 0%, #cbc1a8 60%, #d4cab2 100%); box-shadow: inset 0 3px 0 rgba(255,255,255,0.35);"></div>
+  <div style="position: absolute; left: 330px; top: 84px; width: 620px; height: 24px; background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(60,50,40,0.55) 14px 18px); border-radius: 4px; opacity: 0.8;"></div>
+
+  <!-- front cabinet -->
+  <div style="position: absolute; left: 221px; top: 110px; width: 838px; height: 668px; box-sizing: border-box; border-radius: 26px 26px 22px 22px; background: linear-gradient(170deg, #ece5d2 0%, #ded5be 35%, #cfc5ab 75%, #c1b69c 100%); box-shadow: inset 0 3px 0 rgba(255,255,255,0.7), inset 3px 0 0 rgba(255,255,255,0.35), inset -4px 0 0 rgba(0,0,0,0.12), inset 0 -10px 0 #a99e84, 0 24px 40px rgba(0,0,0,0.45);">
+    <!-- bezel chamfer (slopes inward toward the tube) -->
+    <div style="position: absolute; left: 82px; top: 52px; width: 674px; height: 508px; box-sizing: border-box; border-radius: 14px; padding: 16px; background: linear-gradient(135deg, #9f957c 0%, #b5aa90 25%, #d5cbb1 50%, #b5aa90 75%, #9f957c 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), inset 0 -3px 0 rgba(255,255,255,0.35), inset 0 3px 0 rgba(0,0,0,0.25);">
+      <!-- inner lip / dark gap -->
+      <div style="width: 100%; height: 100%; box-sizing: border-box; border-radius: 8px; padding: 6px; background: #1a1a18; box-shadow: inset 0 0 6px rgba(0,0,0,0.9);">
+        <!-- tube face: 640×480 visible, curved glass -->
+        <div class="crt" style="width: 630px; height: 464px; box-sizing: border-box; border-radius: 10px / 14px; background: #008080; position: relative; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,0.65), inset 0 0 6px rgba(0,0,0,0.9);">
+
+          <!-- Program Manager window -->
+          <div class="bev" style="position: absolute; left: 10px; top: 8px; width: 610px; height: 424px; box-sizing: border-box; display: flex; flex-direction: column;">
+            <div style="height: 19px; background: #000080; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 3px; font-family: 'Silkscreen', monospace; font-size: 8px;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▬</span>
+                <span>VISION LAB MANAGER — [calgaryvisioncentre.com/lab]</span>
+              </div>
+              <div style="display: flex; gap: 2px;">
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▼</span>
+                <span class="bev" style="width: 13px; height: 11px; display: flex; align-items: center; justify-content: center; font-size: 7px; color: #000;">▲</span>
+              </div>
+            </div>
+            <div style="height: 18px; display: flex; align-items: center; gap: 14px; padding: 0 6px; font-size: 16px; line-height: 1; border-bottom: 1px solid #808080;">
+              <span><u>F</u>ile</span><span><u>O</u>ptions</span><span><u>W</u>indow</span><span><u>H</u>elp</span>
+            </div>
+
+            <div style="flex-grow: 1; position: relative; background: #c0c0c0;">
+
+              <!-- Group: Neuro & Binocular -->
+              <div class="bev" style="position: absolute; left: 6px; top: 6px; width: 246px; height: 150px; box-sizing: border-box; display: flex; flex-direction: column;">
+                <div style="height: 16px; background: #000080; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; padding: 0 5px;">NEURO &amp; BINOCULAR</div>
+                <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px;">
+                  <a class="ico" href="https://calgaryvisioncentre.com/gaze"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/><rect x="15" y="4" width="2" height="4" fill="#ff0000"/><rect x="15" y="24" width="2" height="4" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Gaze<br>Simulator</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/bbfi"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="11" width="24" height="2" fill="#000"/><rect x="4" y="19" width="24" height="2" fill="#800000"/><rect x="15" y="13" width="2" height="6" fill="#ff0000"/><rect x="6" y="5" width="8" height="4" fill="#000"/><rect x="18" y="23" width="8" height="4" fill="#800000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">BVD<br>Screener</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/quiz"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="6" y="4" width="20" height="24" fill="#ffff00" stroke="#000" stroke-width="2"/><rect x="12" y="8" width="8" height="2" fill="#000"/><rect x="18" y="10" width="2" height="4" fill="#000"/><rect x="14" y="14" width="6" height="2" fill="#000"/><rect x="14" y="16" width="2" height="2" fill="#000"/><rect x="14" y="21" width="2" height="2" fill="#000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">History<br>Quiz</span></a>
+                </div>
+              </div>
+
+              <!-- Group: Optics & Lens Design -->
+              <div class="bev" style="position: absolute; left: 260px; top: 6px; width: 320px; height: 150px; box-sizing: border-box; display: flex; flex-direction: column;">
+                <div style="height: 16px; background: #000080; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; padding: 0 5px;">OPTICS &amp; LENS DESIGN</div>
+                <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px;">
+                  <a class="ico" href="https://calgaryvisioncentre.com/multifocal-cl-sim"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="24" height="24" fill="#00ffff" stroke="#000" stroke-width="2"/><rect x="9" y="9" width="14" height="14" fill="#008080"/><rect x="13" y="13" width="6" height="6" fill="#00ffff"/><rect x="0" y="15" width="32" height="2" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Multifocal<br>CL Sim</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/multifocal-iol-sim"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="12" y="2" width="8" height="28" fill="#c0c0c0" stroke="#000" stroke-width="2"/><rect x="2" y="15" width="10" height="2" fill="#ff0000"/><rect x="20" y="15" width="10" height="2" fill="#ff0000"/><rect x="2" y="9" width="10" height="2" fill="#ff0000"/><rect x="20" y="12" width="8" height="2" fill="#ff0000"/><rect x="2" y="21" width="10" height="2" fill="#ff0000"/><rect x="20" y="18" width="8" height="2" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">IOL Range<br>Sim</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/power-map"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="24" height="24" fill="#c0c0c0" stroke="#000" stroke-width="2"/><rect x="8" y="6" width="16" height="6" fill="#00ff00"/><rect x="12" y="12" width="8" height="8" fill="#ffff00"/><rect x="10" y="20" width="12" height="6" fill="#ff8000"/><rect x="6" y="14" width="4" height="12" fill="#ff0000"/><rect x="22" y="14" width="4" height="12" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Progressive<br>Comparator</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/glasses-fit"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="10" width="12" height="10" fill="#fff" stroke="#000" stroke-width="2"/><rect x="18" y="10" width="12" height="10" fill="#fff" stroke="#000" stroke-width="2"/><rect x="14" y="13" width="4" height="2" fill="#000"/><rect x="6" y="13" width="4" height="4" fill="#ff0000"/><rect x="24" y="12" width="4" height="4" fill="#008000"/><rect x="2" y="24" width="28" height="2" fill="#808080"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Spectacle<br>Tolerance</span></a>
+                </div>
+              </div>
+
+              <!-- Group: Visual Performance -->
+              <div class="bev" style="position: absolute; left: 6px; top: 164px; width: 246px; height: 150px; box-sizing: border-box; display: flex; flex-direction: column;">
+                <div style="height: 16px; background: #000080; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; padding: 0 5px;">VISUAL PERFORMANCE</div>
+                <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px;">
+                  <a class="ico" href="https://drburke-droid.github.io/csf_v2/handoff-fixes/csf-explorer.html"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="4" width="4" height="24" fill="#000"/><rect x="8" y="4" width="4" height="24" fill="#404040"/><rect x="14" y="4" width="3" height="24" fill="#808080"/><rect x="19" y="4" width="3" height="24" fill="#a0a0a0"/><rect x="24" y="4" width="2" height="24" fill="#c0c0c0"/><rect x="28" y="4" width="2" height="24" fill="#e0e0e0"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Contrast<br>Explorer</span></a>
+                  <a class="ico" href="https://drburke-droid.github.io/csf_v2/handoff-fixes/spatial-freq-analyzer.html"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="14" width="2" height="4" fill="#000080"/><rect x="4" y="8" width="2" height="6" fill="#000080"/><rect x="6" y="4" width="2" height="4" fill="#000080"/><rect x="8" y="8" width="2" height="6" fill="#000080"/><rect x="10" y="14" width="2" height="6" fill="#000080"/><rect x="12" y="20" width="2" height="6" fill="#000080"/><rect x="14" y="24" width="2" height="4" fill="#000080"/><rect x="16" y="20" width="2" height="6" fill="#000080"/><rect x="18" y="14" width="2" height="6" fill="#000080"/><rect x="20" y="8" width="2" height="6" fill="#000080"/><rect x="22" y="4" width="2" height="4" fill="#000080"/><rect x="24" y="8" width="2" height="6" fill="#000080"/><rect x="26" y="14" width="2" height="6" fill="#000080"/><rect x="28" y="20" width="2" height="4" fill="#000080"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Fourier<br>Analyzer</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/blue-light-calculator"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="2" y="4" width="28" height="20" fill="#0000ff" stroke="#000" stroke-width="2"/><rect x="6" y="8" width="20" height="12" fill="#00ffff"/><rect x="12" y="26" width="8" height="2" fill="#000"/><rect x="8" y="28" width="16" height="2" fill="#000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Blue Light<br>Calc</span></a>
+                </div>
+              </div>
+
+              <!-- Group: Risk & Evidence -->
+              <div class="bev" style="position: absolute; left: 260px; top: 164px; width: 200px; height: 150px; box-sizing: border-box; display: flex; flex-direction: column;">
+                <div style="height: 16px; background: #000080; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; padding: 0 5px;">RISK &amp; EVIDENCE</div>
+                <div style="flex-grow: 1; display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px;">
+                  <a class="ico" href="https://calgaryvisioncentre.com/myopia-risk"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="4" width="2" height="24" fill="#000"/><rect x="4" y="26" width="24" height="2" fill="#000"/><rect x="8" y="22" width="4" height="2" fill="#ff0000"/><rect x="12" y="18" width="4" height="2" fill="#ff0000"/><rect x="16" y="14" width="4" height="2" fill="#ff0000"/><rect x="20" y="10" width="4" height="2" fill="#ff0000"/><rect x="24" y="6" width="4" height="2" fill="#ff0000"/><rect x="12" y="20" width="4" height="2" fill="#008000"/><rect x="16" y="18" width="4" height="2" fill="#008000"/><rect x="20" y="17" width="4" height="2" fill="#008000"/><rect x="24" y="16" width="4" height="2" fill="#008000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Myopia<br>Risk</span></a>
+                  <a class="ico" href="https://calgaryvisioncentre.com/disease-calculator"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="#fff"/><rect x="4" y="2" width="24" height="28" fill="#fff" stroke="#000" stroke-width="2"/><rect x="8" y="7" width="16" height="2" fill="#000"/><rect x="8" y="12" width="12" height="2" fill="#808080"/><rect x="8" y="17" width="14" height="2" fill="#808080"/><rect x="8" y="22" width="10" height="2" fill="#808080"/><rect x="20" y="20" width="6" height="6" fill="#ff0000"/></svg><span style="font-size: 14px; line-height: 1; padding: 0 2px;">Trial Insight<br>Engine</span></a>
+                </div>
+              </div>
+
+              <!-- README dialog (cascaded over the last group) -->
+              <div class="bev" style="position: absolute; left: 322px; top: 178px; width: 274px; height: 196px; box-sizing: border-box; display: flex; flex-direction: column; box-shadow: 3px 3px 0 rgba(0,0,0,0.35);">
+                <div style="height: 16px; background: #000080; color: #fff; font-family: 'Silkscreen', monospace; font-size: 7px; display: flex; align-items: center; padding: 0 5px;">README.TXT — DR. BURKE</div>
+                <div style="flex-grow: 1; padding: 8px 10px; font-size: 15px; line-height: 1.08; display: flex; flex-direction: column; gap: 5px;">
+                  <p style="margin: 0;">Welcome to the Visual Systems Lab.</p>
+                  <p style="margin: 0;">Each program was built from first principles to explore a question that lacked a satisfying explanation. Some are for patients. Others are intentionally technical. When something does not make sense, it gets modeled and tested.</p>
+                  <p style="margin: 0; color: #707070;">Educational use only. Not a substitute for an eye exam.</p>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 6px; padding: 0 8px 8px 8px;">
+                  <a href="https://calgaryvisioncentre.com/gaze" class="bev" style="min-width: 70px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 15px; outline: 1px solid #000;">Start</a>
+                  <a href="https://calgaryvisioncentre.com" class="bev" style="min-width: 70px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 15px;">Clinic</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- desktop status line -->
+          <div style="position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between; font-family: 'Silkscreen', monospace; font-size: 7px; color: #b2ffff;">
+            <span>12 PROGRAMS LOADED · 640K OK</span><span>CALGARY VISION CENTRE · 403-237-0505</span>
+          </div>
+
+          <!-- phosphor scanlines, shadow mask, glass -->
+          <div style="position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px, transparent 1px, transparent 3px);"></div>
+          <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.35; background: repeating-linear-gradient(90deg, rgba(255,0,0,0.12) 0 1px, rgba(0,255,0,0.12) 1px 2px, rgba(0,0,255,0.12) 2px 3px);"></div>
+          <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.35) 100%);"></div>
+          <div style="position: absolute; left: -40px; top: -120px; width: 420px; height: 300px; pointer-events: none; transform: rotate(-18deg); background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.0)); border-radius: 50%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom bezel controls -->
+    <div style="position: absolute; left: 96px; top: 592px; display: flex; align-items: center; gap: 10px;">
+      <div style="height: 22px; padding: 0 10px; border-radius: 3px; background: linear-gradient(180deg, #b7ac92, #a2977c); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.6); display: flex; align-items: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.12em; color: #3f382e;">VSL</div>
+      <div style="font-family: 'Silkscreen', monospace; font-size: 7px; letter-spacing: 0.14em; color: #7d7460;">VISION SYSTEMS LAB · MODEL VSL-1993 · 17" MULTISYNC</div>
+    </div>
+    <div style="position: absolute; right: 96px; top: 586px; display: flex; align-items: center; gap: 16px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;"><div style="width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d6cdb5, #9a8f76); box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.5); position: relative;"><div style="position: absolute; left: 10px; top: 2px; width: 2px; height: 8px; background: #3f382e;"></div></div><span style="font-family: 'Silkscreen', monospace; font-size: 6px; color: #7d7460;">CONTRAST</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;"><div style="width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d6cdb5, #9a8f76); box-shadow: inset 0 -2px 3px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.5); position: relative;"><div style="position: absolute; left: 14px; top: 4px; width: 2px; height: 8px; background: #3f382e; transform: rotate(40deg);"></div></div><span style="font-family: 'Silkscreen', monospace; font-size: 6px; color: #7d7460;">BRIGHT</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;"><div style="width: 10px; height: 10px; border-radius: 50%; background: #35e050; box-shadow: 0 0 8px #35e050, inset 0 -2px 2px rgba(0,0,0,0.3); margin-top: 6px;"></div><span style="font-family: 'Silkscreen', monospace; font-size: 6px; color: #7d7460;">POWER</span></div>
+      <div style="width: 44px; height: 24px; border-radius: 3px; background: linear-gradient(180deg, #d9d0b8, #b3a88e); box-shadow: inset 0 -4px 0 #8f8570, inset 0 1px 0 #f0e9d6, 0 2px 2px rgba(0,0,0,0.3); margin-top: -6px;"></div>
+    </div>
+    <!-- lower cabinet seam -->
+    <div style="position: absolute; left: 20px; right: 20px; top: 624px; height: 1px; background: rgba(0,0,0,0.18); box-shadow: 0 1px 0 rgba(255,255,255,0.45);"></div>
+  </div>
+
+  <!-- caption -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-family: 'Silkscreen', monospace; font-size: 9px; letter-spacing: 0.14em; color: rgba(60,40,20,0.7);">DOUBLE-CLICK ANY PROGRAM · SCROLL FOR THE MODERN INDEX</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Share card — Gaze Simulator</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0f0e;font-family:'Space Grotesk',system-ui,sans-serif;color:#d6ded9}
+a{color:#7cf5b0}a:hover{color:#b9ffd6}
+</style>
+</helmet>
+<div style="width: 1200px; height: 630px; box-sizing: border-box; background: #0b0f0e; background-image: linear-gradient(rgba(124,245,176,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(124,245,176,0.05) 1px, transparent 1px); background-size: 60px 60px; padding: 64px 72px; display: flex; align-items: center; gap: 56px; overflow: hidden; position: relative;">
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 24px;">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.16em; color: {{accent}};">LAB 01 · NEURO-OPHTHALMOLOGY</div>
+    <div style="font-size: 64px; line-height: 1.02; font-weight: 600; letter-spacing: -0.03em; color: #f2f6f3;">Interactive Gaze Simulator</div>
+    <div style="font-size: 24px; line-height: 1.45; color: #a7b3ad; max-width: 560px;">Which cranial nerve is failing when an eye can't move where it should? Move the target and find out.</div>
+    <div style="margin-top: 12px; display: flex; align-items: center; gap: 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.12em; color: #6f7b76;">
+      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {{accent}}; box-shadow: 0 0 10px {{accent}};"></span>
+      VISUAL SYSTEMS LAB · CALGARYVISIONCENTRE.COM/LAB
+    </div>
+  </div>
+  <svg width="420" height="420" viewBox="0 0 420 420" fill="none" style="flex-shrink: 0;">
+    <circle cx="210" cy="210" r="200" stroke="#1d2622"/>
+    <circle cx="210" cy="210" r="170" stroke="{{accent}}" stroke-opacity="0.6" stroke-dasharray="2 10"/>
+    <path d="M210 14 v14 M406 210 h-14 M210 406 v-14 M14 210 h14" stroke="{{accent}}" stroke-width="2"/>
+    <circle cx="210" cy="210" r="130" stroke="#f5b94a" stroke-opacity="0.8" stroke-dasharray="60 200"/>
+    <circle cx="210" cy="210" r="86" fill="#0f1613" stroke="{{accent}}" stroke-width="1.5"/>
+    <path d="M210 124 v172 M124 210 h172" stroke="{{accent}}" stroke-opacity="0.35"/>
+    <circle cx="210" cy="210" r="40" fill="#0b0f0e" stroke="{{accent}}" stroke-width="1.5"/>
+    <circle cx="196" cy="196" r="7" fill="{{accent}}"/>
+    <g font-family="JetBrains Mono, monospace" font-size="11" fill="#8f9c95" letter-spacing="1.5">
+      <text x="210" y="8" text-anchor="middle">CN III</text>
+      <text x="412" y="214" text-anchor="end">CN VI</text>
+      <text x="316" y="104">CN IV</text>
+    </g>
+  </svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#7cf5b0","options":["#7cf5b0","#f5b94a","#7cc8ff","#ff8a7a"]},"$preview":{"width":1200,"height":630}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#7cf5b0' };
+  }
+}
+</script>
+</body>
+</html>

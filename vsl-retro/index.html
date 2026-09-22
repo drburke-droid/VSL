@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual Systems Lab — Calgary Vision Centre</title>
+<meta name="description" content="Twelve interactive vision-science instruments by Dr. Robert Burke, Calgary Vision Centre — served on a 1993 CRT.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- SVG filter: barrel distortion driven by a radial r³ displacement map -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="barrel" filterUnits="userSpaceOnUse" x="0" y="0" width="602" height="495" color-interpolation-filters="sRGB">
+    <feImage href="assets/barrel.png" x="0" y="0" width="602" height="495" preserveAspectRatio="none" result="map"/>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<!-- The stage is a fixed 1280×720 scene, scaled to fit the viewport by JS -->
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <img class="photo" src="assets/monitor.png" alt="Beige 1990s CRT monitor on a desk beside a copy of the CVC Journal">
+
+    <!-- Screen: traced from the photo (365,19 → 602×495) -->
+    <div class="screen" id="screen">
+      <div class="tube" id="tube">
+        <div class="desktop-scale">
+          <!-- boot -->
+          <pre class="boot" id="boot" hidden></pre>
+
+          <!-- desktop -->
+          <div class="desktop" id="desktop">
+            <div class="bev progman">
+              <div class="titlebar main">
+                <span><span class="bev sysbtn">▬</span> VISION LAB MANAGER — [calgaryvisioncentre.com/lab]</span>
+                <span><span class="bev sysbtn">▼</span><span class="bev sysbtn">▲</span></span>
+              </div>
+              <div class="menubar" id="menubar">
+                <button data-menu="file"><u>F</u>ile</button>
+                <span class="disabled"><u>O</u>ptions</span>
+                <button data-menu="window"><u>W</u>indow</button>
+                <button data-menu="help"><u>H</u>elp</button>
+
+                <div class="bev menu" data-for="file" hidden>
+                  <a href="https://calgaryvisioncentre.com/gaze">Open…&nbsp; Gaze Simulator</a>
+                  <a href="https://calgaryvisioncentre.com/lab">Modern index of the Lab</a>
+                  <span class="sep"></span>
+                  <button data-action="power-off">Exit Vision Lab Manager…</button>
+                </div>
+                <div class="bev menu" data-for="window" hidden>
+                  <button data-action="cascade">Cascade</button>
+                  <button data-action="tile">Tile</button>
+                  <button data-action="home">Arrange Icons</button>
+                  <span class="sep"></span>
+                  <button data-action="reopen">Reopen closed groups</button>
+                </div>
+                <div class="bev menu" data-for="help" hidden>
+                  <button data-action="degauss">Degauss</button>
+                  <button data-action="saver">Preview screensaver</button>
+                  <button data-action="scanlines">Toggle scanlines</button>
+                  <span class="sep"></span>
+                  <button data-action="about">About Vision Lab Manager…</button>
+                </div>
+              </div>
+              <div class="workspace" id="workspace">
+                <!-- group windows are generated from js/tools.json -->
+
+                <!-- README dialog -->
+                <div class="bev win dialog" data-win="readme" style="left:322px;top:178px;width:274px;height:196px">
+                  <div class="titlebar">
+                    <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> README.TXT — DR. BURKE</span>
+                    <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+                  </div>
+                  <div class="body text">
+                    <p>Welcome to the Visual Systems Lab.</p>
+                    <p>Each program was built from first principles to explore a question that lacked a satisfying explanation. Some are for patients. Others are intentionally technical. When something does not make sense, it gets modeled and tested.</p>
+                    <p class="muted">Educational use only. Not a substitute for an eye exam.</p>
+                  </div>
+                  <div class="buttons">
+                    <a class="bev btn default" href="https://calgaryvisioncentre.com/gaze">Start</a>
+                    <a class="bev btn" href="https://calgaryvisioncentre.com">Clinic</a>
+                  </div>
+                  <div class="grip" data-wm="resize" aria-hidden="true"></div>
+                </div>
+
+                <!-- ABOUT dialog -->
+                <div class="bev win dialog" data-win="about" data-closed style="left:120px;top:90px;width:330px;height:190px" hidden>
+                  <div class="titlebar">
+                    <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ABOUT VISION LAB MANAGER</span>
+                    <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+                  </div>
+                  <div class="body about">
+                    <svg width="40" height="40" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect width="32" height="32" fill="#c0c0c0"/><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg>
+                    <div>
+                      <div>Vision Lab Manager<br>Version 3.1</div>
+                      <div>Copyright © Dr. Robert Burke<br>Calgary Vision Centre</div>
+                      <div class="muted">Memory: 640K OK<br>Vision: 20/20 (corrected)</div>
+                      <div class="chart">E&nbsp; F&nbsp; P&nbsp; T&nbsp; O&nbsp; Z<br><small>L&nbsp; P&nbsp; E&nbsp; D&nbsp; P&nbsp; E&nbsp; C&nbsp; F&nbsp; D</small></div>
+                    </div>
+                  </div>
+                  <div class="buttons"><button class="bev btn default" data-wm="close">OK</button></div>
+                  <div class="grip" data-wm="resize" aria-hidden="true"></div>
+                </div>
+
+                <div class="tray" id="tray"></div>
+              </div>
+            </div>
+            <div class="statusline"><span id="status">12 PROGRAMS LOADED · 640K OK</span><span>CALGARY VISION CENTRE · 403-237-0505</span></div>
+          </div>
+
+          <!-- screensaver -->
+          <div class="saver" id="saver" hidden>
+            <div class="eye e1"><svg width="48" height="48" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="eye e2"><svg width="36" height="36" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="9" y="12" width="10" height="8" fill="#800000"/><rect x="12" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="eye e3"><svg width="60" height="60" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="13" y="12" width="10" height="8" fill="#000080"/><rect x="16" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="eye e4"><svg width="40" height="40" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008000"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg></div>
+            <div class="saver-caption">VISUAL SYSTEMS LAB · CLICK TO WAKE</div>
+          </div>
+        </div>
+
+        <div class="scanlines" id="scanlines"></div>
+        <div class="mask"></div>
+      </div>
+
+      <div class="off-dot" id="offdot" hidden></div>
+
+      <!-- glass & bezel edge treatment (see css) -->
+      <div class="fx falloff"></div>
+      <div class="fx bezel-shadow"></div>
+      <div class="fx glass-edge"></div>
+      <div class="fx reflection"></div>
+      <div class="fx specular"></div>
+      <div class="fx dust"></div>
+    </div>
+
+    <!-- bezel power button + LED -->
+    <button class="power" id="power" aria-label="Power" title="Power"></button>
+    <div class="led on" id="led"></div>
+
+    <!-- hotspots on the photo -->
+    <a class="hot masthead" href="https://calgaryvisioncentre.com/blog" aria-label="CVC Journal — read the blog"></a>
+    <a class="hot pda" href="https://calgaryvisioncentre.com/book-an-appointment" aria-label="Book an appointment"></a>
+
+    <div class="caption">DRAG · RESIZE · MINIMIZE · CLOSE THE WINDOWS · TRY THE POWER BUTTON</div>
+  </div>
+</div>
+
+<!-- Plain-HTML index for phones, screen readers and no-JS: hidden visually on desktop, shown under 700px -->
+<nav class="fallback" id="fallback" aria-label="Instruments">
+  <h1>Visual Systems Lab</h1>
+  <p>Twelve interactive instruments by Dr. Robert Burke, Calgary Vision Centre.</p>
+  <ul id="fallback-list"></ul>
+  <p><a href="https://calgaryvisioncentre.com/book-an-appointment">Book an appointment</a> · <a href="https://calgaryvisioncentre.com/blog">CVC Journal</a></p>
+</nav>
+
+<script src="js/app.js"></script>
+</body>
+</html>

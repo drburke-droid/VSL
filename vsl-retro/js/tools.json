@@ -1,0 +1,141 @@
+{
+  "groups": [
+    {
+      "id": "neuro",
+      "title": "NEURO & BINOCULAR",
+      "x": 6,
+      "y": 6,
+      "w": 246,
+      "h": 150
+    },
+    {
+      "id": "optics",
+      "title": "OPTICS & LENS DESIGN",
+      "x": 260,
+      "y": 6,
+      "w": 320,
+      "h": 150
+    },
+    {
+      "id": "perf",
+      "title": "VISUAL PERFORMANCE",
+      "x": 6,
+      "y": 164,
+      "w": 246,
+      "h": 150
+    },
+    {
+      "id": "risk",
+      "title": "RISK & EVIDENCE",
+      "x": 260,
+      "y": 164,
+      "w": 200,
+      "h": 150
+    }
+  ],
+  "tools": [
+    {
+      "id": "gaze",
+      "title": "Interactive Gaze Simulator",
+      "label": "Gaze\nSimulator",
+      "href": "https://calgaryvisioncentre.com/gaze",
+      "group": "neuro",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"12\" width=\"28\" height=\"8\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"12\" fill=\"#fff\"/><rect x=\"11\" y=\"12\" width=\"10\" height=\"8\" fill=\"#008080\"/><rect x=\"14\" y=\"14\" width=\"4\" height=\"4\" fill=\"#000\"/><rect x=\"15\" y=\"4\" width=\"2\" height=\"4\" fill=\"#ff0000\"/><rect x=\"15\" y=\"24\" width=\"2\" height=\"4\" fill=\"#ff0000\"/></svg>"
+    },
+    {
+      "id": "bvd",
+      "title": "BVD Diagnostic Screener",
+      "label": "BVD\nScreener",
+      "href": "https://calgaryvisioncentre.com/bbfi",
+      "group": "neuro",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"11\" width=\"24\" height=\"2\" fill=\"#000\"/><rect x=\"4\" y=\"19\" width=\"24\" height=\"2\" fill=\"#800000\"/><rect x=\"15\" y=\"13\" width=\"2\" height=\"6\" fill=\"#ff0000\"/><rect x=\"6\" y=\"5\" width=\"8\" height=\"4\" fill=\"#000\"/><rect x=\"18\" y=\"23\" width=\"8\" height=\"4\" fill=\"#800000\"/></svg>"
+    },
+    {
+      "id": "quiz",
+      "title": "Historical Ophthalmology Quiz",
+      "label": "History\nQuiz",
+      "href": "https://calgaryvisioncentre.com/quiz",
+      "group": "neuro",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"4\" width=\"20\" height=\"24\" fill=\"#ffff00\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"2\" fill=\"#000\"/><rect x=\"18\" y=\"10\" width=\"2\" height=\"4\" fill=\"#000\"/><rect x=\"14\" y=\"14\" width=\"6\" height=\"2\" fill=\"#000\"/><rect x=\"14\" y=\"16\" width=\"2\" height=\"2\" fill=\"#000\"/><rect x=\"14\" y=\"21\" width=\"2\" height=\"2\" fill=\"#000\"/></svg>"
+    },
+    {
+      "id": "clsim",
+      "title": "Photon-Accurate Multifocal CL Simulator",
+      "label": "Multifocal\nCL Sim",
+      "href": "https://calgaryvisioncentre.com/multifocal-cl-sim",
+      "group": "optics",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"4\" width=\"24\" height=\"24\" fill=\"#00ffff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"9\" y=\"9\" width=\"14\" height=\"14\" fill=\"#008080\"/><rect x=\"13\" y=\"13\" width=\"6\" height=\"6\" fill=\"#00ffff\"/><rect x=\"0\" y=\"15\" width=\"32\" height=\"2\" fill=\"#ff0000\"/></svg>"
+    },
+    {
+      "id": "iol",
+      "title": "Dynamic IOL Range Simulator",
+      "label": "IOL Range\nSim",
+      "href": "https://calgaryvisioncentre.com/multifocal-iol-sim",
+      "group": "optics",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"12\" y=\"2\" width=\"8\" height=\"28\" fill=\"#c0c0c0\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"2\" y=\"15\" width=\"10\" height=\"2\" fill=\"#ff0000\"/><rect x=\"20\" y=\"15\" width=\"10\" height=\"2\" fill=\"#ff0000\"/><rect x=\"2\" y=\"9\" width=\"10\" height=\"2\" fill=\"#ff0000\"/><rect x=\"20\" y=\"12\" width=\"8\" height=\"2\" fill=\"#ff0000\"/><rect x=\"2\" y=\"21\" width=\"10\" height=\"2\" fill=\"#ff0000\"/><rect x=\"20\" y=\"18\" width=\"8\" height=\"2\" fill=\"#ff0000\"/></svg>"
+    },
+    {
+      "id": "pal",
+      "title": "Progressive Lens Comparator",
+      "label": "Progressive\nComparator",
+      "href": "https://calgaryvisioncentre.com/power-map",
+      "group": "optics",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"4\" width=\"24\" height=\"24\" fill=\"#c0c0c0\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"8\" y=\"6\" width=\"16\" height=\"6\" fill=\"#00ff00\"/><rect x=\"12\" y=\"12\" width=\"8\" height=\"8\" fill=\"#ffff00\"/><rect x=\"10\" y=\"20\" width=\"12\" height=\"6\" fill=\"#ff8000\"/><rect x=\"6\" y=\"14\" width=\"4\" height=\"12\" fill=\"#ff0000\"/><rect x=\"22\" y=\"14\" width=\"4\" height=\"12\" fill=\"#ff0000\"/></svg>"
+    },
+    {
+      "id": "fit",
+      "title": "Spectacle Tolerance & Error Calculator",
+      "label": "Spectacle\nTolerance",
+      "href": "https://calgaryvisioncentre.com/glasses-fit",
+      "group": "optics",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"10\" width=\"12\" height=\"10\" fill=\"#fff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"18\" y=\"10\" width=\"12\" height=\"10\" fill=\"#fff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"14\" y=\"13\" width=\"4\" height=\"2\" fill=\"#000\"/><rect x=\"6\" y=\"13\" width=\"4\" height=\"4\" fill=\"#ff0000\"/><rect x=\"24\" y=\"12\" width=\"4\" height=\"4\" fill=\"#008000\"/><rect x=\"2\" y=\"24\" width=\"28\" height=\"2\" fill=\"#808080\"/></svg>"
+    },
+    {
+      "id": "csf",
+      "title": "Contrast Sensitivity Explorer",
+      "label": "Contrast\nExplorer",
+      "href": "https://drburke-droid.github.io/csf_v2/handoff-fixes/csf-explorer.html",
+      "group": "perf",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"4\" width=\"4\" height=\"24\" fill=\"#000\"/><rect x=\"8\" y=\"4\" width=\"4\" height=\"24\" fill=\"#404040\"/><rect x=\"14\" y=\"4\" width=\"3\" height=\"24\" fill=\"#808080\"/><rect x=\"19\" y=\"4\" width=\"3\" height=\"24\" fill=\"#a0a0a0\"/><rect x=\"24\" y=\"4\" width=\"2\" height=\"24\" fill=\"#c0c0c0\"/><rect x=\"28\" y=\"4\" width=\"2\" height=\"24\" fill=\"#e0e0e0\"/></svg>"
+    },
+    {
+      "id": "fourier",
+      "title": "Fourier Transformation",
+      "label": "Fourier\nAnalyzer",
+      "href": "https://drburke-droid.github.io/csf_v2/handoff-fixes/spatial-freq-analyzer.html",
+      "group": "perf",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"14\" width=\"2\" height=\"4\" fill=\"#000080\"/><rect x=\"4\" y=\"8\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"6\" y=\"4\" width=\"2\" height=\"4\" fill=\"#000080\"/><rect x=\"8\" y=\"8\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"10\" y=\"14\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"12\" y=\"20\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"14\" y=\"24\" width=\"2\" height=\"4\" fill=\"#000080\"/><rect x=\"16\" y=\"20\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"18\" y=\"14\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"20\" y=\"8\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"22\" y=\"4\" width=\"2\" height=\"4\" fill=\"#000080\"/><rect x=\"24\" y=\"8\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"26\" y=\"14\" width=\"2\" height=\"6\" fill=\"#000080\"/><rect x=\"28\" y=\"20\" width=\"2\" height=\"4\" fill=\"#000080\"/></svg>"
+    },
+    {
+      "id": "blue",
+      "title": "Blue Light Exposure Calculator",
+      "label": "Blue Light\nCalc",
+      "href": "https://calgaryvisioncentre.com/blue-light-calculator",
+      "group": "perf",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"4\" width=\"28\" height=\"20\" fill=\"#0000ff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"6\" y=\"8\" width=\"20\" height=\"12\" fill=\"#00ffff\"/><rect x=\"12\" y=\"26\" width=\"8\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"28\" width=\"16\" height=\"2\" fill=\"#000\"/></svg>"
+    },
+    {
+      "id": "myopia",
+      "title": "Pediatric Myopia Risk Assessment",
+      "label": "Myopia\nRisk",
+      "href": "https://calgaryvisioncentre.com/myopia-risk",
+      "group": "risk",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"4\" width=\"2\" height=\"24\" fill=\"#000\"/><rect x=\"4\" y=\"26\" width=\"24\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"22\" width=\"4\" height=\"2\" fill=\"#ff0000\"/><rect x=\"12\" y=\"18\" width=\"4\" height=\"2\" fill=\"#ff0000\"/><rect x=\"16\" y=\"14\" width=\"4\" height=\"2\" fill=\"#ff0000\"/><rect x=\"20\" y=\"10\" width=\"4\" height=\"2\" fill=\"#ff0000\"/><rect x=\"24\" y=\"6\" width=\"4\" height=\"2\" fill=\"#ff0000\"/><rect x=\"12\" y=\"20\" width=\"4\" height=\"2\" fill=\"#008000\"/><rect x=\"16\" y=\"18\" width=\"4\" height=\"2\" fill=\"#008000\"/><rect x=\"20\" y=\"17\" width=\"4\" height=\"2\" fill=\"#008000\"/><rect x=\"24\" y=\"16\" width=\"4\" height=\"2\" fill=\"#008000\"/></svg>"
+    },
+    {
+      "id": "trial",
+      "title": "Clinical Trial Insight Engine",
+      "label": "Trial Insight\nEngine",
+      "href": "https://calgaryvisioncentre.com/disease-calculator",
+      "group": "risk",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"2\" width=\"24\" height=\"28\" fill=\"#fff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"8\" y=\"7\" width=\"16\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"12\" width=\"12\" height=\"2\" fill=\"#808080\"/><rect x=\"8\" y=\"17\" width=\"14\" height=\"2\" fill=\"#808080\"/><rect x=\"8\" y=\"22\" width=\"10\" height=\"2\" fill=\"#808080\"/><rect x=\"20\" y=\"20\" width=\"6\" height=\"6\" fill=\"#ff0000\"/></svg>"
+    }
+  ],
+  "links": {
+    "lab": "https://calgaryvisioncentre.com/lab",
+    "clinic": "https://calgaryvisioncentre.com",
+    "blog": "https://calgaryvisioncentre.com/blog",
+    "book": "https://calgaryvisioncentre.com/book-an-appointment",
+    "phone": "403-237-0505"
+  }
+}

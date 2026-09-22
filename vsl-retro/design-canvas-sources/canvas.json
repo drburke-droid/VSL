@@ -1,0 +1,77 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "h": 2360,
+      "title": "A \u2014 Instrument panel (4 of 12 tools shown)",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "ShareCard.dc.html": {
+      "h": 630,
+      "title": "Per-tool share card (OG image)",
+      "w": 1200,
+      "x": 0,
+      "y": 2480
+    },
+    "Journal.dc.html": {
+      "h": 2260,
+      "title": "B \u2014 Snellen journal (all 12 tools)",
+      "w": 1280,
+      "x": 1360,
+      "y": 0
+    },
+    "Spectrum.dc.html": {
+      "h": 1900,
+      "title": "C \u2014 Spectrum bento (all 12 tools)",
+      "w": 1280,
+      "x": 2720,
+      "y": 0
+    },
+    "Retro.dc.html": {
+      "h": 1000,
+      "title": "D \u2014 Retro CRT desktop (all 12 tools as programs)",
+      "w": 1280,
+      "x": 4080,
+      "y": 0
+    },
+    "RetroPhoto.dc.html": {
+      "h": 720,
+      "title": "E \u2014 Your photo, interactive desktop (press Play)",
+      "w": 1280,
+      "x": 4080,
+      "y": 1120,
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-18T17:12:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 5360,
+      "text": "Visual Systems Lab \u2014 four directions",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "ShareCard.dc.html",
+    "Journal.dc.html",
+    "Spectrum.dc.html",
+    "Retro.dc.html",
+    "RetroPhoto.dc.html"
+  ],
+  "pages": [],
+  "title": "Visual Systems Lab Redesign"
+}
