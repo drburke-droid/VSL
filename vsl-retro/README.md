@@ -1,7 +1,7 @@
 # Visual Systems Lab — retro CRT front page
 
 A replacement for https://calgaryvisioncentre.com/lab: a photographed 1993 CRT whose
-tube shows a working 16-colour "Vision Lab Manager" desktop. Each of the 12 lab tools
+tube shows a working 16-colour "Vision Lab Manager" desktop. Each of the 13 lab tools
 is a program icon; windows drag, resize, minimize, maximize and close; the power
 button, screensaver and degauss are easter eggs.
 
@@ -24,7 +24,7 @@ SVG displacement map is loaded by URL.
 index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, phone fallback
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
-js/tools.json               the 12 tools (title, URL, group, pixel icon) + 4 group windows + site links
+js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
 assets/monitor.png          the photo with the tube blanked to #008080 (1672×941)
 assets/monitor-original.png the photo as supplied (DOS text still on screen)
 assets/barrel.png           602×495 displacement map (R = x, G = y, radial r³) for the barrel filter

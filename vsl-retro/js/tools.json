@@ -29,7 +29,7 @@
       "title": "RISK & EVIDENCE",
       "x": 260,
       "y": 164,
-      "w": 200,
+      "w": 320,
       "h": 150
     }
   ],
@@ -129,6 +129,14 @@
       "href": "https://calgaryvisioncentre.com/disease-calculator",
       "group": "risk",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"4\" y=\"2\" width=\"24\" height=\"28\" fill=\"#fff\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"8\" y=\"7\" width=\"16\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"12\" width=\"12\" height=\"2\" fill=\"#808080\"/><rect x=\"8\" y=\"17\" width=\"14\" height=\"2\" fill=\"#808080\"/><rect x=\"8\" y=\"22\" width=\"10\" height=\"2\" fill=\"#808080\"/><rect x=\"20\" y=\"20\" width=\"6\" height=\"6\" fill=\"#ff0000\"/></svg>"
+    },
+    {
+      "id": "glaucoma",
+      "title": "See What Glaucoma Steals — Glaucoma Vision Simulator",
+      "label": "Glaucoma\nSim",
+      "href": "https://calgaryvisioncentre.com/blog/2026/9/16/glaucoma",
+      "group": "risk",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#000\"/><rect x=\"2\" y=\"6\" width=\"28\" height=\"20\" fill=\"#808080\"/><rect x=\"6\" y=\"2\" width=\"20\" height=\"28\" fill=\"#808080\"/><rect x=\"4\" y=\"4\" width=\"24\" height=\"24\" fill=\"#808080\"/><rect x=\"5\" y=\"8\" width=\"22\" height=\"16\" fill=\"#c0c0c0\"/><rect x=\"8\" y=\"5\" width=\"16\" height=\"22\" fill=\"#c0c0c0\"/><rect x=\"6\" y=\"6\" width=\"20\" height=\"20\" fill=\"#c0c0c0\"/><rect x=\"8\" y=\"10\" width=\"16\" height=\"12\" fill=\"#fff\"/><rect x=\"10\" y=\"8\" width=\"12\" height=\"16\" fill=\"#fff\"/><rect x=\"9\" y=\"9\" width=\"14\" height=\"14\" fill=\"#fff\"/><rect x=\"8\" y=\"13\" width=\"16\" height=\"6\" fill=\"#000\"/><rect x=\"10\" y=\"12\" width=\"12\" height=\"8\" fill=\"#fff\"/><rect x=\"13\" y=\"13\" width=\"6\" height=\"6\" fill=\"#008080\"/><rect x=\"15\" y=\"15\" width=\"2\" height=\"2\" fill=\"#000\"/></svg>"
     }
   ],
   "links": {

@@ -17,7 +17,7 @@
     'MODE prepare visual cortex ... completed',
     'MODE select 20/20 ............ completed',
     '',
-    'Loading 12 programs ......... OK',
+    'Loading 13 programs ......... OK',
     '640K OK',
     '',
     'C:\\>win'
@@ -265,7 +265,7 @@
       boot.textContent = BOOT_LINES.slice(0, n).join('\n');
       if (n >= BOOT_LINES.length) {
         clearInterval(bootTimer);
-        setTimeout(() => { boot.hidden = true; desktop.hidden = false; power = 'on'; $('#status').textContent = '12 PROGRAMS LOADED · 640K OK'; armIdle(); }, 400);
+        setTimeout(() => { boot.hidden = true; desktop.hidden = false; power = 'on'; $('#status').textContent = '13 PROGRAMS LOADED · 640K OK'; armIdle(); }, 400);
       }
     }, 260);
   }
