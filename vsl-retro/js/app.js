@@ -74,8 +74,8 @@
       win.style.cssText = `left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
       win.innerHTML = `
         <div class="titlebar">
-          <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ${g.title}</span>
-          <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+          <span>${g.title}</span>
+          <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
         <div class="body icons">
           ${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}
@@ -178,8 +178,8 @@
       win.style.cssText = `left:${14 + n * 16}px;top:${10 + n * 14}px;width:576px;height:356px`;
       win.innerHTML = `
         <div class="titlebar">
-          <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ${esc(t.title.toUpperCase())}</span>
-          <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+          <span>${esc(t.title.toUpperCase())}</span>
+          <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
         <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;

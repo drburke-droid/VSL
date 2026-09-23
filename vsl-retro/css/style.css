@@ -102,10 +102,16 @@ button { font: inherit; color: inherit; }
 .progman { position: absolute; left: 10px; top: 8px; width: 610px; height: 424px; display: flex; flex-direction: column; }
 .titlebar { height: 16px; background: var(--dark); color: #fff; font-family: var(--font-ui); font-size: 14px; letter-spacing: .03em;
   display: flex; align-items: center; justify-content: space-between; padding: 0 3px; cursor: move; }
-.titlebar > span { display: flex; align-items: center; gap: 4px; }
+.titlebar > span { display: flex; align-items: center; gap: 2px; }
+.titlebar > span:first-child { padding-left: 2px; overflow: hidden; white-space: nowrap; }
 .titlebar.main { height: 19px; font-size: 16px; cursor: default; }
 .win.active > .titlebar { background: var(--navy); }
-.sysbtn { width: 13px; height: 11px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: var(--font-px); }
+.sysbtn { width: 13px; height: 11px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 7px; color: #000; cursor: pointer; font-family: var(--font-px);
+  background-repeat: no-repeat; background-position: center; background-size: 7px 7px; }
+/* familiar glyphs, drawn as 7×7 pixel art: _ minimize, □ maximize, × close */
+.sysbtn[data-wm="min"], .sysbtn.min { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='7' height='7' shape-rendering='crispEdges'><rect x='0' y='5' width='7' height='2' fill='black'/></svg>"); }
+.sysbtn[data-wm="max"], .sysbtn.max { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='7' height='7' shape-rendering='crispEdges'><rect x='0' y='0' width='7' height='2' fill='black'/><rect x='0' y='0' width='1' height='7' fill='black'/><rect x='6' y='0' width='1' height='7' fill='black'/><rect x='0' y='6' width='7' height='1' fill='black'/></svg>"); }
+.sysbtn[data-wm="close"], .sysbtn.x { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='7' height='7' shape-rendering='crispEdges'><path fill='black' d='M0 0h1v1h-1zM6 0h1v1h-1zM1 1h1v1h-1zM5 1h1v1h-1zM2 2h1v1h-1zM4 2h1v1h-1zM3 3h1v1h-1zM2 4h1v1h-1zM4 4h1v1h-1zM1 5h1v1h-1zM5 5h1v1h-1zM0 6h1v1h-1zM6 6h1v1h-1z'/></svg>"); }
 .menubar { position: relative; z-index: 50; height: 18px; display: flex; align-items: center; gap: 14px; padding: 0 6px; font-size: 16px; line-height: 1; border-bottom: 1px solid var(--dark); }
 .menubar > button { background: none; border: 0; padding: 0 2px; cursor: pointer; }
 .menubar > button.open { background: var(--navy); color: #fff; }
