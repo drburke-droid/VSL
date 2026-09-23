@@ -181,6 +181,7 @@
           <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ${esc(t.title.toUpperCase())}</span>
           <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
         </div>
+        <div class="notice"><span>PREVIEW ONLY. To actually use this tool, open it full size:</span><a class="bev btn default" href="${t.href}" target="_blank" rel="noopener">Open full size ↗</a></div>
         <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
       workspace.insertBefore(win, tray);

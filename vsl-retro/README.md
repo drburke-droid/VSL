@@ -51,8 +51,8 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 
 | Action | How |
 |---|---|
-| Run a tool | click its icon: the page opens in a window on the tube (iframe). Ctrl/⌘-click, or the ↗ button on the window, opens it in a new tab |
-| Tool properties | right-click an icon: description, URL, Run / Open in browser |
+| Run a tool | click its icon: the page opens as a low-res preview in a window on the tube (iframe), with a yellow strip and an **Open full size** button for the real site. Ctrl/⌘-click, or the ↗ button on the window, also opens it in a new tab |
+| Tool properties | right-click an icon: description, URL, Open full size (default) / Preview here |
 | Move / resize | drag title bar / drag bottom-right grip |
 | Minimize / maximize / close | ▼ ▲ ▬ on each title bar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Window menu |
