@@ -9,6 +9,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - Tool data belongs in `js/tools.json`, never hard-coded in HTML.
 - Keep the desktop chrome generic 1990s: our own pixel icons, 16-colour palette, no vendor logos/icons/wordmarks.
 - All clickable things must be real `<a>`/`<button>` elements with labels. The phone handheld's group windows are generated from tools.json in `build()`; never hand-edit them.
+- The page is embedded on calgaryvisioncentre.com/lab in an iframe; keep `<base target="_top">` so links leave the frame.
 - Real links: tools are on calgaryvisioncentre.com (two on drburke-droid.github.io); blog `/blog`; booking `/book-an-appointment`; lab index `/lab`.
 
 ## Testing
