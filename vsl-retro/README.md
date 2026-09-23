@@ -28,6 +28,7 @@ js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 gro
 assets/monitor.png          the photo with the tube blanked to #008080 (1672×941)
 assets/monitor-original.png the photo as supplied (DOS text still on screen)
 assets/barrel.png           602×495 displacement map (R = x, G = y, radial r³) for the barrel filter
+assets/cvc-logo.png         the CVC mark, white on transparent, used by the screensaver
 design-canvas-sources/      the Claude Design artboards this was built from (.dc.html) — reference only
 ```
 
@@ -54,10 +55,13 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Minimize / maximize / close | ▼ ▲ ▬ on each title bar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Window menu |
 | Power off / on | bezel button below the tube, or File → Exit; boot sequence on power-on |
-| Screensaver | 45 s idle, or Help → Preview screensaver; click to wake |
+| Screensaver | 45 s idle, or Help → Preview screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
 | Degauss | Help → Degauss, or type `dgs` |
 | Scanlines | Help → Toggle scanlines, or type `20/20` |
 | Menus by keyboard | Alt-F, Alt-W, Alt-H; Esc closes |
+
+The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)
+so the whole tube goes black; it is a 602×495 canvas driven by `svFrame()` in app.js.
 
 Under 700 px wide the stage is hidden and a plain list of the tools is shown instead
 (`nav.fallback`). Screen readers get that list too.

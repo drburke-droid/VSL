@@ -271,10 +271,99 @@
   }
   $('#power').addEventListener('click', () => setPower(power === 'off'));
 
-  /* ---------- screensaver ---------- */
+  /* ---------- screensaver: bouncing logo ----------
+     The logo drifts and reflects off the screen edges, changing colour on
+     each bounce. If it lands in a corner exactly (both edges in the same
+     frame) it shatters into its own pixels, then respawns in the centre. */
+  const canvas = $('#saver-canvas');
+  const ctx = canvas.getContext('2d');
+  const logo = new Image(); logo.src = 'assets/cvc-logo.png';
+  const tintCanvas = document.createElement('canvas');
+  const PALETTE = ['#ffffff', '#00ffff', '#ffff00', '#00ff00', '#ff00ff', '#ff8000', '#ff0000', '#b2ffff'];
+  const LOGO_W = 150;
+  const PX = 4;                                                // particle size / sample step
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let sv = null, svRaf = 0, svLast = 0;
+
+  function svReset(centre) {
+    const ratio = logo.naturalWidth ? logo.naturalHeight / logo.naturalWidth : 0.55;
+    const w = LOGO_W, h = Math.round(LOGO_W * ratio);
+    const sgn = () => (Math.random() < .5 ? -1 : 1);
+    sv = { x: centre ? (canvas.width - w) / 2 : Math.random() * (canvas.width - w),
+           y: centre ? (canvas.height - h) / 2 : Math.random() * (canvas.height - h),
+           w, h, vx: sgn() * (1.5 + Math.random()), vy: sgn() * (1.1 + Math.random()),
+           color: 0, particles: null, respawnAt: 0 };
+    if (reduceMotion) { sv.vx = sv.vy = 0; }
+    tint();
+  }
+  function tint() {
+    if (!logo.naturalWidth) return;
+    tintCanvas.width = sv.w; tintCanvas.height = sv.h;
+    const c = tintCanvas.getContext('2d');
+    c.clearRect(0, 0, sv.w, sv.h);
+    c.drawImage(logo, 0, 0, sv.w, sv.h);
+    c.globalCompositeOperation = 'source-in';
+    c.fillStyle = PALETTE[sv.color]; c.fillRect(0, 0, sv.w, sv.h);
+  }
+  function explode() {
+    const c = tintCanvas.getContext('2d');
+    const img = c.getImageData(0, 0, sv.w, sv.h).data;
+    const cx = sv.x + sv.w / 2, cy = sv.y + sv.h / 2;
+    sv.particles = [];
+    for (let py = 0; py < sv.h; py += PX) for (let px = 0; px < sv.w; px += PX) {
+      if (img[(py * sv.w + px) * 4 + 3] < 128) continue;   // only the logo's own pixels
+      const x = sv.x + px, y = sv.y + py;
+      const ang = Math.atan2(y - cy, x - cx) + (Math.random() - .5) * .8;
+      const sp = 1.5 + Math.random() * 4;
+      sv.particles.push({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 1.5, life: 1, decay: .006 + Math.random() * .01,
+                          color: PALETTE[(sv.color + (Math.random() * 3 | 0)) % PALETTE.length] });
+    }
+    sv.respawnAt = performance.now() + 2600;
+  }
+  function svFrame(now) {
+    svRaf = requestAnimationFrame(svFrame);
+    const dt = Math.min(3, (now - svLast) / 16.67 || 1); svLast = now;
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    if (!logo.naturalWidth) return;
+    if (!tintCanvas.width) tint();
+
+    if (sv.particles) {
+      let alive = false;
+      for (const p of sv.particles) {
+        if (p.life <= 0) continue;
+        alive = true;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += .12 * dt; p.life -= p.decay * dt;
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color; ctx.fillRect(Math.round(p.x), Math.round(p.y), PX, PX);
+      }
+      ctx.globalAlpha = 1;
+      if (!alive && now >= sv.respawnAt) svReset(true);
+      return;
+    }
+
+    sv.x += sv.vx * dt; sv.y += sv.vy * dt;
+    let hitX = false, hitY = false;
+    if (sv.x <= 0) { sv.x = 0; sv.vx = Math.abs(sv.vx); hitX = true; }
+    else if (sv.x + sv.w >= W) { sv.x = W - sv.w; sv.vx = -Math.abs(sv.vx); hitX = true; }
+    if (sv.y <= 0) { sv.y = 0; sv.vy = Math.abs(sv.vy); hitY = true; }
+    else if (sv.y + sv.h >= H) { sv.y = H - sv.h; sv.vy = -Math.abs(sv.vy); hitY = true; }
+    if (hitX && hitY) { explode(); return; }               // the corner. It happens.
+    if (hitX || hitY) { sv.color = (sv.color + 1) % PALETTE.length; tint(); }
+    ctx.drawImage(tintCanvas, Math.round(sv.x), Math.round(sv.y));
+  }
+
   function armIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (power === 'on') showSaver(); }, IDLE_MS); }
-  function showSaver() { saver.hidden = false; closeMenus(); }
-  function hideSaver() { saver.hidden = true; armIdle(); }
+  function showSaver() {
+    if (!saver.hidden) return;
+    closeMenus(); saver.hidden = false;
+    svReset(false); svLast = performance.now();
+    cancelAnimationFrame(svRaf); svRaf = requestAnimationFrame(svFrame);
+  }
+  function hideSaver() {
+    cancelAnimationFrame(svRaf); svRaf = 0;
+    saver.hidden = true; armIdle();
+  }
   saver.addEventListener('pointerdown', e => { e.stopPropagation(); hideSaver(); });
   ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (power === 'on' && saver.hidden) armIdle(); }));
 
@@ -288,6 +377,7 @@
   /* ---------- keyboard easter eggs (global keys are fine here) ---------- */
   let typed = '';
   document.addEventListener('keydown', e => {
+    if (!saver.hidden) { e.preventDefault(); hideSaver(); return; }   // any key wakes the screensaver
     if (e.altKey && /^[fwh]$/i.test(e.key)) {           // Alt-F / Alt-W / Alt-H open menus
       e.preventDefault();
       $(`button[data-menu="${{ f: 'file', w: 'window', h: 'help' }[e.key.toLowerCase()]}"]`, menubar).click();

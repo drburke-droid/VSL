@@ -111,14 +111,6 @@
             <div class="statusline"><span id="status">13 PROGRAMS LOADED · 640K OK</span><span>CALGARY VISION CENTRE · 403-237-0505</span></div>
           </div>
 
-          <!-- screensaver -->
-          <div class="saver" id="saver" hidden>
-            <div class="eye e1"><svg width="48" height="48" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg></div>
-            <div class="eye e2"><svg width="36" height="36" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="9" y="12" width="10" height="8" fill="#800000"/><rect x="12" y="14" width="4" height="4" fill="#000"/></svg></div>
-            <div class="eye e3"><svg width="60" height="60" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="13" y="12" width="10" height="8" fill="#000080"/><rect x="16" y="14" width="4" height="4" fill="#000"/></svg></div>
-            <div class="eye e4"><svg width="40" height="40" viewBox="0 0 32 32" shape-rendering="crispEdges"><rect x="2" y="12" width="28" height="8" fill="#fff"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008000"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg></div>
-            <div class="saver-caption">VISUAL SYSTEMS LAB · CLICK TO WAKE</div>
-          </div>
         </div>
 
         <div class="scanlines" id="scanlines"></div>
@@ -134,6 +126,12 @@
       <div class="fx reflection"></div>
       <div class="fx specular"></div>
       <div class="fx dust"></div>
+
+      <!-- screensaver: above the glass layers so the whole screen goes black -->
+      <div class="saver" id="saver" hidden>
+        <canvas id="saver-canvas" width="602" height="495" aria-hidden="true"></canvas>
+        <div class="saver-caption">VISUAL SYSTEMS LAB · PRESS ANY KEY OR CLICK TO WAKE</div>
+      </div>
     </div>
 
     <!-- bezel power button + LED -->
@@ -144,7 +142,6 @@
     <a class="hot masthead" href="https://calgaryvisioncentre.com/blog" aria-label="CVC Journal — read the blog"></a>
     <a class="hot pda" href="https://calgaryvisioncentre.com/book-an-appointment" aria-label="Book an appointment"></a>
 
-    <div class="caption">DRAG · RESIZE · MINIMIZE · CLOSE THE WINDOWS · TRY THE POWER BUTTON</div>
   </div>
 </div>
 
