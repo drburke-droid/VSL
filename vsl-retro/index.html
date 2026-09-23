@@ -128,6 +128,22 @@
                   <div class="grip" data-wm="resize" aria-hidden="true"></div>
                 </div>
 
+                <!-- HIGH-RES popup: appears bottom-right whenever a tool opens on the tube -->
+                <div class="bev win dialog" data-win="hires" data-label="HIGH-RES" data-closed style="left:296px;top:244px;width:304px;height:134px" hidden>
+                  <div class="titlebar">
+                    <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> SEE IT IN HIGH RES</span>
+                    <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+                  </div>
+                  <div class="body text">
+                    <p>Yes, it is cool to see this on the retro screen. But to truly appreciate <span id="hires-name">this tool</span>, open it in high resolution, the way it was designed.</p>
+                  </div>
+                  <div class="buttons">
+                    <a class="bev btn default" id="hires-open" href="#" target="_blank" rel="noopener">Open in high res ↗</a>
+                    <button class="bev btn" data-wm="close">Stay retro</button>
+                  </div>
+                  <div class="grip" data-wm="resize" aria-hidden="true"></div>
+                </div>
+
                 <div class="tray" id="tray"></div>
               </div>
             </div>

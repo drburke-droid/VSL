@@ -152,7 +152,7 @@
       return;
     }
     if (mode === 'reopen') {
-      wins.forEach(w => { if (!['about', 'props'].includes(w.dataset.win)) { Object.assign(w.style, home[w.dataset.win]); delete w.dataset.max; open(w); } });
+      wins.forEach(w => { if (!['about', 'props', 'hires'].includes(w.dataset.win)) { Object.assign(w.style, home[w.dataset.win]); delete w.dataset.max; open(w); } });
       return;
     }
     const live = wins.filter(w => !w.hidden);
@@ -181,14 +181,24 @@
           <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ${esc(t.title.toUpperCase())}</span>
           <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
         </div>
-        <div class="notice"><span>PREVIEW ONLY. To actually use this tool, open it full size:</span><a class="bev btn default" href="${t.href}" target="_blank" rel="noopener">Open full size ↗</a></div>
         <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
       workspace.insertBefore(win, tray);
       home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
     }
     open(win);
+    clearTimeout(hiresTimer);
+    hiresTimer = setTimeout(() => showHires(t), 900);      // pop in after the window lands
   }
+  let hiresTimer = null;
+  function showHires(t) {
+    const win = $('.win[data-win="hires"]');
+    $('#hires-name').textContent = t.label.replace('\n', ' ');
+    $('#hires-open').href = t.href;
+    Object.assign(win.style, home.hires); delete win.dataset.max;   // always bottom-right
+    open(win);
+  }
+  $('#hires-open').addEventListener('click', () => close($('.win[data-win="hires"]')));
   // clicking inside an iframe never reaches us, but it does move focus into it
   addEventListener('blur', () => setTimeout(() => {
     const f = document.activeElement;
