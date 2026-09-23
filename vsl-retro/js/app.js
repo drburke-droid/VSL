@@ -57,7 +57,7 @@
   function fit() {
     stageScale = Math.min(innerWidth / 1280, innerHeight / 720);
     stage.style.transform = `scale(${stageScale})`;
-    palm.style.transform = `scale(${Math.min(innerWidth / 768, innerHeight / 1376)})`;   // phone: the PalmPilot
+    palm.style.transform = `scale(${Math.min(innerWidth / 378, innerHeight / 655)})`;     // phone: the handheld
   }
   addEventListener('resize', fit);
   fit();
@@ -93,10 +93,12 @@
     });
     focus($('.win[data-win="readme"]'));
 
-    // phone: PalmPilot launcher, one section per group
+    // phone: the same group windows, stacked
     $('#palm-list').innerHTML = data.groups.map(g => `
-      <h2>${g.title}</h2>
-      <div class="palm-grid">${(byGroup[g.id] || []).map(t => `<a class="palm-ico" href="${t.href}" title="${esc(t.title)}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>`).join('');
+      <div class="bev pwin">
+        <div class="titlebar"><span>${g.title}</span></div>
+        <div class="body icons">${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>
+      </div>`).join('');
   }
 
   /* ---------- window management ---------- */

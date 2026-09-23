@@ -158,30 +158,29 @@ a.sysbtn { font-size: 10px; }
 .statusline { position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between;
   font-family: var(--font-ui); font-size: 13px; letter-spacing: .03em; color: #b2ffff; pointer-events: none; }
 
-/* ---------- phones: the PalmPilot ----------
-   The Palm is a fixed 768×1376 scene (image px) scaled to the viewport by fitPalm().
-   Its screen is 720×944 at (34,148); sizes inside are in image px, so ~2× what they
-   will be on a 390px-wide phone. */
-.palm-wrap { display: none; position: fixed; inset: 0; overflow: hidden; }
-.palm { position: absolute; left: 50%; top: 50%; width: 768px; height: 1376px; margin: -688px 0 0 -384px; transform-origin: center center; }
-.palm-photo { position: absolute; inset: 0; width: 768px; height: 1376px; display: block; }
-.palm-screen { position: absolute; left: 34px; top: 148px; width: 720px; height: 944px; border-radius: 8px; overflow: hidden;
-  display: flex; flex-direction: column; background: #c9d2b4; color: #1a2019; font-family: var(--font-ui); font-size: 30px; line-height: 1.1;
-  box-shadow: inset 0 0 0 2px rgba(0,0,0,.25), inset 0 6px 14px rgba(0,0,0,.22); }
-.palm-bar { flex: none; height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
-  background: #1a2019; color: #c9d2b4; font-family: var(--font-px); font-size: 20px; letter-spacing: .08em; }
-.palm-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px 18px 24px; }
-.palm-body h1 { margin: 0 0 6px; font-family: var(--font-px); font-size: 22px; letter-spacing: .08em; }
-.palm-body p { margin: 0 0 10px; }
-.palm-body h2 { margin: 18px 0 6px; padding: 6px 10px; background: #1a2019; color: #c9d2b4; font-family: var(--font-px); font-size: 15px; letter-spacing: .1em; }
-.palm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 4px; }
-.palm-ico { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 2px; text-align: center; color: inherit; }
-.palm-ico svg { width: 72px; height: 72px; filter: grayscale(1) contrast(1.15); }
-.palm-ico span { white-space: pre-line; font-size: 26px; line-height: 1; }
-.palm-ico:active, .palm-ico:focus-visible { background: #1a2019; color: #c9d2b4; outline: 0; }
-.palm-note { color: #4f5a4c; margin-top: 18px !important; font-size: 26px; }
-.palm-links { font-size: 26px; } .palm-links a { text-decoration: underline; }
-.palm-btn { position: absolute; display: block; width: 110px; height: 110px; border-radius: 50%; }
+/* ---------- phones: the handheld ----------
+   A 378×655 scene (the photo is 755×1310, shown at half size for crispness) scaled to
+   the viewport by fit(). The screen is 250×457 at (63,54); inside it the desktop chrome
+   is reused at its normal sizes, stacked vertically and scrolling. */
+.palm-wrap { display: none; position: fixed; inset: 0; overflow: hidden; background: #f3f3f4; }
+.palm { position: absolute; left: 50%; top: 50%; width: 378px; height: 655px; margin: -328px 0 0 -189px; transform-origin: center center; }
+.palm-photo { position: absolute; inset: 0; width: 378px; height: 655px; display: block; }
+.palm-screen { position: absolute; left: 63px; top: 54px; width: 250px; height: 457px; border-radius: 5px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 4px; padding: 5px; background: var(--teal); color: #000; font-family: var(--font-ui);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.4), inset 0 2px 6px rgba(0,0,0,.35); }
+.palm-progman { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.palm-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding: 5px; display: flex; flex-direction: column; gap: 6px; scrollbar-width: thin; }
+#palm-list { display: flex; flex-direction: column; gap: 6px; }
+.pwin { display: flex; flex-direction: column; flex: none; }
+.pwin .titlebar { cursor: default; }
+.pwin .body.icons { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; row-gap: 6px; padding: 6px 0 5px; }
+.pwin .ico { width: auto; min-width: 70px; padding: 0 2px; }
+.pwin .body.text { padding: 6px 8px; font-size: 15px; line-height: 1.08; display: flex; flex-direction: column; gap: 5px; }
+.pwin .body.text p { margin: 0; }
+.palm-links a { text-decoration: underline; }
+.palm-status { flex: none; display: flex; justify-content: space-between; padding: 0 2px; font-size: 12px; letter-spacing: .03em; color: #b2ffff; }
+.palm-btn { position: absolute; display: block; width: 78px; height: 56px; border-radius: 16px; }
 .palm-btn:focus-visible { outline: 3px dashed #fff; }
 @media (max-width: 700px) {
   .stage-wrap { display: none; }
