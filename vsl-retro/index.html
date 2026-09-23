@@ -105,10 +105,32 @@
                   <div class="grip" data-wm="resize" aria-hidden="true"></div>
                 </div>
 
+                <!-- PROPERTIES dialog: filled per tool by JS on right-click -->
+                <div class="bev win dialog" data-win="props" data-label="PROPERTIES" data-closed style="left:90px;top:60px;width:400px;height:206px" hidden>
+                  <div class="titlebar">
+                    <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> <span id="props-title">PROPERTIES</span></span>
+                    <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+                  </div>
+                  <div class="body about">
+                    <div class="props-icon" id="props-icon"></div>
+                    <div>
+                      <div id="props-name"></div>
+                      <div id="props-desc"></div>
+                      <div class="muted" id="props-url"></div>
+                    </div>
+                  </div>
+                  <div class="buttons">
+                    <button class="bev btn default" id="props-run">Run</button>
+                    <a class="bev btn" id="props-open" href="#" target="_blank" rel="noopener">Open in browser</a>
+                    <button class="bev btn" data-wm="close">Cancel</button>
+                  </div>
+                  <div class="grip" data-wm="resize" aria-hidden="true"></div>
+                </div>
+
                 <div class="tray" id="tray"></div>
               </div>
             </div>
-            <div class="statusline"><span id="status">13 PROGRAMS LOADED · 640K OK</span><span>CALGARY VISION CENTRE · 403-237-0505</span></div>
+            <div class="statusline"><span id="status">13 PROGRAMS LOADED · 640K OK</span><span id="clock"></span><span>CALGARY VISION CENTRE · 403-237-0505</span></div>
           </div>
 
         </div>

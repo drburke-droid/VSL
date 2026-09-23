@@ -125,6 +125,15 @@ button { font: inherit; color: inherit; }
 .win .body.text p { margin: 0; }
 .win .body.about { padding: 10px 12px; display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.1; }
 .win .body.about > div { display: flex; flex-direction: column; gap: 4px; }
+.props-icon svg { width: 40px; height: 40px; display: block; }
+#props-name { font-family: var(--font-px); font-size: 8px; letter-spacing: .04em; padding-bottom: 2px; }
+#props-desc { line-height: 1.08; }
+
+/* tool windows: the real page runs in an iframe on the tube */
+.win .body.frame { background: #fff; }
+.win .body.frame iframe { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+.workspace.dragging iframe { pointer-events: none; }
+a.sysbtn { font-size: 10px; }
 .muted { color: #707070; }
 .chart { font-family: var(--font-px); font-size: 7px; letter-spacing: .1em; padding-top: 4px; } .chart small { font-size: 6px; }
 .buttons { display: flex; justify-content: flex-end; gap: 6px; padding: 0 8px 8px; }

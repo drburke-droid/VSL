@@ -51,9 +51,12 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 
 | Action | How |
 |---|---|
+| Run a tool | click its icon: the page opens in a window on the tube (iframe). Ctrl/⌘-click, or the ↗ button on the window, opens it in a new tab |
+| Tool properties | right-click an icon: description, URL, Run / Open in browser |
 | Move / resize | drag title bar / drag bottom-right grip |
 | Minimize / maximize / close | ▼ ▲ ▬ on each title bar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Window menu |
+| Clock | live in the status line; the boot sequence prints the real date and time |
 | Power off / on | bezel button below the tube, or File → Exit; boot sequence on power-on |
 | Screensaver | 45 s idle, or Help → Preview screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
 | Degauss | Help → Degauss, or type `dgs` |
@@ -69,7 +72,8 @@ Under 700 px wide the stage is hidden and a plain list of the tools is shown ins
 ## Editing the tools
 
 Edit `js/tools.json`. Each tool: `id`, `title` (tooltip + fallback list), `label`
-(icon caption, `\n` for a line break), `href`, `group` (one of the group ids), `icon`
+(icon caption, `\n` for a line break), `href`, `group` (one of the group ids), `desc`
+(one sentence for the Properties dialog), `icon`
 (a 32×32 SVG string; keep `shape-rendering="crispEdges"` and stick to the 16-colour
 palette for the look). Groups carry their home position/size in desktop px.
 
@@ -84,7 +88,6 @@ palette for the look). Groups carry their home position/size in desktop px.
 
 ## Ideas not yet built
 
-- Open each tool *inside* a bevelled window on the tube (iframe) instead of navigating away.
 - Per-tool OG/share images (see `design-canvas-sources/ShareCard.dc.html`).
 - "Start with a symptom" entry point for patients.
 - Mobile: a full-bleed desktop without the monitor instead of the plain list.

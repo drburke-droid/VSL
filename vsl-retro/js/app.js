@@ -9,10 +9,15 @@
   const DESKTOP_SCALE = 0.934;         // must match --desktop-scale in css
   const WS = { w: 606, h: 383 };       // workspace size in desktop px
   const IDLE_MS = 45000;
-  const BOOT_LINES = [
+  const bootLines = () => {
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const day = d.toLocaleDateString('en-US', { weekday: 'short' });
+    return [
     'Starting VSL/OS 3.1...',
     '',
     'HIMEM is testing extended memory...done.',
+    `Current date is ${day} ${p(d.getMonth() + 1)}-${p(d.getDate())}-${d.getFullYear()}`,
+    `Current time is ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(Math.floor(d.getMilliseconds() / 10))}`,
     'C:\\>C:\\VSL\\RETINA.SYS /load',
     'MODE prepare visual cortex ... completed',
     'MODE select 20/20 ............ completed',
@@ -21,7 +26,7 @@
     '640K OK',
     '',
     'C:\\>win'
-  ];
+  ]; };
 
   const $ = (sel, el = document) => el.querySelector(sel);
   const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -44,6 +49,8 @@
   let idleTimer = null;
   let bootTimer = null;
   const home = {};                     // window id → original geometry
+  const tools = {};                    // tool id → tools.json entry
+  const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
   /* ---------- stage scaling ---------- */
   function fit() {
@@ -57,12 +64,13 @@
   async function build() {
     const data = await fetch('js/tools.json').then(r => r.json());
     const byGroup = {};
-    data.tools.forEach(t => (byGroup[t.group] ||= []).push(t));
+    data.tools.forEach(t => { (byGroup[t.group] ||= []).push(t); tools[t.id] = t; });
 
     data.groups.forEach(g => {
       const win = document.createElement('div');
       win.className = 'bev win';
       win.dataset.win = g.id;
+      win.dataset.label = g.title.split(' ')[0];
       win.style.cssText = `left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
       win.innerHTML = `
         <div class="titlebar">
@@ -70,7 +78,7 @@
           <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
         </div>
         <div class="body icons">
-          ${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${t.title}">${t.icon}<span>${t.label}</span></a>`).join('')}
+          ${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}
         </div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
       workspace.insertBefore(win, tray);
@@ -98,7 +106,7 @@
   function minimize(win) {
     win.hidden = true;
     win.dataset.min = '1';
-    const title = win.querySelector('.titlebar > span').textContent.trim().split(' ')[0].replace(/[^A-Z&.]/gi, '');
+    const title = win.dataset.label || [...win.querySelector('.titlebar > span').childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim().split(/\s/)[0];
     const b = document.createElement('button');
     b.className = 'ico';
     b.dataset.restore = win.dataset.win;
@@ -125,9 +133,10 @@
   }
 
   function close(win) {
+    tray.querySelector(`[data-restore="${win.dataset.win}"]`)?.remove();
+    if (win.classList.contains('tool')) { delete home[win.dataset.win]; win.remove(); return; }
     win.hidden = true;
     win.dataset.closed = '1';
-    tray.querySelector(`[data-restore="${win.dataset.win}"]`)?.remove();
   }
 
   function open(win) {
@@ -143,7 +152,7 @@
       return;
     }
     if (mode === 'reopen') {
-      wins.forEach(w => { if (w.dataset.win !== 'about') { Object.assign(w.style, home[w.dataset.win]); delete w.dataset.max; open(w); } });
+      wins.forEach(w => { if (!['about', 'props'].includes(w.dataset.win)) { Object.assign(w.style, home[w.dataset.win]); delete w.dataset.max; open(w); } });
       return;
     }
     const live = wins.filter(w => !w.hidden);
@@ -155,6 +164,54 @@
       live.forEach((w, i) => { Object.assign(w.style, { left: 6 + (i % cols) * cw + 'px', top: 6 + Math.floor(i / cols) * ch + 'px', width: cw - 4 + 'px', height: ch - 4 + 'px' }); delete w.dataset.max; });
     }
   }
+
+  /* ---------- tool windows (iframe on the tube) ---------- */
+  function runTool(id) {
+    const t = tools[id]; if (!t) return;
+    let win = $(`.win[data-win="tool-${id}"]`, workspace);
+    if (!win) {
+      const n = $$('.win.tool', workspace).length;
+      win = document.createElement('div');
+      win.className = 'bev win tool';
+      win.dataset.win = `tool-${id}`;
+      win.dataset.label = t.label.split('\n')[0].toUpperCase();
+      win.style.cssText = `left:${14 + n * 16}px;top:${10 + n * 14}px;width:576px;height:356px`;
+      win.innerHTML = `
+        <div class="titlebar">
+          <span><button class="bev sysbtn" data-wm="close" aria-label="Close">▬</button> ${esc(t.title.toUpperCase())}</span>
+          <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize">▼</button><button class="bev sysbtn" data-wm="max" aria-label="Maximize">▲</button></span>
+        </div>
+        <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
+        <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
+      workspace.insertBefore(win, tray);
+      home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
+    }
+    open(win);
+  }
+  // clicking inside an iframe never reaches us, but it does move focus into it
+  addEventListener('blur', () => setTimeout(() => {
+    const f = document.activeElement;
+    if (f?.tagName === 'IFRAME') focus(f.closest('.win'));
+  }, 0));
+
+  function showProps(id) {
+    const t = tools[id]; if (!t) return;
+    const win = $('.win[data-win="props"]');
+    $('#props-title').textContent = `PROPERTIES — ${t.label.replace('\n', ' ').toUpperCase()}`;
+    $('#props-icon').innerHTML = t.icon;
+    $('#props-name').textContent = t.title;
+    $('#props-desc').textContent = t.desc || '';
+    $('#props-url').textContent = t.href.replace(/^https?:\/\//, '');
+    $('#props-open').href = t.href;
+    $('#props-run').onclick = () => { close(win); runTool(id); };
+    open(win);
+  }
+  workspace.addEventListener('contextmenu', e => {
+    const ico = e.target.closest('.ico[data-tool]');
+    if (!ico) return;
+    e.preventDefault();
+    showProps(ico.dataset.tool);
+  });
 
   // pointer: drag + resize (pointer events cover mouse, pen and touch)
   workspace.addEventListener('pointerdown', e => {
@@ -172,6 +229,7 @@
              ox: parseFloat(win.style.left), oy: parseFloat(win.style.top),
              ow: win.offsetWidth, oh: win.offsetHeight };
     workspace.setPointerCapture?.(e.pointerId);
+    workspace.classList.add('dragging');
   });
 
   addEventListener('pointermove', e => {
@@ -188,11 +246,16 @@
     }
     delete w.dataset.max;
   });
-  addEventListener('pointerup', () => { drag = null; });
-  addEventListener('pointercancel', () => { drag = null; });
+  addEventListener('pointerup', () => { drag = null; workspace.classList.remove('dragging'); });
+  addEventListener('pointercancel', () => { drag = null; workspace.classList.remove('dragging'); });
 
   // window buttons + tray
   workspace.addEventListener('click', e => {
+    const ico = e.target.closest('a.ico[data-tool]');
+    if (ico) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      e.preventDefault(); runTool(ico.dataset.tool); return;
+    }
     const wm = e.target.closest('[data-wm]');
     if (wm) {
       const win = wm.closest('.win');
@@ -259,11 +322,12 @@
     tube.classList.remove('off');
     led.classList.add('on');
     desktop.hidden = true; boot.hidden = false; boot.textContent = '';
+    const lines = bootLines();
     let n = 0;
     bootTimer = setInterval(() => {
       n++;
-      boot.textContent = BOOT_LINES.slice(0, n).join('\n');
-      if (n >= BOOT_LINES.length) {
+      boot.textContent = lines.slice(0, n).join('\n');
+      if (n >= lines.length) {
         clearInterval(bootTimer);
         setTimeout(() => { boot.hidden = true; desktop.hidden = false; power = 'on'; $('#status').textContent = '13 PROGRAMS LOADED · 640K OK'; armIdle(); }, 400);
       }
@@ -353,7 +417,13 @@
     ctx.drawImage(tintCanvas, Math.round(sv.x), Math.round(sv.y));
   }
 
-  function armIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(() => { if (power === 'on') showSaver(); }, IDLE_MS); }
+  function armIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (power !== 'on') return;
+      if (document.activeElement?.tagName === 'IFRAME') armIdle(); else showSaver();
+    }, IDLE_MS);
+  }
   function showSaver() {
     if (!saver.hidden) return;
     closeMenus(); saver.hidden = false;
@@ -387,6 +457,13 @@
     if (typed.endsWith('20/20')) $('#scanlines').classList.toggle('hidden');   // type 20/20 → toggle scanlines
     if (typed.endsWith('dgs')) degauss();                                      // d g s → degauss
   });
+
+  /* ---------- status-line clock ---------- */
+  const clock = $('#clock');
+  function tick() {
+    clock.textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }).toUpperCase();
+  }
+  tick(); setInterval(tick, 1000);
 
   build().then(armIdle);
 })();

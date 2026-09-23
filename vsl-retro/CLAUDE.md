@@ -12,7 +12,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - Real links: tools are on calgaryvisioncentre.com (two on drburke-droid.github.io); blog `/blog`; booking `/book-an-appointment`; lab index `/lab`.
 
 ## Testing
-- Serve the folder, open in Chrome, and check: drag/resize/min/max/close on every window; Window → Cascade/Tile/Arrange/Reopen; power button off → on boot sequence; Help → Degauss / screensaver / scanlines; Alt-F/W/H; typing `20/20` and `dgs`.
+- Serve the folder, open in Chrome, and check: click an icon → tool opens in an iframe window; right-click → Properties; drag/resize/min/max/close on every window; Window → Cascade/Tile/Arrange/Reopen; power button off → on boot sequence; Help → Degauss / screensaver / scanlines; Alt-F/W/H; typing `20/20` and `dgs`.
 - Check Safari for the barrel filter (`#barrel`); if it breaks, guard with `@supports` or a UA check and set `filter:none` on `.tube`.
 - Resize under 700 px: the plain `nav.fallback` list must appear.
 - `design-canvas-sources/` is reference only — the `.dc.html` files need the Claude Design runtime and will not run here.
