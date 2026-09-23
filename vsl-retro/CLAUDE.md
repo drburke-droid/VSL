@@ -14,5 +14,5 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 ## Testing
 - Serve the folder, open in Chrome, and check: click an icon → tool opens in an iframe window; right-click → Properties; drag/resize/min/max/close on every window; Window → Cascade/Tile/Arrange/Reopen; power button off → on boot sequence; Help → Degauss / screensaver / scanlines; Alt-F/W/H; typing `20/20` and `dgs`.
 - Check Safari for the barrel filter (`#barrel`); if it breaks, guard with `@supports` or a UA check and set `filter:none` on `.tube`.
-- Resize under 700 px: the handheld must appear with all 13 icons; its screen is `left:63 top:54 250×457` in a 378×655 scene — do not move it.
+- Resize under 700 px: the handheld must appear with all 13 icons; its screen is `left:40 top:38 250×457` in a 332×625 scene — do not move it.
 - `design-canvas-sources/` is reference only — the `.dc.html` files need the Claude Design runtime and will not run here.

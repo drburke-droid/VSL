@@ -57,7 +57,7 @@
   function fit() {
     stageScale = Math.min(innerWidth / 1280, innerHeight / 720);
     stage.style.transform = `scale(${stageScale})`;
-    palm.style.transform = `scale(${Math.min(innerWidth / 378, innerHeight / 655)})`;     // phone: the handheld
+    palm.style.transform = `scale(${Math.min(innerWidth / 332, innerHeight / 625)})`;     // phone: the handheld
   }
   addEventListener('resize', fit);
   fit();
