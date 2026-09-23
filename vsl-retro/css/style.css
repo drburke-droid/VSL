@@ -21,8 +21,9 @@ button { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
 /* ---------- stage ---------- */
-.stage-wrap { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
-.stage { position: relative; width: 1280px; height: 720px; transform-origin: center center; user-select: none; }
+.stage-wrap { position: fixed; inset: 0; overflow: hidden; }
+/* centred by absolute position + negative margins (a grid track would grow to the unscaled size and overflow on small viewports) */
+.stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; margin: -360px 0 0 -640px; transform-origin: center center; user-select: none; }
 .photo { position: absolute; inset: 0; width: 1280px; height: 720px; display: block; }
 
 /* ---------- screen (traced from photo) ---------- */
@@ -157,14 +158,34 @@ a.sysbtn { font-size: 10px; }
 .statusline { position: absolute; left: 10px; right: 10px; bottom: 8px; display: flex; justify-content: space-between;
   font-family: var(--font-ui); font-size: 13px; letter-spacing: .03em; color: #b2ffff; pointer-events: none; }
 
-/* ---------- phone / no-JS fallback ---------- */
-.fallback { display: none; padding: 24px 16px; color: #e8e4dc; font-family: system-ui, sans-serif; max-width: 640px; margin: 0 auto; }
-.fallback h1 { font-family: var(--font-px); font-size: 18px; letter-spacing: .1em; }
-.fallback ul { padding-left: 18px; line-height: 1.6; }
-.fallback a { color: #7cf5b0; text-decoration: underline; }
-@media (max-width: 700px), (max-height: 380px) {
+/* ---------- phones: the PalmPilot ----------
+   The Palm is a fixed 768×1376 scene (image px) scaled to the viewport by fitPalm().
+   Its screen is 720×944 at (34,148); sizes inside are in image px, so ~2× what they
+   will be on a 390px-wide phone. */
+.palm-wrap { display: none; position: fixed; inset: 0; overflow: hidden; }
+.palm { position: absolute; left: 50%; top: 50%; width: 768px; height: 1376px; margin: -688px 0 0 -384px; transform-origin: center center; }
+.palm-photo { position: absolute; inset: 0; width: 768px; height: 1376px; display: block; }
+.palm-screen { position: absolute; left: 34px; top: 148px; width: 720px; height: 944px; border-radius: 8px; overflow: hidden;
+  display: flex; flex-direction: column; background: #c9d2b4; color: #1a2019; font-family: var(--font-ui); font-size: 30px; line-height: 1.1;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.25), inset 0 6px 14px rgba(0,0,0,.22); }
+.palm-bar { flex: none; height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  background: #1a2019; color: #c9d2b4; font-family: var(--font-px); font-size: 20px; letter-spacing: .08em; }
+.palm-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 16px 18px 24px; }
+.palm-body h1 { margin: 0 0 6px; font-family: var(--font-px); font-size: 22px; letter-spacing: .08em; }
+.palm-body p { margin: 0 0 10px; }
+.palm-body h2 { margin: 18px 0 6px; padding: 6px 10px; background: #1a2019; color: #c9d2b4; font-family: var(--font-px); font-size: 15px; letter-spacing: .1em; }
+.palm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 4px; }
+.palm-ico { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 2px; text-align: center; color: inherit; }
+.palm-ico svg { width: 72px; height: 72px; filter: grayscale(1) contrast(1.15); }
+.palm-ico span { white-space: pre-line; font-size: 26px; line-height: 1; }
+.palm-ico:active, .palm-ico:focus-visible { background: #1a2019; color: #c9d2b4; outline: 0; }
+.palm-note { color: #4f5a4c; margin-top: 18px !important; font-size: 26px; }
+.palm-links { font-size: 26px; } .palm-links a { text-decoration: underline; }
+.palm-btn { position: absolute; display: block; width: 110px; height: 110px; border-radius: 50%; }
+.palm-btn:focus-visible { outline: 3px dashed #fff; }
+@media (max-width: 700px) {
   .stage-wrap { display: none; }
-  .fallback { display: block; }
+  .palm-wrap { display: block; }
 }
 @media (prefers-reduced-motion: reduce) {
   .tube, .boot::after { animation: none !important; }

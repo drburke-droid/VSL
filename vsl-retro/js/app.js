@@ -41,6 +41,7 @@
   const led = $('#led');
   const offdot = $('#offdot');
   const menubar = $('#menubar');
+  const palm = $('#palm');
 
   let stageScale = 1;
   let zTop = 10;
@@ -56,6 +57,7 @@
   function fit() {
     stageScale = Math.min(innerWidth / 1280, innerHeight / 720);
     stage.style.transform = `scale(${stageScale})`;
+    palm.style.transform = `scale(${Math.min(innerWidth / 768, innerHeight / 1376)})`;   // phone: the PalmPilot
   }
   addEventListener('resize', fit);
   fit();
@@ -91,8 +93,10 @@
     });
     focus($('.win[data-win="readme"]'));
 
-    // plain list for the phone fallback
-    $('#fallback-list').innerHTML = data.tools.map(t => `<li><a href="${t.href}">${t.title}</a></li>`).join('');
+    // phone: PalmPilot launcher, one section per group
+    $('#palm-list').innerHTML = data.groups.map(g => `
+      <h2>${g.title}</h2>
+      <div class="palm-grid">${(byGroup[g.id] || []).map(t => `<a class="palm-ico" href="${t.href}" title="${esc(t.title)}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>`).join('');
   }
 
   /* ---------- window management ---------- */
@@ -471,8 +475,11 @@
 
   /* ---------- status-line clock ---------- */
   const clock = $('#clock');
+  const palmClock = $('#palm-clock');
   function tick() {
-    clock.textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }).toUpperCase();
+    const d = new Date();
+    clock.textContent = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }).toUpperCase();
+    palmClock.textContent = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toUpperCase();
   }
   tick(); setInterval(tick, 1000);
 

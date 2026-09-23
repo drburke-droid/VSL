@@ -184,13 +184,27 @@
   </div>
 </div>
 
-<!-- Plain-HTML index for phones, screen readers and no-JS: hidden visually on desktop, shown under 700px -->
-<nav class="fallback" id="fallback" aria-label="Instruments">
-  <h1>Visual Systems Lab</h1>
-  <p>Thirteen interactive instruments by Dr. Robert Burke, Calgary Vision Centre.</p>
-  <ul id="fallback-list"></ul>
-  <p><a href="https://calgaryvisioncentre.com/book-an-appointment">Book an appointment</a> · <a href="https://calgaryvisioncentre.com/blog">CVC Journal</a></p>
-</nav>
+<!-- Phones: a PalmPilot instead of the CRT (shown under 700px, see css). The launcher is generated from js/tools.json in build(). -->
+<div class="palm-wrap" id="palm-wrap">
+  <div class="palm" id="palm">
+    <img class="palm-photo" src="assets/palm.jpg" alt="A grey PalmPilot handheld">
+    <div class="palm-screen">
+      <div class="palm-bar"><span>VISION LAB</span><span id="palm-clock"></span></div>
+      <nav class="palm-body" id="palm-body" aria-label="Instruments">
+        <h1>Visual Systems Lab</h1>
+        <p>Thirteen interactive instruments by Dr. Robert Burke, Calgary Vision Centre. Tap one to open it.</p>
+        <div id="palm-list"></div>
+        <p class="palm-note">Educational use only. Not a substitute for an eye exam.</p>
+        <p class="palm-links"><a href="https://calgaryvisioncentre.com/book-an-appointment">Book an appointment</a> · <a href="https://calgaryvisioncentre.com/blog">CVC Journal</a> · <a href="tel:+14032370505">403-237-0505</a></p>
+      </nav>
+    </div>
+    <!-- the hardware buttons -->
+    <a class="palm-btn" style="left:37px;top:1168px" href="https://calgaryvisioncentre.com/blog" aria-label="CVC Journal — read the blog"></a>
+    <a class="palm-btn" style="left:195px;top:1168px" href="https://calgaryvisioncentre.com/book-an-appointment" aria-label="Book an appointment"></a>
+    <a class="palm-btn" style="left:486px;top:1168px" href="https://calgaryvisioncentre.com/lab" aria-label="Modern index of the Lab"></a>
+    <a class="palm-btn" style="left:644px;top:1168px" href="https://calgaryvisioncentre.com" aria-label="Calgary Vision Centre"></a>
+  </div>
+</div>
 
 <script src="js/app.js"></script>
 </body>

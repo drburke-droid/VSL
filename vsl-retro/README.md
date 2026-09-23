@@ -21,7 +21,7 @@ SVG displacement map is loaded by URL.
 ## Layout
 
 ```
-index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, phone fallback
+index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, PalmPilot for phones
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
@@ -29,6 +29,7 @@ assets/monitor.png          the photo with the tube blanked to #008080 (1672×94
 assets/monitor-original.png the photo as supplied (DOS text still on screen)
 assets/barrel.png           602×495 displacement map (R = x, G = y, radial r³) for the barrel filter
 assets/cvc-logo.png         the CVC mark, white on transparent, used by the screensaver
+assets/palm.jpg             768×1376 PalmPilot photo for phones, screen area filled LCD-grey
 design-canvas-sources/      the Claude Design artboards this was built from (.dc.html) — reference only
 ```
 
@@ -66,8 +67,12 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)
 so the whole tube goes black; it is a 602×495 canvas driven by `svFrame()` in app.js.
 
-Under 700 px wide the stage is hidden and a plain list of the tools is shown instead
-(`nav.fallback`). Screen readers get that list too.
+Under 700 px wide the CRT is replaced by a PalmPilot (`.palm-wrap`): a 768×1376 photo
+scaled to the viewport, with a monochrome Palm-style launcher on its 720×944 screen
+(`left:34 top:148`). The launcher is one section per group with the same pixel icons,
+greyscaled; tapping an icon opens the tool's real page. The four hardware buttons are
+hotspots: Journal, Book an appointment, Lab index, Clinic. Screen readers get the
+launcher as a plain `nav` of links.
 
 ## Editing the tools
 
@@ -90,4 +95,3 @@ palette for the look). Groups carry their home position/size in desktop px.
 
 - Per-tool OG/share images (see `design-canvas-sources/ShareCard.dc.html`).
 - "Start with a symptom" entry point for patients.
-- Mobile: a full-bleed desktop without the monitor instead of the plain list.
