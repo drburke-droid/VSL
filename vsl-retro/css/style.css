@@ -93,7 +93,6 @@ button { font: inherit; color: inherit; }
 .saver canvas { display: block; width: 602px; height: 495px; image-rendering: pixelated; }
 .saver::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 1px, transparent 1px 3px); }
-.saver-caption { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-family: var(--font-px); font-size: 8px; letter-spacing: .14em; color: #405050; }
 
 /* ---------- Windows-95-style desktop chrome ---------- */
 .bev { background: var(--grey); border: 1px solid; border-color: #dfdfdf #000 #000 #dfdfdf; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
