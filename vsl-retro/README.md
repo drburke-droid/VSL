@@ -1,8 +1,8 @@
 # Visual Systems Lab — retro CRT front page
 
 A replacement for https://calgaryvisioncentre.com/lab: a photographed 1993 CRT whose
-tube shows a working 16-colour "Vision Lab Manager" desktop. Each of the 13 lab tools
-is a program icon; windows drag, resize, minimize, maximize and close; the power
+tube shows a working Windows-95-style desktop. Each of the 13 lab tools is an icon on the
+teal desktop; windows drag, resize, minimize, maximize and close; the power
 button, screensaver and degauss are easter eggs.
 
 Plain HTML/CSS/JS — no build step, no dependencies.
@@ -77,14 +77,13 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Tool properties | right-click an icon: description, URL, Open full size (default) / Preview here |
 | Move / resize | drag title bar / drag bottom-right grip |
 | Minimize / maximize / close | _ □ × at the right of each title bar; minimized windows sit on the taskbar; double-click title bar = maximize |
-| Cascade / Tile / Arrange / Reopen | Window menu |
-| Start menu | taskbar button: Minesweeper, About, Shut Down |
+| Cascade / Tile / Arrange / Reopen | Start menu |
 | Clock | live in the taskbar; the boot sequence prints the real date and time |
-| Power off / on | bezel button below the tube, or File → Exit; boot sequence on power-on |
-| Screensaver | 45 s idle, or Help → Preview screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
-| Degauss | Help → Degauss, or type `dgs` |
-| Scanlines | off by default (they bend badly under the barrel filter); Help → Toggle scanlines, or type `20/20` |
-| Menus by keyboard | Alt-F, Alt-W, Alt-H; Esc closes |
+| Power off / on | bezel button below the tube, or Start > Shut Down; boot sequence on power-on |
+| Screensaver | 45 s idle, or Start > Screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
+| Degauss | Start > Degauss, or type `dgs` |
+| Scanlines | off by default; Start > Toggle scanlines, or type `20/20` |
+| Start menu | taskbar button; Esc closes |
 
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)
 so the whole tube goes black; it is a 602×495 canvas driven by `svFrame()` in app.js.

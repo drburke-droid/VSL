@@ -27,43 +27,12 @@
 
           <!-- desktop -->
           <div class="desktop" id="desktop">
-            <div class="bev progman">
-              <div class="titlebar main">
-                <span>VISION LAB MANAGER — [calgaryvisioncentre.com/lab]</span>
-                <span><span class="bev sysbtn min"></span><span class="bev sysbtn max"></span><span class="bev sysbtn x"></span></span>
-              </div>
-              <div class="menubar" id="menubar">
-                <button data-menu="file"><u>F</u>ile</button>
-                <span class="disabled"><u>O</u>ptions</span>
-                <button data-menu="window"><u>W</u>indow</button>
-                <button data-menu="help"><u>H</u>elp</button>
-
-                <div class="bev menu" data-for="file" hidden>
-                  <a href="https://calgaryvisioncentre.com/gaze">Open…&nbsp; Gaze Simulator</a>
-                  <a href="https://calgaryvisioncentre.com/lab">Modern index of the Lab</a>
-                  <span class="sep"></span>
-                  <button data-action="power-off">Exit Vision Lab Manager…</button>
-                </div>
-                <div class="bev menu" data-for="window" hidden>
-                  <button data-action="cascade">Cascade</button>
-                  <button data-action="tile">Tile</button>
-                  <button data-action="home">Arrange Icons</button>
-                  <span class="sep"></span>
-                  <button data-action="reopen">Reopen closed groups</button>
-                </div>
-                <div class="bev menu" data-for="help" hidden>
-                  <button data-action="degauss">Degauss</button>
-                  <button data-action="saver">Preview screensaver</button>
-                  <button data-action="scanlines">Toggle scanlines</button>
-                  <span class="sep"></span>
-                  <button data-action="about">About Vision Lab Manager…</button>
-                </div>
-              </div>
-              <div class="workspace" id="workspace">
-                <!-- group windows are generated from js/tools.json -->
+            <div class="workspace" id="workspace">
+              <!-- desktop icons are generated from the tools JSON in build() -->
+              <div class="desk" id="desk"></div>
 
                 <!-- README dialog -->
-                <div class="bev win dialog" data-win="readme" style="left:6px;top:224px;width:574px;height:158px">
+                <div class="bev win dialog" data-win="readme" style="left:248px;top:24px;width:372px;height:232px">
                   <div class="titlebar">
                     <span>README.TXT — DR. BURKE</span>
                     <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
@@ -123,7 +92,7 @@
                 </div>
 
                 <!-- HIGH-RES popup: appears bottom-right whenever a tool opens on the tube -->
-                <div class="bev win dialog" data-win="hires" data-label="HIGH-RES" data-closed style="left:296px;top:244px;width:304px;height:134px" hidden>
+                <div class="bev win dialog" data-win="hires" data-label="HIGH-RES" data-closed style="left:296px;top:290px;width:304px;height:134px" hidden>
                   <div class="titlebar">
                     <span>SEE IT IN HIGH RES</span>
                     <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
@@ -138,7 +107,6 @@
                   <div class="grip" data-wm="resize" aria-hidden="true"></div>
                 </div>
 
-              </div>
             </div>
             <!-- taskbar: start-style button, minimized windows, sunken status + clock -->
             <div class="taskbar">

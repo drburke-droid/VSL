@@ -7,7 +7,7 @@
   'use strict';
 
   const DESKTOP_SCALE = 0.934;         // must match --desktop-scale in css
-  const WS = { w: 606, h: 383 };       // workspace size in desktop px
+  const WS = { w: 630, h: 434 };       // desktop size above the taskbar, in desktop px
   const DATA_URL = document.body.dataset.tools || 'js/tools.json';        // which programs to load
   const IDLE_MS = document.body.dataset.idle !== undefined ? Number(document.body.dataset.idle) : 45000;   // 0 = no screensaver
   let programCount = 0;
@@ -43,7 +43,6 @@
   const saver = $('#saver');
   const led = $('#led');
   const offdot = $('#offdot');
-  const menubar = $('#menubar');
   const palm = $('#palm');
 
   let stageScale = 1;
@@ -57,6 +56,7 @@
   const FOLDER16 = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="8" width="12" height="4" fill="#ffff00" stroke="#000" stroke-width="2"/><rect x="3" y="11" width="26" height="16" fill="#ffff00" stroke="#000" stroke-width="2"/></svg>';
   const EYE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg>';
   const MINE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect width="32" height="32" fill="#c0c0c0"/><rect x="14" y="4" width="4" height="24" fill="#000"/><rect x="4" y="14" width="24" height="4" fill="#000"/><rect x="8" y="8" width="16" height="16" fill="#000"/><rect x="6" y="6" width="2" height="2" fill="#000"/><rect x="24" y="6" width="2" height="2" fill="#000"/><rect x="6" y="24" width="2" height="2" fill="#000"/><rect x="24" y="24" width="2" height="2" fill="#000"/><rect x="10" y="10" width="4" height="4" fill="#fff"/></svg>';
+  const WIN_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="6" fill="#000080"/></svg>';
   const POWER_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="6" width="20" height="18" fill="#000080"/><rect x="8" y="8" width="16" height="14" fill="#00ffff"/><rect x="10" y="24" width="12" height="2" fill="#000"/><rect x="6" y="26" width="20" height="2" fill="#808080"/></svg>';
   const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
@@ -78,23 +78,9 @@
     const byGroup = {};
     data.tools.forEach(t => { (byGroup[t.group] ||= []).push(t); tools[t.id] = t; });
 
-    data.groups.forEach(g => {
-      const win = document.createElement('div');
-      win.className = 'bev win';
-      win.dataset.win = g.id;
-      win.dataset.label = g.title.split(' ')[0];
-      win.style.cssText = `left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
-      win.innerHTML = `
-        <div class="titlebar">
-          <span>${FOLDER16} ${g.title}</span>
-          <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
-        </div>
-        <div class="body icons">
-          ${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}
-        </div>
-        <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
-      workspace.appendChild(win);
-    });
+    // desktop icons, grouped in the JSON's order, in columns down the left
+    $('#desk').innerHTML = data.groups.map(g => (byGroup[g.id] || []).map(t =>
+      `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')).join('');
 
     // remember home geometry for every window (groups + dialogs)
     $$('.win', workspace).forEach(w => {
@@ -301,37 +287,8 @@
     if (bar && !e.target.closest('button')) toggleMax(bar.closest('.win'));
   });
 
-  /* ---------- menus ---------- */
-  function closeMenus() {
-    $$('.menu', menubar).forEach(m => (m.hidden = true));
-    $$('button[data-menu]', menubar).forEach(b => b.classList.remove('open'));
-  }
-  menubar.addEventListener('click', e => {
-    const top = e.target.closest('button[data-menu]');
-    if (top) {
-      const menu = $(`.menu[data-for="${top.dataset.menu}"]`, menubar);
-      const wasOpen = !menu.hidden;
-      closeMenus();
-      if (!wasOpen) { menu.hidden = false; top.classList.add('open'); }
-      return;
-    }
-    const act = e.target.closest('[data-action]');
-    if (!act) return;
-    closeMenus();
-    const actions = {
-      'power-off': () => setPower(false),
-      cascade: () => arrange('cascade'),
-      tile: () => arrange('tile'),
-      home: () => arrange('home'),
-      reopen: () => arrange('reopen'),
-      degauss,
-      saver: showSaver,
-      scanlines: () => $('#scanlines').classList.toggle('hidden'),
-      about: () => open($('.win[data-win="about"]'))
-    };
-    actions[act.dataset.action]?.();
-  });
-  document.addEventListener('pointerdown', e => { if (!e.target.closest('#menubar')) closeMenus(); });
+  /* ---------- menus: everything lives in the Start menu now ---------- */
+  function closeMenus() { const m = $('.startmenu'); if (m) m.hidden = true; }
   /* ---------- start menu ---------- */
   const startbtn = $('.startbtn');
   const startmenu = document.createElement('div');
@@ -339,14 +296,26 @@
   startmenu.innerHTML = `
     <button type="button" data-start="minesweeper">${MINE_ICON} Minesweeper</button>
     <span class="sep"></span>
+    <button type="button" data-start="cascade">${WIN_ICON} Cascade windows</button>
+    <button type="button" data-start="tile">${WIN_ICON} Tile windows</button>
+    <button type="button" data-start="home">${WIN_ICON} Arrange windows</button>
+    <button type="button" data-start="reopen">${WIN_ICON} Reopen closed windows</button>
+    <span class="sep"></span>
+    <button type="button" data-start="degauss">${EYE_ICON} Degauss</button>
+    <button type="button" data-start="saver">${EYE_ICON} Screensaver</button>
+    <button type="button" data-start="scanlines">${EYE_ICON} Toggle scanlines</button>
     <button type="button" data-start="about">${EYE_ICON} About…</button>
+    <span class="sep"></span>
     <button type="button" data-start="power-off">${POWER_ICON} Shut Down…</button>`;
   startbtn?.after(startmenu);
-  startbtn?.addEventListener('click', () => { startmenu.hidden = !startmenu.hidden; closeMenus(); });
+  startbtn?.addEventListener('click', () => { startmenu.hidden = !startmenu.hidden; });
   startmenu.addEventListener('click', e => {
     const b = e.target.closest('[data-start]'); if (!b) return;
     startmenu.hidden = true;
-    ({ minesweeper: openMinesweeper, about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
+    ({ minesweeper: openMinesweeper,
+       cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
+       degauss, saver: showSaver, scanlines: () => $('#scanlines').classList.toggle('hidden'),
+       about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
 
@@ -517,11 +486,6 @@
   let typed = '';
   document.addEventListener('keydown', e => {
     if (!saver.hidden) { e.preventDefault(); hideSaver(); return; }   // any key wakes the screensaver
-    if (e.altKey && /^[fwh]$/i.test(e.key)) {           // Alt-F / Alt-W / Alt-H open menus
-      e.preventDefault();
-      $(`button[data-menu="${{ f: 'file', w: 'window', h: 'help' }[e.key.toLowerCase()]}"]`, menubar).click();
-      return;
-    }
     typed = (typed + e.key).slice(-6);
     if (typed.endsWith('20/20')) $('#scanlines').classList.toggle('hidden');   // type 20/20 → toggle scanlines
     if (typed.endsWith('dgs')) degauss();                                      // d g s → degauss

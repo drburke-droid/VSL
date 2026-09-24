@@ -99,7 +99,6 @@ button { font: inherit; color: inherit; }
 
 /* ---------- Windows-95-style desktop chrome ---------- */
 .bev { background: var(--grey); border: 1px solid; border-color: #dfdfdf #000 #000 #dfdfdf; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
-.progman { position: absolute; left: 10px; top: 8px; width: 610px; height: 424px; display: flex; flex-direction: column; }
 .titlebar { height: 18px; background: var(--dark); color: #c0c0c0; font-weight: bold; font-size: 11px; line-height: 1;
   display: flex; align-items: center; justify-content: space-between; padding: 0 2px 0 3px; margin: 2px 2px 0; cursor: move; }
 .titlebar > span { display: flex; align-items: center; gap: 3px; }
@@ -124,7 +123,13 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .menu a, .menu button { display: block; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; line-height: 1; padding: 5px 22px; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--navy); color: #fff; }
 .menu .sep { display: block; height: 1px; margin: 3px 2px; background: var(--dark); box-shadow: 0 1px 0 #fff; }
-.workspace { position: relative; flex: 1; margin: 2px; background: var(--grey); overflow: hidden; }
+.workspace { position: absolute; left: 0; right: 0; top: 0; bottom: 30px; background: var(--teal); overflow: hidden; }
+/* desktop icons: columns down the left, white labels with a shadow, as on a 1998 desktop */
+.desk { position: absolute; left: 6px; top: 6px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(6, 64px); gap: 2px 4px; }
+.desk .ico { color: #fff; }
+.desk .ico span { text-shadow: 1px 1px 0 #000; }
+.desk .ico:hover span, .desk .ico:focus-visible span { background: var(--navy); color: #fff; outline: 1px dotted #fff; text-shadow: none; }
+.desk .ico svg { filter: drop-shadow(1px 1px 0 rgba(0,0,0,.35)); }
 
 .win { position: absolute; display: flex; flex-direction: column; overflow: hidden; }
 .win .body { flex: 1; overflow: hidden; margin: 0 2px 2px; }
@@ -151,7 +156,7 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
   background: repeating-linear-gradient(135deg, transparent 0 2px, #fff 2px 3px, var(--dark) 3px 4px); }
 
 .ico { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 74px; text-align: center; background: none; border: 0; padding: 2px 0; cursor: pointer; color: #000; }
-.ico svg { width: 32px; height: 32px; }
+.ico svg { width: 32px; height: 32px; overflow: visible; }
 .ico span { font-size: 11px; line-height: 1.15; padding: 1px 3px; white-space: pre-line; }
 .ico:hover span, .ico:focus-visible span { background: var(--navy); color: #fff; outline: 1px dotted #ff0; }
 
