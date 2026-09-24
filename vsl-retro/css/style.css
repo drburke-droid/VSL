@@ -34,7 +34,7 @@ button { font: inherit; color: inherit; }
 }
 .tube {
   position: absolute; inset: 0; background: var(--teal);
-  filter: url(#barrel);
+  /* no barrel filter: feDisplacementMap resamples the raster and breaks 1px bevels and glyph edges; the glass layers carry the CRT look */
   transform-origin: 50% 50%;
   transition: transform .35s cubic-bezier(.6, 0, .9, .4), opacity .25s .3s;
   animation: flicker 5s ease-in-out infinite;
@@ -47,11 +47,11 @@ button { font: inherit; color: inherit; }
 }
 @keyframes flicker { 0%, 100% { opacity: 1 } 50% { opacity: .985 } }
 @keyframes degauss {
-  0%   { filter: url(#barrel) hue-rotate(0) saturate(1);        transform: translate(0, 0) }
-  15%  { filter: url(#barrel) hue-rotate(90deg) saturate(3);    transform: translate(3px, -2px) skewX(1deg) }
-  35%  { filter: url(#barrel) hue-rotate(-120deg) saturate(2.5);transform: translate(-3px, 2px) skewX(-1deg) }
-  60%  { filter: url(#barrel) hue-rotate(40deg) saturate(1.6);  transform: translate(1px, -1px) }
-  100% { filter: url(#barrel) hue-rotate(0) saturate(1);        transform: translate(0, 0) }
+  0%   { filter: hue-rotate(0) saturate(1);         transform: translate(0, 0) }
+  15%  { filter: hue-rotate(90deg) saturate(3);     transform: translate(3px, -2px) skewX(1deg) }
+  35%  { filter: hue-rotate(-120deg) saturate(2.5); transform: translate(-3px, 2px) skewX(-1deg) }
+  60%  { filter: hue-rotate(40deg) saturate(1.6);   transform: translate(1px, -1px) }
+  100% { filter: hue-rotate(0) saturate(1);         transform: translate(0, 0) }
 }
 
 /* optional scanlines (Help → Toggle scanlines): a sibling of .tube, so the barrel filter never bends them */

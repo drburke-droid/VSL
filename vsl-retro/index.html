@@ -13,14 +13,6 @@
 </head>
 <body>
 
-<!-- SVG filter: barrel distortion driven by a radial r³ displacement map -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="barrel" filterUnits="userSpaceOnUse" x="0" y="0" width="602" height="495" color-interpolation-filters="sRGB">
-    <feImage href="assets/barrel.png" x="0" y="0" width="602" height="495" preserveAspectRatio="none" result="map"/>
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
-
 <!-- The stage is a fixed 1280×720 scene, scaled to fit the viewport by JS -->
 <div class="stage-wrap">
   <div class="stage" id="stage">

@@ -36,7 +36,7 @@ SVG displacement map is loaded by URL.
 ## Layout
 
 ```
-index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, handheld for phones
+index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, handheld for phones (no SVG filter any more)
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
 js/minesweeper.js           Minesweeper (9×9, 10 mines), mounted in a window from the Start menu
@@ -46,7 +46,7 @@ js/home.json                the 11 programs for home.html
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 assets/monitor.png          the photo with the tube blanked to #008080 (1672×941)
 assets/monitor-original.png the photo as supplied (DOS text still on screen)
-assets/barrel.png           602×495 displacement map (R = x, G = y, radial r³) for the barrel filter
+assets/barrel.png           602×495 displacement map, kept for reference; no longer used
 assets/cvc-logo.png         the CVC mark, white on transparent, used by the screensaver
 assets/palm.jpg             664×1250 handheld photo for phones (shown at half size)
 design-canvas-sources/      the Claude Design artboards this was built from (.dc.html) — reference only
@@ -59,8 +59,10 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
   corners are the real ones from the photo's fill.
 - Inside `.tube`, a 630×464 desktop is scaled by 0.934 (`--desktop-scale`). Pointer
   deltas are divided by `stageScale × 0.934` so dragging tracks the cursor.
-- `.tube` has `filter: url(#barrel)` — an `feDisplacementMap` fed by `assets/barrel.png`.
-  `scale="14"` in index.html sets the curvature strength (was 22; lower keeps 11px text legible). Scanlines and the RGB
+- There is no barrel distortion any more. The `feDisplacementMap` approach (still documented by
+  `assets/barrel.png`, a 602×495 map with R = x, G = y, radial r³) rasterised the screen once and
+  shifted pixels by fractional amounts, which broke 1px bevel lines and clipped glyph edges. The
+  glass layers alone carry the CRT look. Scanlines and the RGB
   shadow-mask sit inside `.tube` so they curve too.
 - Six overlay layers (`.fx.*`) build the glass: beam falloff, bezel shadow, glass
   edge hairline, mirrored room reflection, specular, dust.
