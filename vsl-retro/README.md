@@ -7,6 +7,16 @@ button, screensaver and degauss are easter eggs.
 
 Plain HTML/CSS/JS — no build step, no dependencies.
 
+## Two pages, one codebase
+
+- `index.html` + `js/tools.json`: the Visual Systems Lab (13 tools) for /lab.
+- `home.html` + `js/home.json`: the homepage version, seven archived web pages (1996–2010)
+  from the Wayback Machine in the same chrome, with a "1996 was fun, it is 2026" popup that
+  shows once per visit and no idle screensaver. Both share css/style.css and js/app.js;
+  the HTML sets `data-tools` (which JSON to load) and `data-idle` (ms before the
+  screensaver, 0 = never) on `<body>`. Wayback URLs use the `if_` flag so the archive
+  toolbar is hidden.
+
 ## Run it
 
 ```bash
@@ -25,6 +35,8 @@ index.html                  stage markup: photo, screen, desktop chrome, dialogs
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
+home.html                   homepage entry point (see above)
+js/home.json                the 7 archived sites for home.html
 assets/monitor.png          the photo with the tube blanked to #008080 (1672×941)
 assets/monitor-original.png the photo as supplied (DOS text still on screen)
 assets/barrel.png           602×495 displacement map (R = x, G = y, radial r³) for the barrel filter

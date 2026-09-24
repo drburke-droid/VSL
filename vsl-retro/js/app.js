@@ -8,7 +8,10 @@
 
   const DESKTOP_SCALE = 0.934;         // must match --desktop-scale in css
   const WS = { w: 606, h: 383 };       // workspace size in desktop px
-  const IDLE_MS = 45000;
+  const DATA_URL = document.body.dataset.tools || 'js/tools.json';        // which programs to load
+  const IDLE_MS = document.body.dataset.idle !== undefined ? Number(document.body.dataset.idle) : 45000;   // 0 = no screensaver
+  let programCount = 0;
+  const statusText = () => `${programCount} PROGRAMS LOADED · 640K OK`;
   const bootLines = () => {
     const d = new Date(), p = n => String(n).padStart(2, '0');
     const day = d.toLocaleDateString('en-US', { weekday: 'short' });
@@ -22,7 +25,7 @@
     'MODE prepare visual cortex ... completed',
     'MODE select 20/20 ............ completed',
     '',
-    'Loading 13 programs ......... OK',
+    `Loading ${programCount} programs ......... OK`,
     '640K OK',
     '',
     'C:\\>win'
@@ -64,7 +67,10 @@
 
   /* ---------- build group windows from data ---------- */
   async function build() {
-    const data = await fetch('js/tools.json').then(r => r.json());
+    const data = await fetch(DATA_URL).then(r => r.json());
+    programCount = data.tools.length;
+    $('#status').textContent = statusText();
+    $('.palm-status span').textContent = statusText();
     const byGroup = {};
     data.tools.forEach(t => { (byGroup[t.group] ||= []).push(t); tools[t.id] = t; });
 
@@ -199,12 +205,15 @@
   let hiresTimer = null;
   function showHires(t) {
     const win = $('.win[data-win="hires"]');
-    $('#hires-name').textContent = t.label.replace('\n', ' ');
-    $('#hires-open').href = t.href;
+    if (win.dataset.once !== undefined) { if (win.dataset.shown) return; win.dataset.shown = '1'; }
+    if ($('#hires-name')) $('#hires-name').textContent = t.label.replace('\n', ' ');
+    if ($('#hires-open')) $('#hires-open').href = t.href;
     Object.assign(win.style, home.hires); delete win.dataset.max;   // always bottom-right
     open(win);
   }
-  $('#hires-open').addEventListener('click', () => close($('.win[data-win="hires"]')));
+  $('#hires-open')?.addEventListener('click', () => close($('.win[data-win="hires"]')));
+  // "Scroll down" in an embed: the link targets an anchor on the host page; also tell the host, in case it listens
+  $$('[data-host-scroll]').forEach(el => el.addEventListener('click', () => { try { parent.postMessage({ vsl: 'scroll-down' }, '*'); } catch (e) {} }));
   // clicking inside an iframe never reaches us, but it does move focus into it
   addEventListener('blur', () => setTimeout(() => {
     const f = document.activeElement;
@@ -346,7 +355,7 @@
       boot.textContent = lines.slice(0, n).join('\n');
       if (n >= lines.length) {
         clearInterval(bootTimer);
-        setTimeout(() => { boot.hidden = true; desktop.hidden = false; power = 'on'; $('#status').textContent = '13 PROGRAMS LOADED · 640K OK'; armIdle(); }, 400);
+        setTimeout(() => { boot.hidden = true; desktop.hidden = false; power = 'on'; $('#status').textContent = statusText(); armIdle(); }, 400);
       }
     }, 260);
   }
@@ -436,6 +445,7 @@
 
   function armIdle() {
     clearTimeout(idleTimer);
+    if (!IDLE_MS) return;
     idleTimer = setTimeout(() => {
       if (power !== 'on') return;
       if (document.activeElement?.tagName === 'IFRAME') armIdle(); else showSaver();
