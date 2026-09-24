@@ -19,7 +19,7 @@
   <div class="stage" id="stage">
     <img class="photo" src="assets/monitor.webp" alt="A beige 1990s CRT monitor">
 
-    <!-- Screen: traced from the image (75,77 -> 586x411) -->
+    <!-- Screen: bounding box of the bulged bezel opening (72,73 -> 593x419); css clips it to the curve -->
     <div class="screen" id="screen">
       <div class="tube" id="tube">
         <div class="desktop-scale">
@@ -93,7 +93,7 @@
                 </div>
 
                 <!-- HIGH-RES popup: appears bottom-right whenever a tool opens on the tube -->
-                <div class="bev win dialog" data-win="hires" data-label="2026" data-closed data-once style="left:270px;top:250px;width:364px;height:164px" hidden>
+                <div class="bev win dialog" data-win="hires" data-label="2026" data-closed data-once style="left:270px;top:252px;width:364px;height:164px" hidden>
                   <div class="titlebar">
                     <span>1998 CALLED.</span>
                     <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>

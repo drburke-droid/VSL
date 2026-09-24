@@ -54,8 +54,10 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 ## How the screen is put together
 
 - The stage is a fixed 737x720 scene scaled to the viewport (`fit()` in app.js); the monitor image fills it.
-- The screen was traced from the image: `left:75px; top:77px; 586x411`.
-- Inside `.tube`, a 645x452 desktop is scaled by 0.9085 (`--desktop-scale`) to fill the screen exactly. Pointer
+- The screen box is the bounding box of the bezel's bulged opening (`left:72px; top:73px; 593x419`), and
+  a `clip-path` trims it to the curve, about 6px top/bottom and 3px at the sides. The content is
+  not warped, so text stays crisp; only the outline follows the glass.
+- Inside `.tube`, a 645x456 desktop is scaled by 0.9194 (`--desktop-scale`) to fill the screen exactly. Pointer
   deltas are divided by `stageScale × 0.934` so dragging tracks the cursor.
 - There is no barrel distortion any more. The `feDisplacementMap` approach (still documented by
   `assets/barrel.png`, a 602×495 map with R = x, G = y, radial r³) rasterised the screen once and

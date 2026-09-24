@@ -12,7 +12,7 @@
   --font-ui: Tahoma, 'MS Sans Serif', Verdana, Arial, sans-serif;   /* the Windows 95 system face */
   --font-dos: 'VT323', 'Courier New', monospace;
   --font-px: 'Silkscreen', monospace;
-  --desktop-scale: 0.9085;          /* 645x452 desktop -> 586x411: the whole screen */
+  --desktop-scale: 0.9194;          /* 645x456 desktop -> 593x419: the bulged screen box */
 }
 
 * { box-sizing: border-box; }
@@ -29,8 +29,10 @@ button { font: inherit; color: inherit; }
 
 /* ---------- screen (traced from photo) ---------- */
 .screen {
-  position: absolute; left: 75px; top: 77px; width: 586px; height: 411px;
-  overflow: hidden; border-radius: 10px / 9px; background: #061a1a;
+  position: absolute; left: 72px; top: 73px; width: 593px; height: 419px;
+  overflow: hidden; border-radius: 12px / 10px; background: #061a1a;
+  /* the bezel opening bulges ~6px top/bottom and ~3px at the sides: clip to that shape (no pixel warping, so text stays crisp) */
+  clip-path: path('M3 6 Q296.5 -6 590 6 Q596 209.5 590 413 Q296.5 425 3 413 Q-3 209.5 3 6 Z');
 }
 .tube {
   position: absolute; inset: 0; background: var(--teal);
@@ -42,7 +44,7 @@ button { font: inherit; color: inherit; }
 .tube.off { transform: scaleY(0.004); opacity: 0; }
 .tube.degauss { animation: degauss .7s ease-out 1; }
 .desktop-scale {
-  position: absolute; left: 0; top: 0; width: 645px; height: 452px;
+  position: absolute; left: 0; top: 0; width: 645px; height: 456px;
   transform: scale(var(--desktop-scale)); transform-origin: top left;
 }
 @keyframes flicker { 0%, 100% { opacity: 1 } 50% { opacity: .985 } }
@@ -119,7 +121,7 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .menu a, .menu button { display: block; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; line-height: 1; padding: 5px 22px; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--navy); color: #fff; }
 .menu .sep { display: block; height: 1px; margin: 3px 2px; background: var(--dark); box-shadow: 0 1px 0 #fff; }
-.workspace { position: absolute; left: 0; right: 0; top: 0; bottom: 30px; background: var(--teal); overflow: hidden; }
+.workspace { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background: var(--teal); overflow: hidden; }
 /* desktop icons: columns down the left, white labels with a shadow, as on a 1998 desktop */
 .desk { position: absolute; left: 6px; top: 6px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(6, 64px); gap: 2px 4px; }
 .desk .ico { color: #fff; }
@@ -157,7 +159,7 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .ico:hover span, .ico:focus-visible span { background: var(--navy); color: #fff; outline: 1px dotted #ff0; }
 
 /* start menu (opens above the taskbar) */
-.startmenu { position: absolute; left: 3px; bottom: 30px; min-width: 190px; display: flex; flex-direction: column; padding: 2px; z-index: 70; }
+.startmenu { position: absolute; left: 6px; bottom: 32px; min-width: 190px; display: flex; flex-direction: column; padding: 2px; z-index: 70; }
 .startmenu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; padding: 5px 10px; cursor: pointer; }
 .startmenu button:hover { background: var(--navy); color: #fff; }
 .startmenu button svg { width: 24px; height: 24px; flex: none; }
@@ -182,8 +184,8 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .ms-cell[data-n="5"] { color: #800000 } .ms-cell[data-n="6"] { color: #008080 } .ms-cell[data-n="7"] { color: #000000 } .ms-cell[data-n="8"] { color: #808080 }
 
 /* taskbar along the bottom of the screen */
-.taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: var(--grey); border-top: 1px solid #fff; box-shadow: 0 -1px 0 #dfdfdf;
-  display: flex; align-items: center; gap: 4px; padding: 2px 3px; font-size: 11px; }
+.taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; background: var(--grey); border-top: 1px solid #fff; box-shadow: 0 -1px 0 #dfdfdf;
+  display: flex; align-items: center; gap: 4px; padding: 2px 6px 5px; font-size: 11px; }
 .startbtn { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 6px 0 4px; font-weight: bold; font-size: 11px; cursor: pointer; }
 .startbtn .ti { width: 16px; height: 16px; }
 .tray { flex: 1; display: flex; gap: 3px; align-items: center; min-width: 0; overflow: hidden; }
