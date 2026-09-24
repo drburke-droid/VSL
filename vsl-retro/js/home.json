@@ -1,8 +1,9 @@
 {
   "groups": [
     { "id": "search", "title": "SEARCH & SHOPPING", "x": 6, "y": 6, "w": 246, "h": 104 },
-    { "id": "news", "title": "NEWS, SPACE & DANCING", "x": 260, "y": 6, "w": 320, "h": 104 },
-    { "id": "clinic", "title": "OUR CLINIC", "x": 6, "y": 114, "w": 246, "h": 104 }
+    { "id": "sports", "title": "SPORTS PAGE", "x": 260, "y": 6, "w": 320, "h": 104 },
+    { "id": "space", "title": "SPACE, NEWS & CARTOONS", "x": 6, "y": 114, "w": 246, "h": 104 },
+    { "id": "clinic", "title": "OUR CLINIC", "x": 260, "y": 114, "w": 320, "h": 104 }
   ],
   "tools": [
     {
@@ -33,31 +34,58 @@
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"6\" width=\"10\" height=\"6\" fill=\"#800000\"/><rect x=\"4\" y=\"8\" width=\"14\" height=\"4\" fill=\"#800000\"/><rect x=\"10\" y=\"12\" width=\"3\" height=\"12\" fill=\"#ff8000\"/><rect x=\"4\" y=\"24\" width=\"22\" height=\"3\" fill=\"#000\"/><rect x=\"18\" y=\"10\" width=\"10\" height=\"8\" fill=\"#ffff00\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"21\" y=\"13\" width=\"2\" height=\"2\" fill=\"#000\"/></svg>"
     },
     {
-      "id": "cnn",
-      "title": "CNN.com, August 2000 (Wayback Machine)",
-      "label": "CNN\n2000",
-      "href": "https://web.archive.org/web/20000815052826if_/http://www.cnn.com/",
-      "group": "news",
-      "desc": "CNN's front page from the summer of 2000. Headlines, a search box, and the ads that have not loaded since.",
-      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"20\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"2\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"17\" fill=\"#000\"/><rect x=\"6\" y=\"12\" width=\"18\" height=\"13\" fill=\"#c0c0c0\"/><rect x=\"8\" y=\"14\" width=\"14\" height=\"2\" fill=\"#ff0000\"/><rect x=\"8\" y=\"18\" width=\"10\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"21\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"25\" y=\"22\" width=\"2\" height=\"2\" fill=\"#ff0000\"/></svg>"
+      "id": "nhl",
+      "title": "NHL standings, December 3, 1998 (CNN/SI via the Wayback Machine)",
+      "label": "NHL\nStandings",
+      "href": "https://web.archive.org/web/19981203045437if_/http://cnnsi.com/hockey/nhl/standings/",
+      "group": "sports",
+      "desc": "The NHL standings as of December 3, 1998. Find Calgary in the Northwest Division and see how the season was going.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"20\" y=\"2\" width=\"4\" height=\"18\" fill=\"#800000\"/><rect x=\"18\" y=\"4\" width=\"4\" height=\"18\" fill=\"#800000\"/><rect x=\"8\" y=\"20\" width=\"14\" height=\"4\" fill=\"#800000\"/><rect x=\"6\" y=\"22\" width=\"12\" height=\"4\" fill=\"#800000\"/><rect x=\"4\" y=\"25\" width=\"10\" height=\"5\" fill=\"#000\"/><rect x=\"22\" y=\"24\" width=\"8\" height=\"2\" fill=\"#000\"/></svg>"
+    },
+    {
+      "id": "nfl",
+      "title": "NFL standings, December 6, 1998 (CNN/SI via the Wayback Machine)",
+      "label": "NFL\nStandings",
+      "href": "https://web.archive.org/web/19981206103752if_/http://www.cnnsi.com/football/nfl/standings/",
+      "group": "sports",
+      "desc": "NFL standings in December 1998, with Denver at 12-1 and Minnesota chasing a perfect season.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"12\" y=\"6\" width=\"8\" height=\"20\" fill=\"#800000\"/><rect x=\"9\" y=\"8\" width=\"14\" height=\"16\" fill=\"#800000\"/><rect x=\"6\" y=\"11\" width=\"20\" height=\"10\" fill=\"#800000\"/><rect x=\"15\" y=\"10\" width=\"2\" height=\"12\" fill=\"#fff\"/><rect x=\"12\" y=\"13\" width=\"8\" height=\"2\" fill=\"#fff\"/><rect x=\"12\" y=\"17\" width=\"8\" height=\"2\" fill=\"#fff\"/></svg>"
+    },
+    {
+      "id": "nba",
+      "title": "NBA.com, January 16, 1999: Farewell, #23 (Wayback Machine)",
+      "label": "NBA\n1999",
+      "href": "https://web.archive.org/web/19990117002128if_/http://www4.nba.com/",
+      "group": "sports",
+      "desc": "NBA.com on the day Michael Jordan retired from the Bulls, with the 1997-98 stat leaders down the side.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"11\" y=\"5\" width=\"10\" height=\"22\" fill=\"#ff8000\"/><rect x=\"8\" y=\"7\" width=\"16\" height=\"18\" fill=\"#ff8000\"/><rect x=\"6\" y=\"10\" width=\"20\" height=\"12\" fill=\"#ff8000\"/><rect x=\"15\" y=\"5\" width=\"2\" height=\"22\" fill=\"#000\"/><rect x=\"6\" y=\"15\" width=\"20\" height=\"2\" fill=\"#000\"/><rect x=\"9\" y=\"8\" width=\"2\" height=\"2\" fill=\"#000\"/><rect x=\"21\" y=\"22\" width=\"2\" height=\"2\" fill=\"#000\"/></svg>"
     },
     {
       "id": "nasa",
       "title": "NASA, January 1999 (Wayback Machine)",
       "label": "NASA\n1999",
       "href": "https://web.archive.org/web/19990116233500if_/http://nasa.gov/",
-      "group": "news",
+      "group": "space",
       "desc": "NASA's home page in January 1999: hurricane science, the new Mars missions and a section called Cool NASA Websites.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#000080\"/><rect x=\"4\" y=\"4\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"25\" y=\"7\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"6\" y=\"22\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"14\" y=\"2\" width=\"4\" height=\"6\" fill=\"#c0c0c0\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"14\" fill=\"#fff\"/><rect x=\"14\" y=\"11\" width=\"4\" height=\"4\" fill=\"#0000ff\"/><rect x=\"8\" y=\"16\" width=\"4\" height=\"8\" fill=\"#ff0000\"/><rect x=\"20\" y=\"16\" width=\"4\" height=\"8\" fill=\"#ff0000\"/><rect x=\"13\" y=\"22\" width=\"6\" height=\"3\" fill=\"#ff8000\"/><rect x=\"14\" y=\"25\" width=\"4\" height=\"4\" fill=\"#ffff00\"/></svg>"
     },
     {
-      "id": "hamster",
-      "title": "The Hampster Dance, 1999 (Wayback Machine)",
-      "label": "Hamster\nDance",
-      "href": "https://web.archive.org/web/20000229062257if_/http://www.hamsterdance.com/",
-      "group": "news",
-      "desc": "Rows and rows of dancing hamsters. The first thing the internet ever made go viral, and it still loads perfectly.",
-      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"6\" width=\"6\" height=\"6\" fill=\"#ff8000\"/><rect x=\"20\" y=\"6\" width=\"6\" height=\"6\" fill=\"#ff8000\"/><rect x=\"8\" y=\"10\" width=\"16\" height=\"16\" fill=\"#ff8000\"/><rect x=\"6\" y=\"14\" width=\"20\" height=\"10\" fill=\"#ff8000\"/><rect x=\"11\" y=\"14\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"18\" y=\"14\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"14\" y=\"18\" width=\"4\" height=\"2\" fill=\"#800000\"/><rect x=\"12\" y=\"20\" width=\"8\" height=\"4\" fill=\"#fff\"/><rect x=\"4\" y=\"26\" width=\"8\" height=\"3\" fill=\"#ff8000\"/><rect x=\"20\" y=\"26\" width=\"8\" height=\"3\" fill=\"#ff8000\"/></svg>"
+      "id": "spacejam",
+      "title": "Space Jam, January 1997 (Wayback Machine)",
+      "label": "Space Jam\n1997",
+      "href": "https://web.archive.org/web/19970124032137if_/http://www.spacejam.com/index.cgi",
+      "group": "space",
+      "desc": "The Space Jam movie site: the planets, the starfield, and every link still working. The web's most famous survivor.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#000\"/><rect x=\"3\" y=\"5\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"26\" y=\"3\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"6\" y=\"26\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"27\" y=\"24\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"12\" y=\"9\" width=\"8\" height=\"14\" fill=\"#ff8000\"/><rect x=\"10\" y=\"11\" width=\"12\" height=\"10\" fill=\"#ff8000\"/><rect x=\"13\" y=\"12\" width=\"3\" height=\"3\" fill=\"#ffff00\"/><rect x=\"4\" y=\"16\" width=\"24\" height=\"2\" fill=\"#00ffff\"/><rect x=\"2\" y=\"15\" width=\"4\" height=\"2\" fill=\"#00ffff\"/><rect x=\"26\" y=\"17\" width=\"4\" height=\"2\" fill=\"#00ffff\"/></svg>"
+    },
+    {
+      "id": "cnn",
+      "title": "CNN.com, August 2000 (Wayback Machine)",
+      "label": "CNN\n2000",
+      "href": "https://web.archive.org/web/20000815052826if_/http://www.cnn.com/",
+      "group": "space",
+      "desc": "CNN's front page from the summer of 2000. Headlines, a search box, and the ads that have not loaded since.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"20\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"2\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"17\" fill=\"#000\"/><rect x=\"6\" y=\"12\" width=\"18\" height=\"13\" fill=\"#c0c0c0\"/><rect x=\"8\" y=\"14\" width=\"14\" height=\"2\" fill=\"#ff0000\"/><rect x=\"8\" y=\"18\" width=\"10\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"21\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"25\" y=\"22\" width=\"2\" height=\"2\" fill=\"#ff0000\"/></svg>"
     },
     {
       "id": "cvc1998",
@@ -74,7 +102,7 @@
       "label": "Our Site\n2026",
       "href": "https://calgaryvisioncentre.com/",
       "group": "clinic",
-      "desc": "The real thing, live, squeezed onto a 1993 monitor. It looks better below this screen.",
+      "desc": "The real thing, live, squeezed onto a 1993 monitor. It reads better below this screen.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"12\" width=\"28\" height=\"8\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"12\" fill=\"#fff\"/><rect x=\"11\" y=\"12\" width=\"10\" height=\"8\" fill=\"#008080\"/><rect x=\"14\" y=\"14\" width=\"4\" height=\"4\" fill=\"#000\"/><rect x=\"4\" y=\"26\" width=\"24\" height=\"2\" fill=\"#808080\"/></svg>"
     }
   ],

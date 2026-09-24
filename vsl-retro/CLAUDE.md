@@ -10,6 +10,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - Keep the desktop chrome generic 1990s: our own pixel icons, 16-colour palette, no vendor logos/icons/wordmarks.
 - All clickable things must be real `<a>`/`<button>` elements with labels. The phone handheld's group windows are generated from tools.json in `build()`; never hand-edit them.
 - The page is embedded on calgaryvisioncentre.com/lab in an iframe; keep `<base target="_top">` so links leave the frame.
+- Homepage copy (home.html, home.json, sites/cvc1998): no individual's name, and no comparative or superiority words (best, latest, advanced, leading, most, superior). The College of Optometrists' advertising rules apply.
 - Real links: tools are on calgaryvisioncentre.com (two on drburke-droid.github.io); blog `/blog`; booking `/book-an-appointment`; lab index `/lab`.
 
 ## Testing
