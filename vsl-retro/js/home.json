@@ -1,45 +1,36 @@
 {
   "groups": [
-    { "id": "search", "title": "SEARCH ENGINES", "x": 6, "y": 6, "w": 246, "h": 104 },
-    { "id": "news", "title": "NEWS, SPORT & FUN", "x": 260, "y": 6, "w": 320, "h": 104 },
+    { "id": "search", "title": "SEARCH & SHOPPING", "x": 6, "y": 6, "w": 246, "h": 104 },
+    { "id": "news", "title": "NEWS, SPACE & DANCING", "x": 260, "y": 6, "w": 320, "h": 104 },
     { "id": "clinic", "title": "OUR CLINIC", "x": 6, "y": 114, "w": 246, "h": 104 }
   ],
   "tools": [
     {
-      "id": "lycos",
-      "title": "Lycos, October 1996 (Wayback Machine)",
-      "label": "Lycos\n1996",
-      "href": "https://web.archive.org/web/19961022175214if_/http://www.lycos.com/",
+      "id": "google",
+      "title": "Google, December 1998 (Wayback Machine)",
+      "label": "Google\n1998",
+      "href": "https://web.archive.org/web/19981202230410if_/http://www.google.com/",
       "group": "search",
-      "desc": "The Lycos search engine as it looked in October 1996, from the Internet Archive. Links work; the search box does not.",
+      "desc": "Google three months after it was founded: a beta, a Stanford search, and a Linux search. From the Internet Archive.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"4\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"4\" y=\"6\" width=\"2\" height=\"12\" fill=\"#000\"/><rect x=\"18\" y=\"6\" width=\"2\" height=\"12\" fill=\"#000\"/><rect x=\"6\" y=\"18\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" fill=\"#00ffff\"/><rect x=\"8\" y=\"8\" width=\"3\" height=\"3\" fill=\"#fff\"/><rect x=\"19\" y=\"19\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"21\" y=\"21\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"23\" y=\"23\" width=\"5\" height=\"5\" fill=\"#000\"/></svg>"
     },
     {
       "id": "yahoo",
-      "title": "Yahoo directory, October 1996 (Wayback Machine)",
-      "label": "Yahoo\n1996",
-      "href": "https://web.archive.org/web/19961017235908if_/http://www2.yahoo.com/",
+      "title": "Yahoo, January 1999 (Wayback Machine)",
+      "label": "Yahoo\n1999",
+      "href": "https://web.archive.org/web/19990116224322if_/http://yahoo.com/",
       "group": "search",
-      "desc": "Yahoo when it was a hand-made directory of the whole web, October 1996. Browse the categories.",
+      "desc": "Yahoo when it was a hand-sorted directory of the whole web. Browse the categories; every one still works.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"3\" y=\"6\" width=\"12\" height=\"4\" fill=\"#ffff00\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"3\" y=\"9\" width=\"26\" height=\"18\" fill=\"#ffff00\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"8\" y=\"14\" width=\"16\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"18\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"22\" width=\"14\" height=\"2\" fill=\"#000\"/></svg>"
     },
     {
-      "id": "altavista",
-      "title": "AltaVista, May 1996 (Wayback Machine)",
-      "label": "AltaVista\n1996",
-      "href": "https://web.archive.org/web/19960511013133if_/http://www.altavista.digital.com/",
+      "id": "ebay",
+      "title": "eBay, January 1999 (Wayback Machine)",
+      "label": "eBay\n1999",
+      "href": "https://web.archive.org/web/19990117033159if_/http://pages.ebay.com/aw/index.html",
       "group": "search",
-      "desc": "AltaVista in May 1996, five months after launch, when it was the fastest search engine on earth.",
-      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"3\" y=\"10\" width=\"11\" height=\"15\" fill=\"#000\"/><rect x=\"18\" y=\"10\" width=\"11\" height=\"15\" fill=\"#000\"/><rect x=\"5\" y=\"13\" width=\"7\" height=\"10\" fill=\"#00ffff\"/><rect x=\"20\" y=\"13\" width=\"7\" height=\"10\" fill=\"#00ffff\"/><rect x=\"13\" y=\"14\" width=\"6\" height=\"4\" fill=\"#000\"/><rect x=\"6\" y=\"7\" width=\"5\" height=\"3\" fill=\"#808080\"/><rect x=\"21\" y=\"7\" width=\"5\" height=\"3\" fill=\"#808080\"/></svg>"
-    },
-    {
-      "id": "espn",
-      "title": "ESPN SportsZone, December 1997 (Wayback Machine)",
-      "label": "ESPN\n1997",
-      "href": "https://web.archive.org/web/19971211234527if_/http://espn.com/",
-      "group": "news",
-      "desc": "ESPN's site from December 1997. Scores, standings and 56k-friendly headlines.",
-      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"12\" y=\"6\" width=\"8\" height=\"20\" fill=\"#800000\"/><rect x=\"9\" y=\"8\" width=\"14\" height=\"16\" fill=\"#800000\"/><rect x=\"6\" y=\"11\" width=\"20\" height=\"10\" fill=\"#800000\"/><rect x=\"15\" y=\"10\" width=\"2\" height=\"12\" fill=\"#fff\"/><rect x=\"12\" y=\"13\" width=\"8\" height=\"2\" fill=\"#fff\"/><rect x=\"12\" y=\"17\" width=\"8\" height=\"2\" fill=\"#fff\"/></svg>"
+      "desc": "eBay with 1.2 million items for sale and a Beanie Baby section. The auctions have, sadly, ended.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"6\" width=\"10\" height=\"6\" fill=\"#800000\"/><rect x=\"4\" y=\"8\" width=\"14\" height=\"4\" fill=\"#800000\"/><rect x=\"10\" y=\"12\" width=\"3\" height=\"12\" fill=\"#ff8000\"/><rect x=\"4\" y=\"24\" width=\"22\" height=\"3\" fill=\"#000\"/><rect x=\"18\" y=\"10\" width=\"10\" height=\"8\" fill=\"#ffff00\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"21\" y=\"13\" width=\"2\" height=\"2\" fill=\"#000\"/></svg>"
     },
     {
       "id": "cnn",
@@ -47,25 +38,43 @@
       "label": "CNN\n2000",
       "href": "https://web.archive.org/web/20000815052826if_/http://www.cnn.com/",
       "group": "news",
-      "desc": "CNN's front page from August 2000, the summer before everything changed.",
+      "desc": "CNN's front page from the summer of 2000. Headlines, a search box, and the ads that have not loaded since.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"20\" y=\"3\" width=\"2\" height=\"7\" fill=\"#000\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"2\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"17\" fill=\"#000\"/><rect x=\"6\" y=\"12\" width=\"18\" height=\"13\" fill=\"#c0c0c0\"/><rect x=\"8\" y=\"14\" width=\"14\" height=\"2\" fill=\"#ff0000\"/><rect x=\"8\" y=\"18\" width=\"10\" height=\"2\" fill=\"#000\"/><rect x=\"8\" y=\"21\" width=\"12\" height=\"2\" fill=\"#000\"/><rect x=\"25\" y=\"22\" width=\"2\" height=\"2\" fill=\"#ff0000\"/></svg>"
     },
     {
-      "id": "spacejam",
-      "title": "Space Jam, December 1996 (Wayback Machine)",
-      "label": "Space Jam\n1996",
-      "href": "https://web.archive.org/web/19961227161755if_/http://spacejam.com/",
+      "id": "nasa",
+      "title": "NASA, January 1999 (Wayback Machine)",
+      "label": "NASA\n1999",
+      "href": "https://web.archive.org/web/19990116233500if_/http://nasa.gov/",
       "group": "news",
-      "desc": "The Space Jam movie site from 1996, the web's most famous survivor. Starfield, tiled background and all.",
-      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#000\"/><rect x=\"3\" y=\"5\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"26\" y=\"3\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"6\" y=\"26\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"27\" y=\"24\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"11\" y=\"7\" width=\"10\" height=\"18\" fill=\"#ff8000\"/><rect x=\"8\" y=\"9\" width=\"16\" height=\"14\" fill=\"#ff8000\"/><rect x=\"7\" y=\"12\" width=\"18\" height=\"8\" fill=\"#ff8000\"/><rect x=\"15\" y=\"7\" width=\"2\" height=\"18\" fill=\"#000\"/><rect x=\"7\" y=\"15\" width=\"18\" height=\"2\" fill=\"#000\"/></svg>"
+      "desc": "NASA's home page in January 1999: hurricane science, the new Mars missions and a section called Cool NASA Websites.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#000080\"/><rect x=\"4\" y=\"4\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"25\" y=\"7\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"6\" y=\"22\" width=\"2\" height=\"2\" fill=\"#fff\"/><rect x=\"14\" y=\"2\" width=\"4\" height=\"6\" fill=\"#c0c0c0\"/><rect x=\"12\" y=\"8\" width=\"8\" height=\"14\" fill=\"#fff\"/><rect x=\"14\" y=\"11\" width=\"4\" height=\"4\" fill=\"#0000ff\"/><rect x=\"8\" y=\"16\" width=\"4\" height=\"8\" fill=\"#ff0000\"/><rect x=\"20\" y=\"16\" width=\"4\" height=\"8\" fill=\"#ff0000\"/><rect x=\"13\" y=\"22\" width=\"6\" height=\"3\" fill=\"#ff8000\"/><rect x=\"14\" y=\"25\" width=\"4\" height=\"4\" fill=\"#ffff00\"/></svg>"
     },
     {
-      "id": "cvc2010",
-      "title": "Calgary Vision Centre, September 2010 (Wayback Machine)",
-      "label": "Our Site\n2010",
-      "href": "https://web.archive.org/web/20100913003840if_/http://www.calgaryvisioncentre.com/",
+      "id": "hamster",
+      "title": "The Hampster Dance, 1999 (Wayback Machine)",
+      "label": "Hamster\nDance",
+      "href": "https://web.archive.org/web/20000229062257if_/http://www.hamsterdance.com/",
+      "group": "news",
+      "desc": "Rows and rows of dancing hamsters. The first thing the internet ever made go viral, and it still loads perfectly.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"6\" y=\"6\" width=\"6\" height=\"6\" fill=\"#ff8000\"/><rect x=\"20\" y=\"6\" width=\"6\" height=\"6\" fill=\"#ff8000\"/><rect x=\"8\" y=\"10\" width=\"16\" height=\"16\" fill=\"#ff8000\"/><rect x=\"6\" y=\"14\" width=\"20\" height=\"10\" fill=\"#ff8000\"/><rect x=\"11\" y=\"14\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"18\" y=\"14\" width=\"3\" height=\"3\" fill=\"#000\"/><rect x=\"14\" y=\"18\" width=\"4\" height=\"2\" fill=\"#800000\"/><rect x=\"12\" y=\"20\" width=\"8\" height=\"4\" fill=\"#fff\"/><rect x=\"4\" y=\"26\" width=\"8\" height=\"3\" fill=\"#ff8000\"/><rect x=\"20\" y=\"26\" width=\"8\" height=\"3\" fill=\"#ff8000\"/></svg>"
+    },
+    {
+      "id": "cvc1998",
+      "title": "Calgary Vision Centre, 1998 (as it would have looked)",
+      "label": "Our Site\n1998",
+      "href": "sites/cvc1998/index.html",
       "group": "clinic",
-      "desc": "Our own website as the Internet Archive first saw it, in September 2010. We have had our eyes checked since.",
+      "desc": "Our first website, re-created the way it would have looked the year we opened. Under construction, naturally.",
+      "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"10\" width=\"28\" height=\"8\" fill=\"#000\"/><rect x=\"4\" y=\"8\" width=\"24\" height=\"12\" fill=\"#fff\"/><rect x=\"11\" y=\"10\" width=\"10\" height=\"8\" fill=\"#008080\"/><rect x=\"14\" y=\"12\" width=\"4\" height=\"4\" fill=\"#000\"/><rect x=\"2\" y=\"23\" width=\"28\" height=\"6\" fill=\"#ffff00\"/><rect x=\"2\" y=\"23\" width=\"4\" height=\"6\" fill=\"#000\"/><rect x=\"10\" y=\"23\" width=\"4\" height=\"6\" fill=\"#000\"/><rect x=\"18\" y=\"23\" width=\"4\" height=\"6\" fill=\"#000\"/><rect x=\"26\" y=\"23\" width=\"4\" height=\"6\" fill=\"#000\"/></svg>"
+    },
+    {
+      "id": "cvc2026",
+      "title": "Calgary Vision Centre, today",
+      "label": "Our Site\n2026",
+      "href": "https://calgaryvisioncentre.com/",
+      "group": "clinic",
+      "desc": "The real thing, live, squeezed onto a 1993 monitor. It looks better below this screen.",
       "icon": "<svg shape-rendering=\"crispEdges\" width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" fill=\"#fff\"/><rect x=\"2\" y=\"12\" width=\"28\" height=\"8\" fill=\"#000\"/><rect x=\"4\" y=\"10\" width=\"24\" height=\"12\" fill=\"#fff\"/><rect x=\"11\" y=\"12\" width=\"10\" height=\"8\" fill=\"#008080\"/><rect x=\"14\" y=\"14\" width=\"4\" height=\"4\" fill=\"#000\"/><rect x=\"4\" y=\"26\" width=\"24\" height=\"2\" fill=\"#808080\"/></svg>"
     }
   ],
