@@ -55,6 +55,9 @@
   const home = {};                     // window id → original geometry
   const tools = {};                    // tool id → tools.json entry
   const FOLDER16 = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="8" width="12" height="4" fill="#ffff00" stroke="#000" stroke-width="2"/><rect x="3" y="11" width="26" height="16" fill="#ffff00" stroke="#000" stroke-width="2"/></svg>';
+  const EYE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg>';
+  const MINE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect width="32" height="32" fill="#c0c0c0"/><rect x="14" y="4" width="4" height="24" fill="#000"/><rect x="4" y="14" width="24" height="4" fill="#000"/><rect x="8" y="8" width="16" height="16" fill="#000"/><rect x="6" y="6" width="2" height="2" fill="#000"/><rect x="24" y="6" width="2" height="2" fill="#000"/><rect x="6" y="24" width="2" height="2" fill="#000"/><rect x="24" y="24" width="2" height="2" fill="#000"/><rect x="10" y="10" width="4" height="4" fill="#fff"/></svg>';
+  const POWER_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="6" width="20" height="18" fill="#000080"/><rect x="8" y="8" width="16" height="14" fill="#00ffff"/><rect x="10" y="24" width="12" height="2" fill="#000"/><rect x="6" y="26" width="20" height="2" fill="#808080"/></svg>';
   const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
   /* ---------- stage scaling ---------- */
@@ -147,7 +150,7 @@
 
   function close(win) {
     tray.querySelector(`[data-restore="${win.dataset.win}"]`)?.remove();
-    if (win.classList.contains('tool')) { delete home[win.dataset.win]; win.remove(); return; }
+    if (win.classList.contains('tool')) { win._destroy?.(); delete home[win.dataset.win]; win.remove(); return; }
     win.hidden = true;
     win.dataset.closed = '1';
   }
@@ -329,7 +332,44 @@
     actions[act.dataset.action]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('#menubar')) closeMenus(); });
-  $('.startbtn')?.addEventListener('click', () => open($('.win[data-win="about"]')));
+  /* ---------- start menu ---------- */
+  const startbtn = $('.startbtn');
+  const startmenu = document.createElement('div');
+  startmenu.className = 'bev startmenu'; startmenu.hidden = true;
+  startmenu.innerHTML = `
+    <button type="button" data-start="minesweeper">${MINE_ICON} Minesweeper</button>
+    <span class="sep"></span>
+    <button type="button" data-start="about">${EYE_ICON} About…</button>
+    <button type="button" data-start="power-off">${POWER_ICON} Shut Down…</button>`;
+  startbtn?.after(startmenu);
+  startbtn?.addEventListener('click', () => { startmenu.hidden = !startmenu.hidden; closeMenus(); });
+  startmenu.addEventListener('click', e => {
+    const b = e.target.closest('[data-start]'); if (!b) return;
+    startmenu.hidden = true;
+    ({ minesweeper: openMinesweeper, about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
+  });
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
+
+  function openMinesweeper() {
+    let win = $('.win[data-win="app-minesweeper"]', workspace);
+    if (!win) {
+      win = document.createElement('div');
+      win.className = 'bev win tool app';
+      win.dataset.win = 'app-minesweeper';
+      win.dataset.label = 'MINESWEEPER';
+      win.style.cssText = 'left:200px;top:40px;width:184px;height:244px';
+      win.innerHTML = `
+        <div class="titlebar">
+          <span>${MINE_ICON} MINESWEEPER</span>
+          <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
+        </div>
+        <div class="body"></div>`;
+      workspace.appendChild(win);
+      home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
+      win._destroy = Minesweeper.mount(win.querySelector('.body'));
+    }
+    open(win);
+  }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 
   /* ---------- power / boot ---------- */

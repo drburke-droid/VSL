@@ -54,12 +54,10 @@ button { font: inherit; color: inherit; }
   100% { filter: url(#barrel) hue-rotate(0) saturate(1);        transform: translate(0, 0) }
 }
 
-/* phosphor overlays ride inside the tube so they curve with it */
+/* optional scanlines (Help → Toggle scanlines): a sibling of .tube, so the barrel filter never bends them */
 .scanlines { position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 1px, transparent 1px 2px); }
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.08) 0 1px, transparent 1px 3px); }
 .scanlines.hidden { display: none; }
-.mask { position: absolute; inset: 0; pointer-events: none; opacity: .06;
-  background: repeating-linear-gradient(90deg, rgba(255,0,0,.12) 0 1px, rgba(0,255,0,.12) 1px 2px, rgba(0,0,255,.12) 2px 3px); }
 
 /* glass + bezel edge treatment, in the order light builds up */
 .fx { position: absolute; inset: 0; pointer-events: none; }
@@ -144,6 +142,7 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .win .body.frame iframe { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
 .workspace.dragging iframe { pointer-events: none; }
 .muted { color: #707070; }
+.win[data-win="readme"] .muted { color: #000; }   /* README stays all black */
 .chart { font-family: var(--font-px); font-size: 7px; letter-spacing: .1em; padding-top: 4px; } .chart small { font-size: 6px; }
 .buttons { display: flex; justify-content: flex-end; gap: 6px; padding: 0 10px 10px; }
 .btn { min-width: 75px; height: 23px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; padding: 0 10px; }
@@ -155,6 +154,31 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .ico svg { width: 32px; height: 32px; }
 .ico span { font-size: 11px; line-height: 1.15; padding: 1px 3px; white-space: pre-line; }
 .ico:hover span, .ico:focus-visible span { background: var(--navy); color: #fff; outline: 1px dotted #ff0; }
+
+/* start menu (opens above the taskbar) */
+.startmenu { position: absolute; left: 3px; bottom: 30px; min-width: 190px; display: flex; flex-direction: column; padding: 2px; z-index: 70; }
+.startmenu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; padding: 5px 10px; cursor: pointer; }
+.startmenu button:hover { background: var(--navy); color: #fff; }
+.startmenu button svg { width: 24px; height: 24px; flex: none; }
+.startmenu .sep { display: block; height: 1px; margin: 3px 2px; background: var(--dark); box-shadow: 0 1px 0 #fff; }
+
+/* Minesweeper */
+.ms { padding: 6px; display: flex; flex-direction: column; gap: 6px; align-items: center; user-select: none; }
+.bev-in { border: 2px solid; border-color: #808080 #fff #fff #808080; }
+.ms-top { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 4px 5px; }
+.ms-led { font: bold 18px/1 'Courier New', monospace; color: #f00; background: #000; padding: 1px 2px; letter-spacing: 1px; border: 1px solid; border-color: #808080 #fff #fff #808080; }
+.ms-face { width: 26px; height: 26px; padding: 2px; background: var(--grey); border: 2px solid; border-color: #fff #808080 #808080 #fff; cursor: pointer; }
+.ms-face svg { width: 100%; height: 100%; display: block; }
+.ms-face:active { border-color: #808080 #fff #fff #808080; }
+.ms-grid { display: grid; grid-template-columns: repeat(9, 16px); grid-auto-rows: 16px; background: #c0c0c0; }
+.ms-cell { width: 16px; height: 16px; padding: 0; margin: 0; background: var(--grey); border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  font: bold 11px/1 Tahoma, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.ms-cell.open { border: 1px solid #808080; border-width: 1px 0 0 1px; }
+.ms-cell.hit { background: #f00; }
+.ms-cell.wrong { background: #f00; }
+.ms-cell svg { width: 14px; height: 14px; }
+.ms-cell[data-n="1"] { color: #0000ff } .ms-cell[data-n="2"] { color: #008000 } .ms-cell[data-n="3"] { color: #ff0000 } .ms-cell[data-n="4"] { color: #000080 }
+.ms-cell[data-n="5"] { color: #800000 } .ms-cell[data-n="6"] { color: #008080 } .ms-cell[data-n="7"] { color: #000000 } .ms-cell[data-n="8"] { color: #808080 }
 
 /* taskbar along the bottom of the screen */
 .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: var(--grey); border-top: 1px solid #fff; box-shadow: 0 -1px 0 #dfdfdf;

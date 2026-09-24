@@ -39,6 +39,7 @@ SVG displacement map is loaded by URL.
 index.html                  stage markup: photo, screen, desktop chrome, dialogs, hotspots, handheld for phones
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
+js/minesweeper.js           Minesweeper (9×9, 10 mines), mounted in a window from the Start menu
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 11 programs for home.html
@@ -75,11 +76,12 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Move / resize | drag title bar / drag bottom-right grip |
 | Minimize / maximize / close | _ □ × at the right of each title bar; minimized windows sit on the taskbar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Window menu |
-| Clock | live in the status line; the boot sequence prints the real date and time |
+| Start menu | taskbar button: Minesweeper, About, Shut Down |
+| Clock | live in the taskbar; the boot sequence prints the real date and time |
 | Power off / on | bezel button below the tube, or File → Exit; boot sequence on power-on |
 | Screensaver | 45 s idle, or Help → Preview screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
 | Degauss | Help → Degauss, or type `dgs` |
-| Scanlines | Help → Toggle scanlines, or type `20/20` |
+| Scanlines | off by default (they bend badly under the barrel filter); Help → Toggle scanlines, or type `20/20` |
 | Menus by keyboard | Alt-F, Alt-W, Alt-H; Esc closes |
 
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)
