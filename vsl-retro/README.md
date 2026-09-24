@@ -44,8 +44,7 @@ js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 gro
 home.html                   homepage entry point (see above)
 js/home.json                the 11 programs for home.html
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
-assets/monitor.png          the photo with the tube blanked to #008080 (1672×941)
-assets/monitor-original.png the photo as supplied (DOS text still on screen)
+assets/monitor.webp         the CRT on a transparent background (1172x1145), screen area dark
 assets/barrel.png           602×495 displacement map, kept for reference; no longer used
 assets/cvc-logo.png         the CVC mark, white on transparent, used by the screensaver
 assets/palm.jpg             664×1250 handheld photo for phones (shown at half size)
@@ -54,10 +53,9 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 
 ## How the screen is put together
 
-- The stage is a fixed 1280×720 scene scaled to the viewport (`fit()` in app.js).
-- The tube was traced from the photo: `left:365px; top:19px; 602×495`. The rounded
-  corners are the real ones from the photo's fill.
-- Inside `.tube`, a 645×530 desktop is scaled by 0.934 (`--desktop-scale`) to fill the tube exactly. Pointer
+- The stage is a fixed 737x720 scene scaled to the viewport (`fit()` in app.js); the monitor image fills it.
+- The screen was traced from the image: `left:75px; top:77px; 586x411`.
+- Inside `.tube`, a 645x452 desktop is scaled by 0.9085 (`--desktop-scale`) to fill the screen exactly. Pointer
   deltas are divided by `stageScale × 0.934` so dragging tracks the cursor.
 - There is no barrel distortion any more. The `feDisplacementMap` approach (still documented by
   `assets/barrel.png`, a 602×495 map with R = x, G = y, radial r³) rasterised the screen once and
@@ -66,8 +64,7 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
   shadow-mask sit inside `.tube` so they curve too.
 - Six overlay layers (`.fx.*`) build the glass: beam falloff, bezel shadow, glass
   edge hairline, mirrored room reflection, specular, dust.
-- Photo hotspots: `.masthead` (newspaper → /blog), `.pda` (→ /book-an-appointment),
-  `.power` (bezel button, with `.led`).
+- Bezel: `.power` (button, with `.led`). The old newspaper and PDA hotspots went with the old photo.
 
 ## Interactions
 
@@ -107,8 +104,6 @@ palette for the look). Groups carry their home position/size in desktop px.
 
 - The `feImage`-driven displacement is solid in Chrome/Edge; Safari has rendered it
   inconsistently in the past. Test there; fall back to `filter:none` on `.tube` if needed.
-- The photo is 1672×941 upscaled to 1280-wide stage at large viewports; a higher-res
-  original would sharpen the bezel on 4K displays.
 - The desktop is deliberately generic 1990s chrome with original pixel icons — keep it
   that way (no vendor logos, icons or wordmarks).
 

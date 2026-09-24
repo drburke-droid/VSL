@@ -17,9 +17,9 @@
 <!-- The stage is a fixed 1280×720 scene, scaled to fit the viewport by JS -->
 <div class="stage-wrap">
   <div class="stage" id="stage">
-    <img class="photo" src="assets/monitor.png" alt="Beige 1990s CRT monitor on a desk beside a copy of the CVC Journal">
+    <img class="photo" src="assets/monitor.webp" alt="A beige 1990s CRT monitor">
 
-    <!-- Screen: traced from the photo (365,19 → 602×495) -->
+    <!-- Screen: traced from the image (75,77 -> 586x411) -->
     <div class="screen" id="screen">
       <div class="tube" id="tube">
         <div class="desktop-scale">
@@ -93,7 +93,7 @@
                 </div>
 
                 <!-- HIGH-RES popup: appears bottom-right whenever a tool opens on the tube -->
-                <div class="bev win dialog" data-win="hires" data-label="2026" data-closed data-once style="left:270px;top:326px;width:364px;height:164px" hidden>
+                <div class="bev win dialog" data-win="hires" data-label="2026" data-closed data-once style="left:270px;top:250px;width:364px;height:164px" hidden>
                   <div class="titlebar">
                     <span>1998 CALLED.</span>
                     <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
@@ -146,9 +146,6 @@
     <button class="power" id="power" aria-label="Power" title="Power"></button>
     <div class="led on" id="led"></div>
 
-    <!-- hotspots on the photo -->
-    <a class="hot masthead" href="https://calgaryvisioncentre.com/blog" aria-label="CVC Journal — read the blog"></a>
-    <a class="hot pda" href="https://calgaryvisioncentre.com/book-an-appointment" aria-label="Book an appointment"></a>
 
   </div>
 </div>
