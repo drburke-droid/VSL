@@ -12,7 +12,7 @@
   --font-ui: Tahoma, 'MS Sans Serif', Verdana, Arial, sans-serif;   /* the Windows 95 system face */
   --font-dos: 'VT323', 'Courier New', monospace;
   --font-px: 'Silkscreen', monospace;
-  --desktop-scale: 0.934;          /* 630×464 desktop → 588×433 on the tube */
+  --desktop-scale: 0.934;          /* 645×530 desktop → 602×495: the whole tube */
 }
 
 * { box-sizing: border-box; }
@@ -42,7 +42,7 @@ button { font: inherit; color: inherit; }
 .tube.off { transform: scaleY(0.004); opacity: 0; }
 .tube.degauss { animation: degauss .7s ease-out 1; }
 .desktop-scale {
-  position: absolute; left: 7px; top: 24px; width: 630px; height: 464px;
+  position: absolute; left: 0; top: 0; width: 645px; height: 530px;
   transform: scale(var(--desktop-scale)); transform-origin: top left;
 }
 @keyframes flicker { 0%, 100% { opacity: 1 } 50% { opacity: .985 } }

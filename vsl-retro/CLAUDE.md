@@ -5,7 +5,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 ## Ground rules
 - No build tooling, no frameworks, no npm deps. Vanilla HTML/CSS/JS only; keep it runnable with `python3 -m http.server`.
 - Stage coordinates are 1280×720 px. The tube is `left:365 top:19 602×495` — do not move it; it is traced from the photo.
-- Desktop content lives in a 630×464 box scaled by `--desktop-scale` (0.934). If you change that value, change `DESKTOP_SCALE` in js/app.js too.
+- Desktop content lives in a 645×530 box scaled by `--desktop-scale` (0.934) so it fills the 602×495 tube exactly; the taskbar sits on the tube's bottom edge. If you change that value, change `DESKTOP_SCALE` in js/app.js too.
 - Tool data belongs in `js/tools.json` (lab) and `js/home.json` (homepage), never hard-coded in HTML. `home.html` is `index.html` with different copy; when you change chrome in one, change the other.
 - Keep the desktop chrome generic Windows-95/98-era: system sans (Tahoma/MS Sans Serif) at 11px; icons are our own 32x32 SVGs in the shaded late-90s style (gradients, 1px outline, soft shadow), never vendor logos or wordmarks. VT323 is for the DOS boot screen only. Icons sit directly on the teal desktop (`#desk`, generated in `build()`); the `groups` in the JSON only order them and drive the phone layout.
 - All clickable things must be real `<a>`/`<button>` elements with labels. The phone handheld's group windows are generated from tools.json in `build()`; never hand-edit them.
