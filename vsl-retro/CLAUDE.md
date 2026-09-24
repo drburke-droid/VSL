@@ -7,7 +7,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - Stage coordinates are 1280×720 px. The tube is `left:365 top:19 602×495` — do not move it; it is traced from the photo.
 - Desktop content lives in a 630×464 box scaled by `--desktop-scale` (0.934). If you change that value, change `DESKTOP_SCALE` in js/app.js too.
 - Tool data belongs in `js/tools.json` (lab) and `js/home.json` (homepage), never hard-coded in HTML. `home.html` is `index.html` with different copy; when you change chrome in one, change the other.
-- Keep the desktop chrome generic 1990s: our own pixel icons, 16-colour palette, no vendor logos/icons/wordmarks.
+- Keep the desktop chrome generic Windows-95-era: system sans (Tahoma/MS Sans Serif) at 11px, our own pixel icons, 16-colour palette, no vendor logos/icons/wordmarks. VT323 is for the DOS boot screen only.
 - All clickable things must be real `<a>`/`<button>` elements with labels. The phone handheld's group windows are generated from tools.json in `build()`; never hand-edit them.
 - The page is embedded on calgaryvisioncentre.com/lab in an iframe; keep `<base target="_top">` so links leave the frame.
 - Homepage copy (home.html, home.json, sites/cvc1998): no individual's name, and no comparative or superiority words (best, latest, advanced, leading, most, superior). The College of Optometrists' advertising rules apply.

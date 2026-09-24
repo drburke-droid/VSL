@@ -59,7 +59,7 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 - Inside `.tube`, a 630×464 desktop is scaled by 0.934 (`--desktop-scale`). Pointer
   deltas are divided by `stageScale × 0.934` so dragging tracks the cursor.
 - `.tube` has `filter: url(#barrel)` — an `feDisplacementMap` fed by `assets/barrel.png`.
-  `scale="22"` in index.html sets the curvature strength. Scanlines and the RGB
+  `scale="14"` in index.html sets the curvature strength (was 22; lower keeps 11px text legible). Scanlines and the RGB
   shadow-mask sit inside `.tube` so they curve too.
 - Six overlay layers (`.fx.*`) build the glass: beam falloff, bezel shadow, glass
   edge hairline, mirrored room reflection, specular, dust.
@@ -73,7 +73,7 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Run a tool | click its icon: the page opens as a low-res preview in a window on the tube (iframe). A moment later a **See it in high res** dialog pops up bottom-right with a button to the real site. Ctrl/⌘-click, or the ↗ button on the window, also opens it in a new tab |
 | Tool properties | right-click an icon: description, URL, Open full size (default) / Preview here |
 | Move / resize | drag title bar / drag bottom-right grip |
-| Minimize / maximize / close | _ □ × at the right of each title bar; double-click title bar = maximize |
+| Minimize / maximize / close | _ □ × at the right of each title bar; minimized windows sit on the taskbar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Window menu |
 | Clock | live in the status line; the boot sequence prints the real date and time |
 | Power off / on | bezel button below the tube, or File → Exit; boot sequence on power-on |

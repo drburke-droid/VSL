@@ -54,6 +54,7 @@
   let bootTimer = null;
   const home = {};                     // window id → original geometry
   const tools = {};                    // tool id → tools.json entry
+  const FOLDER16 = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="8" width="12" height="4" fill="#ffff00" stroke="#000" stroke-width="2"/><rect x="3" y="11" width="26" height="16" fill="#ffff00" stroke="#000" stroke-width="2"/></svg>';
   const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
   /* ---------- stage scaling ---------- */
@@ -82,14 +83,14 @@
       win.style.cssText = `left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
       win.innerHTML = `
         <div class="titlebar">
-          <span>${g.title}</span>
+          <span>${FOLDER16} ${g.title}</span>
           <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
         <div class="body icons">
           ${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}
         </div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
-      workspace.insertBefore(win, tray);
+      workspace.appendChild(win);
     });
 
     // remember home geometry for every window (groups + dialogs)
@@ -190,12 +191,12 @@
       win.style.cssText = `left:${14 + n * 16}px;top:${10 + n * 14}px;width:576px;height:356px`;
       win.innerHTML = `
         <div class="titlebar">
-          <span>${esc(t.title.toUpperCase())}</span>
+          <span>${t.icon.replace('<svg ', '<svg class="ti" ')} ${esc(t.title.toUpperCase())}</span>
           <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
         <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
-      workspace.insertBefore(win, tray);
+      workspace.appendChild(win);
       home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
     }
     open(win);
@@ -328,6 +329,7 @@
     actions[act.dataset.action]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('#menubar')) closeMenus(); });
+  $('.startbtn')?.addEventListener('click', () => open($('.win[data-win="about"]')));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 
   /* ---------- power / boot ---------- */

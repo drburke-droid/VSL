@@ -17,7 +17,7 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="barrel" filterUnits="userSpaceOnUse" x="0" y="0" width="602" height="495" color-interpolation-filters="sRGB">
     <feImage href="assets/barrel.png" x="0" y="0" width="602" height="495" preserveAspectRatio="none" result="map"/>
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G"/>
   </filter>
 </svg>
 
@@ -146,10 +146,15 @@
                   <div class="grip" data-wm="resize" aria-hidden="true"></div>
                 </div>
 
-                <div class="tray" id="tray"></div>
               </div>
             </div>
-            <div class="statusline"><span id="status">13 PROGRAMS LOADED · 640K OK</span><span id="clock"></span><span>CALGARY VISION CENTRE · 403-237-0505</span></div>
+            <!-- taskbar: start-style button, minimized windows, sunken status + clock -->
+            <div class="taskbar">
+              <button class="bev startbtn" type="button" data-action="about"><svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg> VISION LAB</button>
+              <div class="tray" id="tray"></div>
+              <span class="sunk" id="status">13 PROGRAMS LOADED · 640K OK</span>
+              <span class="sunk" id="clock"></span>
+            </div>
           </div>
 
         </div>
