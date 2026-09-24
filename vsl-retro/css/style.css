@@ -12,7 +12,7 @@
   --font-ui: Tahoma, 'MS Sans Serif', Verdana, Arial, sans-serif;   /* the Windows 95 system face */
   --font-dos: 'VT323', 'Courier New', monospace;
   --font-px: 'Silkscreen', monospace;
-  --desktop-scale: 0.9194;          /* 645x456 desktop -> 593x419: the bulged screen box */
+  --desktop-scale: 0.9318;          /* 645x457 desktop -> 601x426: the bulged screen box */
 }
 
 * { box-sizing: border-box; }
@@ -24,15 +24,15 @@ button { font: inherit; color: inherit; }
 /* ---------- stage ---------- */
 .stage-wrap { position: fixed; inset: 0; overflow: hidden; }
 /* centred by absolute position + negative margins (a grid track would grow to the unscaled size and overflow on small viewports) */
-.stage { position: absolute; left: 50%; top: 50%; width: 737px; height: 720px; margin: -360px 0 0 -368px; transform-origin: center center; user-select: none; }
-.photo { position: absolute; inset: 0; width: 737px; height: 720px; display: block; }
+.stage { position: absolute; left: 50%; top: 50%; width: 738px; height: 720px; margin: -360px 0 0 -369px; transform-origin: center center; user-select: none; }
+.photo { position: absolute; inset: 0; width: 738px; height: 720px; display: block; }
 
 /* ---------- screen (traced from photo) ---------- */
 .screen {
-  position: absolute; left: 72px; top: 73px; width: 593px; height: 419px;
+  position: absolute; left: 68px; top: 68px; width: 601px; height: 426px;
   overflow: hidden; border-radius: 12px / 10px; background: #061a1a;
   /* the bezel opening bulges ~6px top/bottom and ~3px at the sides: clip to that shape (no pixel warping, so text stays crisp) */
-  clip-path: path('M3 6 Q296.5 -6 590 6 Q596 209.5 590 413 Q296.5 425 3 413 Q-3 209.5 3 6 Z');
+  clip-path: path('M3 6 Q300.5 -6 598 6 Q604 213.0 598 420 Q300.5 432 3 420 Q-3 213.0 3 6 Z');
 }
 .tube {
   position: absolute; inset: 0; background: var(--teal);
@@ -44,7 +44,7 @@ button { font: inherit; color: inherit; }
 .tube.off { transform: scaleY(0.004); opacity: 0; }
 .tube.degauss { animation: degauss .7s ease-out 1; }
 .desktop-scale {
-  position: absolute; left: 0; top: 0; width: 645px; height: 456px;
+  position: absolute; left: 0; top: 0; width: 645px; height: 457px;
   transform: scale(var(--desktop-scale)); transform-origin: top left;
 }
 @keyframes flicker { 0%, 100% { opacity: 1 } 50% { opacity: .985 } }
@@ -79,9 +79,9 @@ button { font: inherit; color: inherit; }
   background: #b2ffff; box-shadow: 0 0 10px 4px rgba(178,255,255,.6); pointer-events: none; }
 
 /* ---------- bezel controls & hotspots ---------- */
-.power { position: absolute; left: 612px; top: 527px; width: 40px; height: 40px; background: none; border: 0; cursor: pointer; border-radius: 6px; }
+.power { position: absolute; left: 616px; top: 529px; width: 40px; height: 40px; background: none; border: 0; cursor: pointer; border-radius: 6px; }
 .power:focus-visible { outline: 2px dashed #fff; }
-.led { position: absolute; left: 659px; top: 540px; width: 10px; height: 10px; border-radius: 50%; background: #3a2a1a; pointer-events: none; transition: background .2s, box-shadow .2s; }
+.led { position: absolute; left: 663px; top: 542px; width: 10px; height: 10px; border-radius: 50%; background: #3a2a1a; pointer-events: none; transition: background .2s, box-shadow .2s; }
 .led.on { background: #35e050; box-shadow: 0 0 6px 2px rgba(53,224,80,.7); }
 
 /* ---------- boot / screensaver ---------- */

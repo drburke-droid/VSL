@@ -6,8 +6,8 @@
 (() => {
   'use strict';
 
-  const DESKTOP_SCALE = 0.9194;        // must match --desktop-scale in css
-  const WS = { w: 645, h: 424 };       // desktop size above the taskbar, in desktop px
+  const DESKTOP_SCALE = 0.9318;        // must match --desktop-scale in css
+  const WS = { w: 645, h: 425 };       // desktop size above the taskbar, in desktop px
   const DATA_URL = document.body.dataset.tools || 'js/tools.json';        // which programs to load
   const IDLE_MS = document.body.dataset.idle !== undefined ? Number(document.body.dataset.idle) : 45000;   // 0 = no screensaver
   let programCount = 0;
@@ -62,7 +62,7 @@
 
   /* ---------- stage scaling ---------- */
   function fit() {
-    stageScale = Math.min(innerWidth / 737, innerHeight / 720);
+    stageScale = Math.min(innerWidth / 738, innerHeight / 720);
     stage.style.transform = `scale(${stageScale})`;
     palm.style.transform = `scale(${Math.min(innerWidth / 328, innerHeight / 613)})`;     // phone: the handheld
   }

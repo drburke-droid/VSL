@@ -44,7 +44,7 @@ js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 gro
 home.html                   homepage entry point (see above)
 js/home.json                the 12 programs for home.html
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
-assets/monitor.webp         the CRT on a transparent background (1172x1145), screen area dark
+assets/monitor.webp         the CRT on a transparent background (1157x1129, cropped to the pixel), screen area dark
 assets/barrel.png           602×495 displacement map, kept for reference; no longer used
 assets/cvc-logo.png         the CVC mark, white on transparent, used by the screensaver
 assets/palm.jpg             656×1226 handheld photo for phones, cropped to the device (shown at half size)
@@ -53,11 +53,11 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 
 ## How the screen is put together
 
-- The stage is a fixed 737x720 scene scaled to the viewport (`fit()` in app.js); the monitor image fills it.
-- The screen box is the bounding box of the bezel's bulged opening (`left:72px; top:73px; 593x419`), and
+- The stage is a fixed 738x720 scene scaled to the viewport (`fit()` in app.js); the monitor image fills it.
+- The screen box is the bounding box of the bezel's bulged opening (`left:68px; top:68px; 601x426`), and
   a `clip-path` trims it to the curve, about 6px top/bottom and 3px at the sides. The content is
   not warped, so text stays crisp; only the outline follows the glass.
-- Inside `.tube`, a 645x456 desktop is scaled by 0.9194 (`--desktop-scale`) to fill the screen exactly. Pointer
+- Inside `.tube`, a 645x457 desktop is scaled by 0.9318 (`--desktop-scale`) to fill the screen exactly. Pointer
   deltas are divided by `stageScale × 0.934` so dragging tracks the cursor.
 - There is no barrel distortion any more. The `feDisplacementMap` approach (still documented by
   `assets/barrel.png`, a 602×495 map with R = x, G = y, radial r³) rasterised the screen once and
