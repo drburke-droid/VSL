@@ -16,5 +16,5 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 ## Testing
 - Serve the folder, open in Chrome, and check: click an icon → tool opens in an iframe window; right-click → Properties; drag/resize/min/max/close on every window; Start > Cascade/Tile/Arrange/Reopen, Degauss, Screensaver, scanlines, Minesweeper, About, Shut Down; power button off > on boot sequence; typing `20/20` and `dgs`.
 - Do not reintroduce the barrel displacement filter on `.tube`: it breaks 1px bevels and clips text. Curvature comes only from the glass overlay layers.
-- Resize under 700 px: the handheld must appear with all 13 icons; its screen is `left:40 top:38 250×457` in a 332×625 scene — do not move it.
+- Resize under 700 px: the handheld must appear with all 13 icons; its screen is `left:38 top:34 250×457` in a 328×613 scene — do not move it.
 - `design-canvas-sources/` is reference only — the `.dc.html` files need the Claude Design runtime and will not run here.
