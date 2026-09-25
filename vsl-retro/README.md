@@ -92,8 +92,9 @@ so the whole tube goes black; it is a 602×495 canvas driven by `svFrame()` in a
 Under 700 px wide the CRT is replaced by a handheld (`.palm-wrap`): a 328×613 scene
 scaled to fill the viewport width, with the same window chrome on its 250×457
 screen (titled VISION LAB MANAGER on the lab page, CVC NET NAVIGATOR on the homepage) (`left:38 top:34`), stacked for portrait and scrolling: README.TXT first (it explains why there is a handheld),
-then the four group windows, with the status line and clock underneath. Tapping an icon opens the tool's
-real page. The three hardware buttons are hotspots: Book an appointment, phone the
+then the four group windows, with the status line and clock underneath. Tapping an icon opens the page inside
+the handheld's screen (a small browser window with Back and Full size buttons; Esc also
+closes it), so the visitor never leaves the PDA. The three hardware buttons are hotspots: Book an appointment, phone the
 clinic, CVC Journal. Screen readers get it as a plain `nav` of links.
 
 ## Editing the tools

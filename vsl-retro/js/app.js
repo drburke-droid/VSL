@@ -93,9 +93,44 @@
     $('#palm-list').innerHTML = data.groups.map(g => `
       <div class="bev pwin">
         <div class="titlebar"><span>${g.title}</span></div>
-        <div class="body icons">${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>
+        <div class="body icons">${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>
       </div>`).join('');
   }
+
+  /* ---------- phone: programs open inside the handheld's screen ---------- */
+  const palmMain = $('.palm-progman');
+  const palmView = document.createElement('div');
+  palmView.className = 'bev palm-progman palm-view';
+  palmView.hidden = true;
+  palmView.innerHTML = `
+    <div class="titlebar main"><span class="pv-title"></span><span><button class="bev sysbtn x" type="button" data-pv="close" aria-label="Close"></button></span></div>
+    <div class="pv-bar"><button class="bev btn" type="button" data-pv="close">&#9664; Back</button><a class="bev btn pv-out" target="_blank" rel="noopener">Full size &#8599;</a></div>
+    <div class="body frame"><iframe title=""></iframe></div>`;
+  palmMain.after(palmView);
+  let palmFrom = null;
+  function palmOpen(t, from) {
+    palmFrom = from;
+    $('.pv-title', palmView).innerHTML = `${t.icon.replace('<svg ', '<svg class="ti" ')} ${esc(t.label.replace('\n', ' ').toUpperCase())}`;
+    $('.pv-out', palmView).href = t.href;
+    const f = $('iframe', palmView);
+    f.title = t.title; f.src = t.href;
+    palmMain.hidden = true; palmView.hidden = false;
+    $('[data-pv="close"].btn', palmView).focus();
+  }
+  function palmClose() {
+    if (palmView.hidden) return;
+    palmView.hidden = true; palmMain.hidden = false;
+    $('iframe', palmView).src = 'about:blank';               // stop sounds and animations
+    palmFrom?.focus();
+  }
+  $('#palm-list').addEventListener('click', e => {
+    const a = e.target.closest('a[data-tool]');
+    if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;   // modified clicks still open a tab
+    e.preventDefault();
+    palmOpen(tools[a.dataset.tool], a);
+  });
+  palmView.addEventListener('click', e => { if (e.target.closest('[data-pv="close"]')) palmClose(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') palmClose(); });
 
   /* ---------- window management ---------- */
   function focus(win) {

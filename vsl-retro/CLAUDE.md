@@ -12,7 +12,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - The page is embedded on calgaryvisioncentre.com/lab in an iframe; keep `<base target="_top">` so links leave the frame.
 - Homepage copy (home.html, home.json, sites/cvc1998): no individual's name, and no comparative or superiority words (best, latest, advanced, leading, most, superior). The College of Optometrists' advertising rules apply.
 - Homepage archive links (js/home.json) must be Wayback captures from 1998: any other year ruins the "we opened in 1998" joke. The Wayback Machine is blocked from the cloud sandbox, so new candidates are checked by hand in a browser (open without `if_`, read the date in the Wayback bar, confirm the page renders) before they go in; the `href` then uses the same timestamp with `if_`. Napster is not an option (launched June 1999).
-- Handheld (phone) view: README.TXT comes first, above the group windows, on both pages, so visitors know why they are looking at a PDA. Keep it short; the homepage title there is just `README.TXT` so it fits.
+- Handheld (phone) view: README.TXT comes first, above the group windows, on both pages, so visitors know why they are looking at a PDA. Tapping a program opens it inside the PDA screen (`.palm-view` iframe, built in app.js), never full screen; Full size is the explicit way out. The three hardware buttons still navigate normally. Keep it short; the homepage title there is just `README.TXT` so it fits.
 - Real links: tools are on calgaryvisioncentre.com (two on drburke-droid.github.io); blog `/blog`; booking `/book-an-appointment`; lab index `/lab`.
 
 ## Testing
