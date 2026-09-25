@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calgary Vision Centre — Today</title>
+<meta name="description" content="A 360° tour of Calgary Vision Centre today, on the screen of a tablet.">
+<base target="_top">
+<style>
+  /* The scene is the tablet image at its own size (1130×940); fit() scales it to the viewport.
+     The screen is a flat 1024×768 iframe mapped onto the tablet's four screen corners by a
+     projective transform, so the tour sits in the same perspective as the device. */
+  html, body { margin: 0; height: 100%; background: #fff; }
+  .stage-wrap { position: fixed; inset: 0; overflow: hidden; }
+  .stage { position: absolute; left: 50%; top: 50%; width: 1130px; height: 940px; margin: -470px 0 0 -565px; transform-origin: center center; }
+  .photo { position: absolute; inset: 0; width: 1130px; height: 940px; display: block; pointer-events: none; z-index: 2; }
+  .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0; z-index: 1;
+            transform: matrix3d(1.15918, 0.136541, 0, 0.000207151, 0.0652888, 1.06489, 0, -4.695e-05, 0, 0, 1, 0, 53, 42, 0, 1); overflow: hidden; border-radius: 26px; background: #000; }
+  .screen iframe { display: block; width: 1024px; height: 768px; border: 0; background: #000; }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <!-- the tour, in perspective; it is interactive: drag to look around -->
+    <div class="screen">
+      <iframe src="https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true" title="Calgary Vision Centre today: a 360° tour of the clinic" allow="fullscreen"></iframe>
+    </div>
+    <!-- the tablet, on top: its screen area is transparent -->
+    <img class="photo" src="assets/ipad.webp" alt="A tablet, propped at an angle, showing a 360° tour of the clinic">
+  </div>
+</div>
+<script>
+  const stage = document.getElementById('stage');
+  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1130, innerHeight / 940)})`; }
+  addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

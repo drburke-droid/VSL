@@ -28,6 +28,12 @@ Plain HTML/CSS/JS — no build step, no dependencies.
   screensaver, 0 = never) on `<body>`. Wayback URLs use the `if_` flag so the archive
   toolbar is hidden.
 
+- `today.html`: the "now" half of the story for the homepage. A tablet photographed at an angle
+  (`assets/ipad.webp`, screen area cut to transparency) with the Momento360 tour of the clinic
+  mapped onto its screen by a CSS `matrix3d` projective transform, computed from the screen's four
+  corner coordinates (a 1024×768 iframe → the quad). The tour stays interactive through the
+  transform. Standalone page, no app.js. Embed aspect ratio 1130 / 940.
+
 ## Run it
 
 ```bash
