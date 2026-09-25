@@ -90,7 +90,7 @@ button { font: inherit; color: inherit; }
 .boot::after { content: '_'; animation: cursor 1s steps(1) infinite; }
 @keyframes cursor { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }
 .saver { position: absolute; inset: 0; z-index: 5; background: #000; overflow: hidden; cursor: pointer; }
-.saver canvas { display: block; width: 602px; height: 495px; image-rendering: pixelated; }
+.saver canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .saver::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background: repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 1px, transparent 1px 3px); }
 

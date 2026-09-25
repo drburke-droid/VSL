@@ -506,6 +506,7 @@
   function showSaver() {
     if (!saver.hidden) return;
     closeMenus(); saver.hidden = false;
+    canvas.width = saver.clientWidth; canvas.height = saver.clientHeight;   // match the screen, whatever its size
     svReset(false); svLast = performance.now();
     cancelAnimationFrame(svRaf); svRaf = requestAnimationFrame(svFrame);
   }
