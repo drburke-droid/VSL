@@ -8,25 +8,24 @@
 <base target="_top">
 <style>
   /* The scene is the tablet image at its own size (1130×940); fit() scales it to the viewport.
-     The screen is a flat 1024×768 iframe mapped onto the tablet's four screen corners by a
-     projective transform, so the tour sits in the same perspective as the device. */
+     The photo has its screen cut out (real rounded shape). Under it, a flat 1024×768 iframe is mapped
+     by a projective transform onto the screen's four corners pushed 6px outward, so the bezel always
+     overlaps the tour by a few pixels. The tour stays interactive through the transform. */
   html, body { margin: 0; height: 100%; background: #fff; }
   .stage-wrap { position: fixed; inset: 0; overflow: hidden; }
   .stage { position: absolute; left: 50%; top: 50%; width: 1130px; height: 940px; margin: -470px 0 0 -565px; transform-origin: center center; }
   .photo { position: absolute; inset: 0; width: 1130px; height: 940px; display: block; pointer-events: none; z-index: 2; }
   .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0; z-index: 1;
-            transform: matrix3d(1.16695, 0.136101, 0, 0.000206456, 0.0655734, 1.07361, 0, -4.65666e-05, 0, 0, 1, 0, 49.1978, 38.753, 0, 1); overflow: hidden; background: #000; }   /* the bezel's rounded cut-out defines the visible shape */
+            transform: matrix3d(1.22395, 0.160651, 0, 0.000232364, 0.0849578, 1.10069, 0, -5.58347e-05, 0, 0, 1, 0, 21.7323, 14.1626, 0, 1); overflow: hidden; background: #000; }
   .screen iframe { display: block; width: 1024px; height: 768px; border: 0; background: #000; }
 </style>
 </head>
 <body>
 <div class="stage-wrap">
   <div class="stage" id="stage">
-    <!-- the tour, in perspective; it is interactive: drag to look around -->
     <div class="screen">
       <iframe src="https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true" title="Calgary Vision Centre today: a 360° tour of the clinic" allow="fullscreen"></iframe>
     </div>
-    <!-- the tablet, on top: its screen area is transparent -->
     <img class="photo" src="assets/ipad.webp" alt="A tablet, propped at an angle, showing a 360° tour of the clinic">
   </div>
 </div>
