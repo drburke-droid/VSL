@@ -16,7 +16,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: #fff; color: #000; font-family: var(--font-ui); font-size: 11px; }   /* white, so an iframe embed matches the site */
+html, body { margin: 0; height: 100%; background: #fff; color: #000; font-family: var(--font-ui); font-size: 12px; }   /* white, so an iframe embed matches the site */
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
@@ -96,12 +96,12 @@ button { font: inherit; color: inherit; }
 
 /* ---------- Windows-95-style desktop chrome ---------- */
 .bev { background: var(--grey); border: 1px solid; border-color: #dfdfdf #000 #000 #dfdfdf; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
-.titlebar { height: 18px; background: var(--dark); color: #c0c0c0; font-weight: bold; font-size: 11px; line-height: 1;
+.titlebar { height: 20px; background: var(--dark); color: #c0c0c0; font-weight: bold; font-size: 12px; line-height: 1;
   display: flex; align-items: center; justify-content: space-between; padding: 0 2px 0 3px; margin: 2px 2px 0; cursor: move; }
 .titlebar > span { display: flex; align-items: center; gap: 3px; }
 .titlebar > span:first-child { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .titlebar .ti { width: 16px; height: 16px; flex: none; }
-.titlebar.main { height: 19px; cursor: default; }
+.titlebar.main { height: 21px; cursor: default; }
 .titlebar.main, .win.active > .titlebar { background: var(--navy); color: #fff; }
 .sysbtn { width: 16px; height: 14px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: #000; cursor: pointer;
   background-repeat: no-repeat; background-position: center; background-size: 7px 7px; }
@@ -111,13 +111,13 @@ button { font: inherit; color: inherit; }
 .sysbtn[data-wm="max"], .sysbtn.max { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='7' height='7' shape-rendering='crispEdges'><rect x='0' y='0' width='7' height='2' fill='black'/><rect x='0' y='0' width='1' height='7' fill='black'/><rect x='6' y='0' width='1' height='7' fill='black'/><rect x='0' y='6' width='7' height='1' fill='black'/></svg>"); }
 .sysbtn[data-wm="close"], .sysbtn.x { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='7' height='7' shape-rendering='crispEdges'><path fill='black' d='M0 0h1v1h-1zM6 0h1v1h-1zM1 1h1v1h-1zM5 1h1v1h-1zM2 2h1v1h-1zM4 2h1v1h-1zM3 3h1v1h-1zM2 4h1v1h-1zM4 4h1v1h-1zM1 5h1v1h-1zM5 5h1v1h-1zM0 6h1v1h-1zM6 6h1v1h-1z'/></svg>"); }
 a.sysbtn { font-size: 10px; font-weight: bold; }
-.menubar { position: relative; z-index: 50; height: 19px; display: flex; align-items: center; gap: 2px; padding: 0 4px; font-size: 11px; line-height: 1; margin: 1px 2px 0; }
+.menubar { position: relative; z-index: 50; height: 20px; display: flex; align-items: center; gap: 2px; padding: 0 4px; font-size: 12px; line-height: 1; margin: 1px 2px 0; }
 .menubar > button { background: none; border: 0; padding: 2px 6px; cursor: pointer; }
 .menubar > button.open { background: var(--navy); color: #fff; }
 .menubar .disabled { color: var(--dark); padding: 2px 6px; text-shadow: 1px 1px #fff; }
 .menu { position: absolute; top: 20px; min-width: 200px; display: flex; flex-direction: column; padding: 2px; z-index: 60; }
 .menu[data-for="file"] { left: 4px } .menu[data-for="window"] { left: 100px } .menu[data-for="help"] { left: 172px }
-.menu a, .menu button { display: block; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; line-height: 1; padding: 5px 22px; cursor: pointer; }
+.menu a, .menu button { display: block; width: 100%; text-align: left; background: none; border: 0; font-size: 12px; line-height: 1; padding: 5px 22px; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--navy); color: #fff; }
 .menu .sep { display: block; height: 1px; margin: 3px 2px; background: var(--dark); box-shadow: 0 1px 0 #fff; }
 .workspace { position: absolute; left: 0; right: 0; top: 0; bottom: 32px; background: var(--teal); overflow: hidden; }
@@ -131,9 +131,9 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .win { position: absolute; display: flex; flex-direction: column; overflow: hidden; }
 .win .body { flex: 1; overflow: hidden; margin: 0 2px 2px; }
 .win .body.icons { display: flex; flex-wrap: wrap; align-content: flex-start; padding: 8px 4px; background: #fff; }
-.win .body.text { padding: 8px 10px; font-size: 11px; line-height: 1.35; display: flex; flex-direction: column; gap: 6px; }
+.win .body.text { padding: 8px 10px; font-size: 13px; line-height: 1.35; display: flex; flex-direction: column; gap: 6px; }
 .win .body.text p { margin: 0; }
-.win .body.about { padding: 10px 12px; display: flex; gap: 12px; align-items: flex-start; font-size: 11px; line-height: 1.35; }
+.win .body.about { padding: 10px 12px; display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.35; }
 .win .body.about > div { display: flex; flex-direction: column; gap: 4px; }
 .props-icon svg { width: 40px; height: 40px; display: block; }
 #props-name { font-weight: bold; padding-bottom: 2px; }
@@ -145,22 +145,22 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .workspace.dragging iframe { pointer-events: none; }
 .muted { color: #707070; }
 .win[data-win="readme"] .muted { color: #000; }   /* README stays all black */
-.win[data-win="readme"] .body.text { font-size: 13px; line-height: 1.4; }   /* README reads a size up */
+.win[data-win="readme"] .body.text { font-size: 14px; line-height: 1.4; }   /* README reads a size up */
 .chart { font-family: var(--font-px); font-size: 7px; letter-spacing: .1em; padding-top: 4px; } .chart small { font-size: 6px; }
 .buttons { display: flex; justify-content: flex-end; gap: 6px; padding: 0 10px 10px; }
-.btn { min-width: 75px; height: 23px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; padding: 0 10px; }
+.btn { min-width: 75px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; padding: 0 10px; }
 .btn.default { outline: 1px solid #000; }
 .grip { position: absolute; right: 2px; bottom: 2px; width: 12px; height: 12px; cursor: nwse-resize;
   background: repeating-linear-gradient(135deg, transparent 0 2px, #fff 2px 3px, var(--dark) 3px 4px); }
 
 .ico { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 74px; text-align: center; background: none; border: 0; padding: 2px 0; cursor: pointer; color: #000; }
 .ico svg { width: 32px; height: 32px; overflow: visible; }
-.ico span { font-size: 11px; line-height: 1.15; padding: 1px 3px; white-space: pre-line; }
+.ico span { font-size: 12px; line-height: 1.15; padding: 1px 3px; white-space: pre-line; }
 .ico:hover span, .ico:focus-visible span { background: var(--navy); color: #fff; outline: 1px dotted #ff0; }
 
 /* start menu (opens above the taskbar) */
 .startmenu { position: absolute; left: 6px; bottom: 32px; min-width: 190px; display: flex; flex-direction: column; padding: 2px; z-index: 70; }
-.startmenu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; font-size: 11px; padding: 5px 10px; cursor: pointer; }
+.startmenu button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; font-size: 12px; padding: 5px 10px; cursor: pointer; }
 .startmenu button:hover { background: var(--navy); color: #fff; }
 .startmenu button svg { width: 24px; height: 24px; flex: none; }
 .startmenu .sep { display: block; height: 1px; margin: 3px 2px; background: var(--dark); box-shadow: 0 1px 0 #fff; }
@@ -205,8 +205,8 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 
 /* taskbar along the bottom of the screen */
 .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; background: var(--grey); border-top: 1px solid #fff; box-shadow: 0 -1px 0 #dfdfdf;
-  display: flex; align-items: center; gap: 4px; padding: 2px 6px 5px; font-size: 11px; }
-.startbtn { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 6px 0 4px; font-weight: bold; font-size: 11px; cursor: pointer; }
+  display: flex; align-items: center; gap: 4px; padding: 2px 6px 5px; font-size: 12px; }
+.startbtn { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 6px 0 4px; font-weight: bold; font-size: 12px; cursor: pointer; }
 .startbtn .ti { width: 16px; height: 16px; }
 .tray { flex: 1; display: flex; gap: 3px; align-items: center; min-width: 0; overflow: hidden; }
 .tray .ico { flex-direction: row; width: auto; max-width: 160px; height: 22px; gap: 4px; padding: 0 8px 0 4px; }
