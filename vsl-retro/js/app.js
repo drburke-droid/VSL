@@ -302,6 +302,8 @@
 
   // window buttons + tray
   workspace.addEventListener('click', e => {
+    const run = e.target.closest('[data-run]');
+    if (run) { const dlg = run.closest('.win'); if (dlg) close(dlg); runTool(run.dataset.run); return; }
     const ico = e.target.closest('a.ico[data-tool]');
     if (ico) {
       if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
