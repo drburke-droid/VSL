@@ -57,6 +57,7 @@
   const EYE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="12" width="28" height="8" fill="#000"/><rect x="4" y="10" width="24" height="12" fill="#fff"/><rect x="11" y="12" width="10" height="8" fill="#008080"/><rect x="14" y="14" width="4" height="4" fill="#000"/></svg>';
   const MINE_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect width="32" height="32" fill="#c0c0c0"/><rect x="14" y="4" width="4" height="24" fill="#000"/><rect x="4" y="14" width="24" height="4" fill="#000"/><rect x="8" y="8" width="16" height="16" fill="#000"/><rect x="6" y="6" width="2" height="2" fill="#000"/><rect x="24" y="6" width="2" height="2" fill="#000"/><rect x="6" y="24" width="2" height="2" fill="#000"/><rect x="24" y="24" width="2" height="2" fill="#000"/><rect x="10" y="10" width="4" height="4" fill="#fff"/></svg>';
   const WIN_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="5" width="26" height="22" fill="#fff" stroke="#000" stroke-width="2"/><rect x="3" y="5" width="26" height="6" fill="#000080"/></svg>';
+  const CARD_ICON = '<svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="3" width="16" height="22" rx="2" fill="#1a4a7a" stroke="#000"/><rect x="5" y="8" width="16" height="22" rx="2" fill="#fff" stroke="#000"/><text x="8" y="17" font-family="Arial" font-weight="bold" font-size="9" fill="#c00">A</text><text x="10" y="27" font-size="11" fill="#c00">♥</text></svg>';
   const POWER_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="6" width="20" height="18" fill="#000080"/><rect x="8" y="8" width="16" height="14" fill="#00ffff"/><rect x="10" y="24" width="12" height="2" fill="#000"/><rect x="6" y="26" width="20" height="2" fill="#808080"/></svg>';
   const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
@@ -332,6 +333,7 @@
   startmenu.className = 'bev startmenu'; startmenu.hidden = true;
   startmenu.innerHTML = `
     <button type="button" data-start="minesweeper">${MINE_ICON} Minesweeper</button>
+    <button type="button" data-start="solitaire">${CARD_ICON} Solitaire</button>
     <span class="sep"></span>
     <button type="button" data-start="cascade">${WIN_ICON} Cascade windows</button>
     <button type="button" data-start="tile">${WIN_ICON} Tile windows</button>
@@ -349,33 +351,35 @@
   startmenu.addEventListener('click', e => {
     const b = e.target.closest('[data-start]'); if (!b) return;
     startmenu.hidden = true;
-    ({ minesweeper: openMinesweeper,
+    ({ minesweeper: openMinesweeper, solitaire: openSolitaire,
        cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
        degauss, saver: showSaver, scanlines: () => $('#scanlines').classList.toggle('hidden'),
        about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
 
-  function openMinesweeper() {
-    let win = $('.win[data-win="app-minesweeper"]', workspace);
+  function openApp(id, title, icon, geom, mountFn) {
+    let win = $(`.win[data-win="app-${id}"]`, workspace);
     if (!win) {
       win = document.createElement('div');
       win.className = 'bev win tool app';
-      win.dataset.win = 'app-minesweeper';
-      win.dataset.label = 'MINESWEEPER';
-      win.style.cssText = 'left:200px;top:40px;width:184px;height:244px';
+      win.dataset.win = `app-${id}`;
+      win.dataset.label = title;
+      win.style.cssText = geom;
       win.innerHTML = `
         <div class="titlebar">
-          <span>${MINE_ICON} MINESWEEPER</span>
+          <span>${icon} ${title}</span>
           <span><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
         <div class="body"></div>`;
       workspace.appendChild(win);
       home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
-      win._destroy = Minesweeper.mount(win.querySelector('.body'));
+      win._destroy = mountFn(win.querySelector('.body'));
     }
     open(win);
   }
+  const openMinesweeper = () => openApp('minesweeper', 'MINESWEEPER', MINE_ICON, 'left:200px;top:40px;width:184px;height:244px', Minesweeper.mount);
+  const openSolitaire = () => openApp('solitaire', 'SOLITAIRE', CARD_ICON, 'left:20px;top:8px;width:450px;height:400px', Solitaire.mount);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 
   /* ---------- power / boot ---------- */

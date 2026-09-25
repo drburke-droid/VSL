@@ -182,6 +182,26 @@ a.sysbtn { font-size: 10px; font-weight: bold; }
 .ms-cell[data-n="1"] { color: #0000ff } .ms-cell[data-n="2"] { color: #008000 } .ms-cell[data-n="3"] { color: #ff0000 } .ms-cell[data-n="4"] { color: #000080 }
 .ms-cell[data-n="5"] { color: #800000 } .ms-cell[data-n="6"] { color: #008080 } .ms-cell[data-n="7"] { color: #000000 } .ms-cell[data-n="8"] { color: #808080 }
 
+/* Solitaire */
+.sol { display: flex; flex-direction: column; height: 100%; background: #008000; user-select: none; }
+.sol-bar { flex: none; display: flex; align-items: center; gap: 10px; padding: 4px; background: var(--grey); border-bottom: 1px solid var(--dark); }
+.sol-bar .btn { height: 20px; min-width: 0; padding: 0 8px; }
+.sol-msg { font-weight: bold; }
+.sol-board { position: relative; flex: 1; overflow: auto; }
+.sol-slot { position: absolute; width: 50px; height: 70px; border: 1px dashed rgba(255,255,255,.55); border-radius: 4px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.55); font-size: 22px; }
+.sol-slot.stock { border-style: solid; }
+.card { position: absolute; width: 50px; height: 70px; box-sizing: border-box; border-radius: 4px; background: #fff; border: 1px solid #333; cursor: pointer;
+  font: bold 11px/1 Tahoma, Verdana, sans-serif; box-shadow: 1px 1px 0 rgba(0,0,0,.35); }
+.card.red { color: #c00; } .card.black { color: #000; }
+.card .tl { position: absolute; left: 3px; top: 3px; } .card .br { position: absolute; right: 3px; bottom: 3px; transform: rotate(180deg); }
+.card .pip { position: absolute; left: 0; right: 0; top: 22px; text-align: center; font-size: 24px; font-weight: normal; }
+.card.back { background: #1a4a7a url(../assets/cvc-logo.png) center / 34px auto no-repeat; border-color: #0b2a4a;
+  box-shadow: inset 0 0 0 3px #fff, 1px 1px 0 rgba(0,0,0,.35); }
+.card.sel { outline: 2px solid #ffd700; outline-offset: -1px; }
+.sol-win { position: absolute; left: 0; top: 0; pointer-events: none; }
+.sol .sol-win { top: 29px; }
+
 /* taskbar along the bottom of the screen */
 .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; background: var(--grey); border-top: 1px solid #fff; box-shadow: 0 -1px 0 #dfdfdf;
   display: flex; align-items: center; gap: 4px; padding: 2px 6px 5px; font-size: 11px; }
