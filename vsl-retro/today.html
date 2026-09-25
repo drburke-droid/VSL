@@ -4,37 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Calgary Vision Centre — Today</title>
-<meta name="description" content="A 360° tour of Calgary Vision Centre today, on the screen of a tablet.">
+<meta name="description" content="A 360° tour of Calgary Vision Centre today, on the screen of a tablet or a phone.">
 <base target="_top">
 <style>
-  /* The scene is the tablet image at its own size (1130×940); fit() scales it to the viewport.
-     The photo has its screen cut out (real rounded shape). Under it, a flat 1024×768 iframe is mapped
-     by a projective transform onto the screen's four corners pushed 6px outward, so the bezel always
-     overlaps the tour by a few pixels. The tour stays interactive through the transform. */
+  /* Two scenes. Landscape: the tablet at an angle (1130×940), the tour mapped onto its screen by a
+     projective transform. Portrait: a straight-on phone (708×1418), the tour in a plain rectangle
+     with the camera island kept in front. One tour iframe, moved into whichever scene is showing. */
   html, body { margin: 0; height: 100%; background: #fff; }
-  .stage-wrap { position: fixed; inset: 0; overflow: hidden; }
-  .stage { position: absolute; left: 50%; top: 50%; width: 1130px; height: 940px; margin: -470px 0 0 -565px; transform-origin: center center; }
-  .photo { position: absolute; inset: 0; width: 1130px; height: 940px; display: block; pointer-events: none; z-index: 2; }
-  /* the tour layer is masked by the tablet's silhouette, so it can never show outside the device */
-  .clip { position: absolute; inset: 0; z-index: 1; -webkit-mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; }
-  .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0;
-            transform: matrix3d(0.772306, -0.126613, 0, -0.000183776, -0.119656, 0.879676, 0, -5.61887e-05, 0, 0, 1, 0, 99.0356, 144.298, 0, 1); overflow: hidden; background: #000; }
-  .screen iframe { display: block; width: 1024px; height: 768px; border: 0; background: #000; }
+  .scene { position: fixed; inset: 0; overflow: hidden; }
+  .stage { position: absolute; left: 50%; top: 50%; transform-origin: center center; }
+  .photo { position: absolute; inset: 0; display: block; pointer-events: none; z-index: 2; }
+  .clip { position: absolute; inset: 0; z-index: 1; }
+  iframe.tour { display: block; border: 0; background: #000; }
+
+  .scene-tablet .stage { width: 1130px; height: 940px; margin: -470px 0 0 -565px; }
+  .scene-tablet .photo { width: 1130px; height: 940px; }
+  .scene-tablet .clip { -webkit-mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; }
+  .scene-tablet .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0; transform: matrix3d(0.772306, -0.126613, 0, -0.000183776, -0.119656, 0.879676, 0, -5.61887e-05, 0, 0, 1, 0, 99.0356, 144.298, 0, 1); overflow: hidden; background: #000; }
+  .scene-tablet iframe.tour { width: 1024px; height: 768px; }
+
+  .scene-phone { display: none; }
+  .scene-phone .stage { width: 708px; height: 1418px; margin: -709px 0 0 -354px; }
+  .scene-phone .photo { width: 708px; height: 1418px; }
+  .scene-phone .clip { -webkit-mask: url(assets/phone-mask.png) 0 0 / 100% 100% no-repeat; mask: url(assets/phone-mask.png) 0 0 / 100% 100% no-repeat; }
+  .scene-phone .screen { position: absolute; left: 24px; top: 19px; width: 658px; height: 1380px; overflow: hidden; background: #000; }   /* square corners: they sit under the opaque bezel */
+  .scene-phone iframe.tour { width: 100%; height: 100%; }
+
+  @media (orientation: portrait) {
+    .scene-tablet { display: none; }
+    .scene-phone { display: block; }
+  }
 </style>
 </head>
 <body>
-<div class="stage-wrap">
-  <div class="stage" id="stage">
-    <div class="clip"><div class="screen">
-      <iframe src="https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true" title="Calgary Vision Centre today: a 360° tour of the clinic" allow="fullscreen"></iframe>
-    </div></div>
+<div class="scene scene-tablet">
+  <div class="stage">
+    <div class="clip"><div class="screen"></div></div>
     <img class="photo" src="assets/ipad.webp" alt="A tablet, propped at an angle, showing a 360° tour of the clinic">
   </div>
 </div>
+<div class="scene scene-phone">
+  <div class="stage">
+    <div class="clip"><div class="screen"></div></div>
+    <img class="photo" src="assets/phone.webp" alt="A phone showing a 360° tour of the clinic">
+  </div>
+</div>
 <script>
-  const stage = document.getElementById('stage');
-  function fit() { stage.style.transform = `scale(${Math.min(innerWidth / 1130, innerHeight / 940)})`; }
-  addEventListener('resize', fit); fit();
+  const TOUR = 'https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true';
+  const mq = matchMedia('(orientation: portrait)');
+  const tour = document.createElement('iframe');
+  tour.className = 'tour'; tour.title = 'Calgary Vision Centre today: a 360\u00b0 tour of the clinic'; tour.allow = 'fullscreen';
+  function place() {
+    const target = document.querySelector(mq.matches ? '.scene-phone .screen' : '.scene-tablet .screen');
+    if (tour.parentElement !== target) { target.appendChild(tour); tour.src = TOUR; }   // moving an iframe reloads it, so set src after
+  }
+  function fit() {
+    document.querySelector('.scene-tablet .stage').style.transform = `scale(${Math.min(innerWidth / 1130, innerHeight / 940)})`;
+    document.querySelector('.scene-phone .stage').style.transform = `scale(${Math.min(innerWidth / 708, innerHeight / 1418)})`;
+  }
+  addEventListener('resize', () => { fit(); place(); });
+  mq.addEventListener?.('change', place);
+  fit(); place();
 </script>
 </body>
 </html>

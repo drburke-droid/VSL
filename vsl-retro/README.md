@@ -33,6 +33,10 @@ Plain HTML/CSS/JS — no build step, no dependencies.
   mapped onto its screen by a CSS `matrix3d` projective transform, computed from the screen's four
   corner coordinates (a 1024×768 iframe → the quad). The tour stays interactive through the
   transform. Standalone page, no app.js. Embed aspect ratio 1130 / 940.
+  In a portrait frame the same page shows a straight-on phone instead (`assets/phone.webp`,
+  708×1418, screen cut as a measured rounded rectangle, camera island kept in front), with the
+  tour in a plain rectangle: no 3D transform, so touch works reliably. One tour iframe is moved
+  into whichever scene is showing. Embed aspect ratio 708 / 1418 on phones.
 
 ## Run it
 
