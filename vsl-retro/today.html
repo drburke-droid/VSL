@@ -15,17 +15,19 @@
   .stage-wrap { position: fixed; inset: 0; overflow: hidden; }
   .stage { position: absolute; left: 50%; top: 50%; width: 1130px; height: 940px; margin: -470px 0 0 -565px; transform-origin: center center; }
   .photo { position: absolute; inset: 0; width: 1130px; height: 940px; display: block; pointer-events: none; z-index: 2; }
-  .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0; z-index: 1;
-            transform: matrix3d(1.22395, 0.160651, 0, 0.000232364, 0.0849578, 1.10069, 0, -5.58347e-05, 0, 0, 1, 0, 21.7323, 14.1626, 0, 1); overflow: hidden; background: #000; }
+  /* the tour layer is masked by the tablet's silhouette, so it can never show outside the device */
+  .clip { position: absolute; inset: 0; z-index: 1; -webkit-mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; mask: url(assets/ipad-mask.png) 0 0 / 100% 100% no-repeat; }
+  .screen { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; transform-origin: 0 0;
+            transform: matrix3d(1.20692, 0.155963, 0, 0.000226378, 0.0692507, 1.08359, 0, -6.92138e-05, 0, 0, 1, 0, 32.8398, 18.0415, 0, 1); overflow: hidden; background: #000; }
   .screen iframe { display: block; width: 1024px; height: 768px; border: 0; background: #000; }
 </style>
 </head>
 <body>
 <div class="stage-wrap">
   <div class="stage" id="stage">
-    <div class="screen">
+    <div class="clip"><div class="screen">
       <iframe src="https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true" title="Calgary Vision Centre today: a 360° tour of the clinic" allow="fullscreen"></iframe>
-    </div>
+    </div></div>
     <img class="photo" src="assets/ipad.webp" alt="A tablet, propped at an angle, showing a 360° tour of the clinic">
   </div>
 </div>
