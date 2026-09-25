@@ -186,15 +186,6 @@
       "group": "clinic",
       "desc": "The real thing, live, squeezed onto a 1993 monitor. It reads better below this screen.",
       "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><linearGradient id=\"mdm\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#f2f2f2\"/><stop offset=\"1\" stop-color=\"#9c9c9c\"/></linearGradient><radialGradient id=\"mdw\" cx=\"0.35\" cy=\"0.35\" r=\".75\"><stop offset=\"0\" stop-color=\"#ffffff\"/><stop offset=\"1\" stop-color=\"#c8d0d8\"/></radialGradient><radialGradient id=\"mdi\" cx=\"0.35\" cy=\"0.35\" r=\".75\"><stop offset=\"0\" stop-color=\"#7fd0ff\"/><stop offset=\"1\" stop-color=\"#0a4f9e\"/></radialGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><rect x=\"3\" y=\"4\" width=\"26\" height=\"18\" rx=\"2\" fill=\"url(#mdm)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><rect x=\"5\" y=\"6\" width=\"22\" height=\"14\" rx=\"1\" fill=\"#0a2a4a\"/><ellipse cx=\"16\" cy=\"13\" rx=\"8\" ry=\"4.5\" fill=\"url(#mdw)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><circle cx=\"16\" cy=\"13\" r=\"3.5\" fill=\"url(#mdi)\"/><circle cx=\"16\" cy=\"13\" r=\"1.7\" fill=\"#000\"/><circle cx=\"14.7\" cy=\"11.7\" r=\"0.7\" fill=\"#fff\"/><path d=\"M12 26h8M9 28h14\" stroke=\"#555\" stroke-width=\"2\"/></svg>"
-    },
-    {
-      "id": "tour",
-      "title": "Calgary Vision Centre today: a 360° tour of the clinic",
-      "label": "Clinic Tour\n2026",
-      "href": "https://momento360.com/e/u/c18c68696cd54fcc935ffc2a82cc49f9?heading=0&pitch=0&field-of-view=75&size=medium&autoplay-annotations=true&display-plan=true",
-      "group": "clinic",
-      "desc": "Step inside the clinic as it is today. Drag to look around; the annotations point out the equipment.",
-      "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><radialGradient id=\"trg\" cx=\"0.4\" cy=\"0.35\" r=\".75\"><stop offset=\"0\" stop-color=\"#9fd8ff\"/><stop offset=\"1\" stop-color=\"#0b3f8a\"/></radialGradient><linearGradient id=\"trb\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#f2f2f2\"/><stop offset=\"1\" stop-color=\"#9c9c9c\"/></linearGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><circle cx=\"16\" cy=\"15\" r=\"11\" fill=\"url(#trg)\" stroke=\"#123\"/><ellipse cx=\"16\" cy=\"15\" rx=\"11\" ry=\"4.5\" fill=\"none\" stroke=\"#dff3ff\" stroke-width=\"1\"/><path d=\"M5 15h22M16 4v22\" stroke=\"#dff3ff\" stroke-width=\".8\" opacity=\".7\"/><path d=\"M4 22a13 6 0 0 0 24 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\"/><path d=\"M25 20l3 2-3 2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\"/><text x=\"16\" y=\"30\" font-family=\"Arial,sans-serif\" font-weight=\"bold\" font-size=\"7\" text-anchor=\"middle\" fill=\"#123\">360°</text></svg>"
     }
   ],
   "links": {
