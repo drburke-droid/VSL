@@ -103,7 +103,7 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)
 so the whole tube goes black; it is a 602×495 canvas driven by `svFrame()` in app.js.
 
-Under 700 px wide the CRT is replaced by a handheld (`.palm-wrap`): a 328×613 scene
+When the viewport is portrait (taller than wide) the CRT is replaced by a handheld (`.palm-wrap`): a 328×613 scene
 scaled to fill the viewport width, with the same window chrome on its 250×457
 screen (titled VISION LAB MANAGER on the lab page, CVC NET NAVIGATOR on the homepage) (`left:38 top:34`), stacked for portrait and scrolling: README.TXT first (it explains why there is a handheld),
 then the four group windows, with the status line and clock underneath. Tapping an icon opens the page inside
