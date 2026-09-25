@@ -177,15 +177,6 @@
       "group": "clinic",
       "desc": "Our first website, re-created the way it would have looked the year we opened. Under construction, naturally.",
       "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><linearGradient id=\"wpg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffffff\"/><stop offset=\"1\" stop-color=\"#dcdcdc\"/></linearGradient><linearGradient id=\"wps\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffd400\"/><stop offset=\"1\" stop-color=\"#e0a000\"/></linearGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><rect x=\"4\" y=\"4\" width=\"24\" height=\"24\" rx=\"1\" fill=\"url(#wpg)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><rect x=\"4\" y=\"4\" width=\"24\" height=\"5\" fill=\"#000080\"/><circle cx=\"8\" cy=\"6.5\" r=\"1\" fill=\"#fff\"/><path d=\"M7 14h18M7 18h12\" stroke=\"#888\"/><rect x=\"7\" y=\"21\" width=\"18\" height=\"5\" fill=\"url(#wps)\" stroke=\"#5a4000\"/><path d=\"M9 21l-2 5M13 21l-2 5M17 21l-2 5M21 21l-2 5M25 21l-2 5\" stroke=\"#000\" stroke-width=\"1.6\"/></svg>"
-    },
-    {
-      "id": "cvc2026",
-      "title": "Calgary Vision Centre, today",
-      "label": "Our Site\n2026",
-      "href": "https://calgaryvisioncentre.com/",
-      "group": "clinic",
-      "desc": "The real thing, live, squeezed onto a 1993 monitor. It reads better below this screen.",
-      "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><linearGradient id=\"mdm\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#f2f2f2\"/><stop offset=\"1\" stop-color=\"#9c9c9c\"/></linearGradient><radialGradient id=\"mdw\" cx=\"0.35\" cy=\"0.35\" r=\".75\"><stop offset=\"0\" stop-color=\"#ffffff\"/><stop offset=\"1\" stop-color=\"#c8d0d8\"/></radialGradient><radialGradient id=\"mdi\" cx=\"0.35\" cy=\"0.35\" r=\".75\"><stop offset=\"0\" stop-color=\"#7fd0ff\"/><stop offset=\"1\" stop-color=\"#0a4f9e\"/></radialGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><rect x=\"3\" y=\"4\" width=\"26\" height=\"18\" rx=\"2\" fill=\"url(#mdm)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><rect x=\"5\" y=\"6\" width=\"22\" height=\"14\" rx=\"1\" fill=\"#0a2a4a\"/><ellipse cx=\"16\" cy=\"13\" rx=\"8\" ry=\"4.5\" fill=\"url(#mdw)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><circle cx=\"16\" cy=\"13\" r=\"3.5\" fill=\"url(#mdi)\"/><circle cx=\"16\" cy=\"13\" r=\"1.7\" fill=\"#000\"/><circle cx=\"14.7\" cy=\"11.7\" r=\"0.7\" fill=\"#fff\"/><path d=\"M12 26h8M9 28h14\" stroke=\"#555\" stroke-width=\"2\"/></svg>"
     }
   ],
   "links": {
