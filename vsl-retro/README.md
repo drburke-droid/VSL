@@ -103,7 +103,8 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Minimize / maximize / close | _ □ × at the right of each title bar; minimized windows sit on the taskbar; double-click title bar = maximize |
 | Cascade / Tile / Arrange / Reopen | Start menu |
 | Clock | live in the taskbar; the boot sequence prints the real date and time |
-| Power off / on | bezel button below the tube, or Start > Shut Down; boot sequence on power-on |
+| Power off / on | bezel button below the tube; boot sequence on power-on |
+| Shut Down | Start > Shut Down: black, then "It's now safe to turn off your computer." in orange; the power button then turns the tube off, and on again to reboot |
 | Screensaver | 45 s idle, or Start > Screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
 | Monitor buttons | the four buttons under the screen, with an on-screen display: ☼ brightness, ◑ contrast (five levels each, cycling), ◀ degauss, ▶ scanlines on/off |
 | Degauss | ◀ button, or type `dgs` |
