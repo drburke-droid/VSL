@@ -1,4 +1,5 @@
 <div class="vsl-pair">
+  <h2 class="vsl-label">Then</h2>
   <div class="vsl-then">
     <iframe
       src="https://drburke-droid.github.io/VSL/home.html?v=2"
@@ -8,6 +9,7 @@
       referrerpolicy="strict-origin-when-cross-origin">
     </iframe>
   </div>
+  <h2 class="vsl-label vsl-label-now">Now</h2>
   <div class="vsl-now">
     <iframe
       src="https://drburke-droid.github.io/VSL/today.html?v=2"
@@ -31,16 +33,19 @@
 .vsl-then {
   position: relative;
   aspect-ratio: 738 / 720;
-  width: 80%;
+  width: 90%;
   justify-self: start;
   margin-bottom: 4%;
 }
 .vsl-now {
   position: relative;
   aspect-ratio: 1130 / 940;
-  width: 85%;
+  width: 88%;
   justify-self: end;
   margin-bottom: 10%;
+}
+.vsl-label {
+  display: none;
 }
 .vsl-pair iframe {
   position: absolute;
@@ -53,6 +58,15 @@
 @media (max-width: 760px) {
   .vsl-pair {
     grid-template-columns: 1fr;
+  }
+  /* plain h2: takes the site's own H2 font */
+  .vsl-label {
+    display: block;
+    margin: 0 0 -8px;
+    text-align: center;
+  }
+  .vsl-label-now {
+    margin-top: 24px;
   }
   .vsl-then {
     aspect-ratio: 328 / 613;
