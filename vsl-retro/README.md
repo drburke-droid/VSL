@@ -59,6 +59,9 @@ js/minesweeper.js           Minesweeper (9×9, 10 mines), mounted in a window fr
 js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card backs): any ace on any
                             foundation, double-click/tap detected in the click handler, plays itself out
                             once every card is face up; mounted like Minesweeper
+js/extras.js                homepage 1998 extras, loaded on first use: Inbox (1998 e-mail, ends with a
+                            note from the clinic), Recycle Bin (1998 junk + an old prescription), and the
+                            once-per-visit dial-up dialog before the first 1998 page (modem sound on a button)
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 16 programs for home.html

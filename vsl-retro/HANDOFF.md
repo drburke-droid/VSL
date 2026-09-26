@@ -41,6 +41,8 @@ Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show
 - Win95-style chrome (Tahoma, 12 px; README 14 px), icons on the teal desktop (`#desk`), taskbar
   with Start menu (Minesweeper, Solitaire, window arrange, degauss, screensaver, scanlines, About,
   Shut Down), bouncing-CVC-logo screensaver (corner hit shatters it).
+- Homepage extras (`js/extras.js`, loaded on first use): Inbox and Recycle Bin desktop icons, and a
+  once-per-visit dial-up dialog over the first 1998 page (optional synthesized modem sound).
 - `today.html` is standalone (no app.js). Tablet: tour mapped with `matrix3d` onto the screen's
   four corners, masked by `assets/ipad-mask.png` (silhouette in the **alpha** channel — CSS masks
   read alpha). Phone: plain rectangle behind `assets/phone.webp`, camera island kept in front.
@@ -53,7 +55,7 @@ Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show
 - Homepage copy: no individual's name; no superiority/comparative words (best, latest, advanced,
   leading, most, superior). College of Optometrists advertising rules. The lab page may credit Dr. Burke.
 - Homepage programs are **1998 only** (another year ruins the joke), each archive capture checked
-  by eye for a clean render. Currently 16: Google, AltaVista, Netscape, Amazon*, Nasdaq, Apple*,
+  by eye for a clean render. Plus Inbox and Recycle Bin (built-in, not pages). Currently 16 pages: Google, AltaVista, Netscape, Amazon*, Nasdaq, Apple*,
   NHL/NFL standings, NHL.com, ESPN, NBA, MLB, Calgary Herald, BBC News*, Winamp, Our Site 1998.
   (* = local screenshots in `sites/`, links don't click.)
 - No link on the homepage may load calgaryvisioncentre.com inside the frame (it would nest the
