@@ -43,6 +43,7 @@
   const saver = $('#saver');
   const led = $('#led');
   const offdot = $('#offdot');
+  const safe = $('#safe');
   const palm = $('#palm');
 
   let stageScale = 1;
@@ -410,7 +411,7 @@
     ({ minesweeper: openMinesweeper, solitaire: openSolitaire,
        cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
        saver: showSaver,
-       about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
+       about: () => open($('.win[data-win="about"]')), 'power-off': shutDown })[b.dataset.start]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
 
@@ -439,6 +440,15 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 
   /* ---------- power / boot ---------- */
+  // Start > Shut Down: a moment of black, then the famous orange line. Power button turns it off.
+  function shutDown() {
+    if (power !== 'on') return;
+    power = 'safe';
+    hideSaver(); clearTimeout(idleTimer); closeMenus();
+    desktop.hidden = true;
+    $('#status').textContent = '';
+    setTimeout(() => { if (power === 'safe') safe.hidden = false; }, 900);
+  }
   function setPower(on) {
     clearInterval(bootTimer);
     if (!on) {
@@ -452,7 +462,7 @@
       return;
     }
     power = 'boot';
-    offdot.hidden = true;
+    offdot.hidden = true; safe.hidden = true;
     tube.classList.remove('off');
     led.classList.add('on');
     desktop.hidden = true; boot.hidden = false; boot.textContent = '';
