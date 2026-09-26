@@ -105,8 +105,9 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Clock | live in the taskbar; the boot sequence prints the real date and time |
 | Power off / on | bezel button below the tube, or Start > Shut Down; boot sequence on power-on |
 | Screensaver | 45 s idle, or Start > Screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
-| Degauss | Start > Degauss, or type `dgs` |
-| Scanlines | off by default; Start > Toggle scanlines, or type `20/20` |
+| Monitor buttons | the four buttons under the screen, with an on-screen display: ☼ brightness, ◑ contrast (five levels each, cycling), ◀ degauss, ▶ scanlines on/off |
+| Degauss | ◀ button, or type `dgs` |
+| Scanlines | off by default; ▶ button, or type `20/20` |
 | Start menu | taskbar button; Esc closes |
 
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)

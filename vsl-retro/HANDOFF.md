@@ -39,8 +39,11 @@ Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show
   clipped by a `clip-path` to the bezel's bulge. Desktop box 645×457 at scale 0.9318.
   **No displacement/barrel filter** — it broke 1px lines and clipped text; do not reintroduce.
 - Win95-style chrome (Tahoma, 12 px; README 14 px), icons on the teal desktop (`#desk`), taskbar
-  with Start menu (Minesweeper, Solitaire, window arrange, degauss, screensaver, scanlines, About,
+  with Start menu (Minesweeper, Solitaire, window arrange, screensaver, About,
   Shut Down), bouncing-CVC-logo screensaver (corner hit shatters it).
+- Monitor front-panel buttons (hotspots over the image): ☼ brightness, ◑ contrast, ◀ degauss,
+  ▶ scanlines, each with a green on-screen display. Brightness/contrast filter `#screen` only when
+  off their defaults.
 - Homepage extras (`js/extras.js`, loaded on first use): Inbox and Recycle Bin desktop icons, and a
   once-per-visit dial-up dialog over the first 1998 page (optional synthesized modem sound).
 - `today.html` is standalone (no app.js). Tablet: tour mapped with `matrix3d` onto the screen's

@@ -398,9 +398,7 @@
     <button type="button" data-start="home">${WIN_ICON} Arrange windows</button>
     <button type="button" data-start="reopen">${WIN_ICON} Reopen closed windows</button>
     <span class="sep"></span>
-    <button type="button" data-start="degauss">${EYE_ICON} Degauss</button>
     <button type="button" data-start="saver">${EYE_ICON} Screensaver</button>
-    <button type="button" data-start="scanlines">${EYE_ICON} Toggle scanlines</button>
     <button type="button" data-start="about">${EYE_ICON} About…</button>
     <span class="sep"></span>
     <button type="button" data-start="power-off">${POWER_ICON} Shut Down…</button>`;
@@ -411,7 +409,7 @@
     startmenu.hidden = true;
     ({ minesweeper: openMinesweeper, solitaire: openSolitaire,
        cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
-       degauss, saver: showSaver, scanlines: () => $('#scanlines').classList.toggle('hidden'),
+       saver: showSaver,
        about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
@@ -581,6 +579,32 @@
     tube.classList.add('degauss');
     setTimeout(() => tube.classList.remove('degauss'), 750);
   }
+
+  /* ---------- front-panel buttons: brightness, contrast, degauss, scanlines ----------
+     Each press shows the monitor's on-screen display. Brightness and contrast
+     filter the whole screen, as the knobs did; no filter at the default levels. */
+  const screenEl = $('#screen'), osd = $('#osd');
+  const BRIGHT = [0.6, 0.75, 0.9, 1, 1.12], CONTRAST = [0.75, 0.88, 1, 1.12, 1.25];
+  let bright = 3, contrast = 2, osdTimer = 0;
+  function picture() {
+    const f = [];
+    if (BRIGHT[bright] !== 1) f.push(`brightness(${BRIGHT[bright]})`);
+    if (CONTRAST[contrast] !== 1) f.push(`contrast(${CONTRAST[contrast]})`);
+    screenEl.style.filter = f.join(' ');
+  }
+  function showOsd(name, level) {
+    osd.textContent = level ? `${name}\n${'█'.repeat(level * 2)}${'░'.repeat(10 - level * 2)}` : name;
+    osd.hidden = false;
+    clearTimeout(osdTimer); osdTimer = setTimeout(() => { osd.hidden = true; }, 1600);
+  }
+  $$('.mbtn').forEach(b => b.addEventListener('click', () => {
+    if (power !== 'on') return;                               // no picture, no menu
+    const k = b.dataset.mon;
+    if (k === 'bright') { bright = (bright + 1) % BRIGHT.length; picture(); showOsd('BRIGHTNESS', bright + 1); }
+    else if (k === 'contrast') { contrast = (contrast + 1) % CONTRAST.length; picture(); showOsd('CONTRAST', contrast + 1); }
+    else if (k === 'degauss') { degauss(); showOsd('DEGAUSS'); }
+    else if (k === 'scan') showOsd(`SCANLINES ${$('#scanlines').classList.toggle('hidden') ? 'OFF' : 'ON'}`);
+  }));
 
   /* ---------- keyboard easter eggs (global keys are fine here) ---------- */
   let typed = '';

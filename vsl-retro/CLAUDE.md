@@ -17,7 +17,7 @@ Read README.md first; it explains the stage, the tube geometry and the effect la
 - Real links: tools are on calgaryvisioncentre.com (two on drburke-droid.github.io); blog `/blog`; booking `/book-an-appointment`; lab index `/lab`.
 
 ## Testing
-- Serve the folder, open in Chrome, and check: click an icon → tool opens in an iframe window; right-click → Properties; drag/resize/min/max/close on every window; Start > Cascade/Tile/Arrange/Reopen, Degauss, Screensaver, scanlines, Minesweeper, About, Shut Down; power button off > on boot sequence; typing `20/20` and `dgs`.
+- Serve the folder, open in Chrome, and check: click an icon → tool opens in an iframe window; right-click → Properties; drag/resize/min/max/close on every window; Start > Cascade/Tile/Arrange/Reopen, Screensaver, Minesweeper, Solitaire, About, Shut Down; the four monitor buttons (brightness, contrast, degauss, scanlines, each with an on-screen display; hotspots at `top:538`, lefts 437/477/517/556, traced from the image); power button off > on boot sequence; typing `20/20` and `dgs`.
 - Homepage extras: the first 1998 page opened shows the dial-up dialog (desktop and PDA), then the taskbar shows 28.8K and a mail envelope; later pages open straight away. Inbox and Recycle Bin open from the desktop and the PDA; minimized windows restore from the taskbar.
 - Do not reintroduce the barrel displacement filter on `.tube`: it breaks 1px bevels and clips text. Curvature comes only from the glass overlay layers.
 - Make the window portrait (taller than wide): the handheld must appear with README.TXT on top and all the icons (13 on index.html, 18 on home.html); its screen is `left:38 top:34 250×457` in a 328×613 scene — do not move it.

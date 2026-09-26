@@ -120,7 +120,7 @@
         </div>
 
       </div>
-      <!-- scanlines sit outside .tube so they are never bent by the barrel filter; off by default (Help → Toggle scanlines) -->
+      <!-- scanlines sit outside .tube so they are never bent by the barrel filter; off by default (the ▶ button under the screen) -->
       <div class="scanlines hidden" id="scanlines"></div>
 
       <div class="off-dot" id="offdot" hidden></div>
@@ -137,11 +137,18 @@
       <div class="saver" id="saver" hidden>
         <canvas id="saver-canvas" width="601" height="426" aria-hidden="true"></canvas>
       </div>
+      <!-- the monitor's own on-screen display, shown by the front-panel buttons -->
+      <div class="osd" id="osd" hidden></div>
     </div>
 
     <!-- bezel power button + LED -->
     <button class="power" id="power" aria-label="Power" title="Power"></button>
     <div class="led on" id="led"></div>
+    <!-- front-panel buttons under the screen, in the order of their printed symbols -->
+    <button class="mbtn" style="left:437px" type="button" data-mon="bright" aria-label="Brightness" title="Brightness"></button>
+    <button class="mbtn" style="left:477px" type="button" data-mon="contrast" aria-label="Contrast" title="Contrast"></button>
+    <button class="mbtn" style="left:517px" type="button" data-mon="degauss" aria-label="Degauss" title="Degauss"></button>
+    <button class="mbtn" style="left:556px" type="button" data-mon="scan" aria-label="Scanlines on or off" title="Scanlines"></button>
 
 
   </div>
