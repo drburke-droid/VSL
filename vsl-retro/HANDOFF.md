@@ -23,7 +23,7 @@ Copy from `embed/home-pair.html` (Raw button on GitHub). **Never copy long lines
 terminal**: characters get dropped at wraps. The file is kept to short lines for that reason.
 
 Desktop settings the owner tuned and approved (keep them):
-monitor `width: 80%; margin-bottom: 4%`, tablet `width: 85%; margin-bottom: 10%`, columns `1fr 1fr`.
+monitor `width: 90%; margin-bottom: 4%`, tablet `width: 88%; margin-bottom: 10%`, columns `1fr 1fr`.
 Mobile (`max-width: 760px`): stacked; retro frame 328/613; tour frame 708/1418 (phone), `width: 90%; max-width: 420px`.
 Mobile also shows "Then" / "Now" as plain `<h2>` labels above the two devices (hidden on desktop).
 They are in the page, not in a frame, so they take the Squarespace site's own H2 style.
