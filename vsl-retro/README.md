@@ -58,7 +58,7 @@ js/app.js                   window manager, menus, power/boot, screensaver, dega
 js/minesweeper.js           Minesweeper (9×9, 10 mines), mounted in a window from the Start menu
 js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card backs): any ace on any
                             foundation, double-click/tap detected in the click handler, plays itself out
-                            once every card is face up; same
+                            once every card is face up; mounted like Minesweeper
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 16 programs for home.html
