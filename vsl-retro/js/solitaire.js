@@ -2,7 +2,9 @@
    Solitaire (Klondike, draw one). window.Solitaire.mount(el)
    builds the game inside el and returns a destroy() function.
    Click a card to pick it up, click where it should go; double-click
-   sends a card to its foundation. Win: the cards bounce. No dependencies.
+   (or double-tap) sends a card to a foundation. Any ace starts any empty
+   foundation. Once the deck is used up and every card is face up, the
+   rest plays itself. Win: the cards bounce. No dependencies.
    ========================================================== */
 (() => {
   'use strict';
@@ -17,10 +19,10 @@
       <div class="sol-board"></div>
       <canvas class="sol-win" hidden></canvas>`;
     const board = root.querySelector('.sol-board'), msg = root.querySelector('.sol-msg'), canvas = root.querySelector('.sol-win');
-    let stock, waste, found, tab, sel, won, raf = 0;
+    let stock, waste, found, tab, sel, won, raf = 0, finishTimer = 0, last = { key: '', t: 0 };
 
     function deal() {
-      cancelAnimationFrame(raf); canvas.hidden = true; won = false; sel = null; msg.textContent = '';
+      cancelAnimationFrame(raf); clearInterval(finishTimer); finishTimer = 0; canvas.hidden = true; won = false; sel = null; msg.textContent = '';
       const deck = [];
       for (const s of SUITS) for (let r = 0; r < 13; r++) deck.push({ s, r, up: false });
       for (let i = deck.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [deck[i], deck[j]] = [deck[j], deck[i]]; }
@@ -51,7 +53,7 @@
       // foundations
       found.forEach((f, k) => {
         const x = LEFT + (3 + k) * (CW + GAP);
-        slot(x, TOP, 'found', { from: 'found', col: k }).textContent = SUITS[k];
+        slot(x, TOP, 'found', { from: 'found', col: k });
         if (f.length) card(f[f.length - 1], x, TOP, { from: 'found', col: k, i: f.length - 1 });
       });
       // tableau
@@ -64,7 +66,7 @@
     }
 
     const topOf = a => a[a.length - 1];
-    function canFound(c, k) { return c.s === SUITS[k] && c.r === found[k].length; }
+    function canFound(c, k) { const f = found[k]; return f.length ? f[0].s === c.s && c.r === f.length : c.r === 0; }
     function canTab(c, k) { const t = topOf(tab[k]); return t ? (t.up && colour(t) !== colour(c) && t.r === c.r + 1) : c.r === 12; }
     function take(src) {                      // returns the cards being moved (not yet removed)
       if (src.from === 'waste') return [topOf(waste)];
@@ -94,7 +96,15 @@
     }
     function after() {
       sel = null; render();
-      if (found.every(f => f.length === 13)) win();
+      if (found.every(f => f.length === 13)) { clearInterval(finishTimer); win(); return; }
+      if (!finishTimer && !stock.length && !waste.length && tab.every(col => col.every(c => c.up))) {
+        msg.textContent = 'Finishing...';              // nothing left to decide: play the rest out
+        finishTimer = setInterval(() => {
+          const k = tab.findIndex(col => col.length && autoFound({ from: 'tab', col: tab.indexOf(col), i: col.length - 1 }));
+          if (k < 0) { clearInterval(finishTimer); finishTimer = 0; msg.textContent = ''; return; }
+          after();
+        }, 90);
+      }
     }
 
     board.addEventListener('click', e => {
@@ -108,6 +118,11 @@
       }
       if (d.from === 'wasteslot') { sel = null; render(); return; }
       if (d.from === 'tab' && d.i >= 0 && !tab[d.col][d.i].up) { sel = null; render(); return; }   // face-down: nothing
+      // double-click, detected here: the first click redraws the board, so the browser's dblclick never fires
+      const key = el.classList.contains('card') ? `${d.from}:${d.col}:${d.i}` : '', now = performance.now();
+      const dbl = key && key === last.key && now - last.t < 450;
+      last = dbl ? { key: '', t: 0 } : { key, t: now };
+      if (dbl && (d.from !== 'tab' || d.i === tab[d.col].length - 1) && autoFound(d)) { after(); return; }
       if (!sel) {
         if (d.from === 'tab' && d.i < 0) return;
         if (d.from === 'waste' && !waste.length) return;
@@ -117,13 +132,6 @@
       const dst = d.from === 'tab' ? { from: 'tab', col: d.col } : d.from === 'found' ? { from: 'found', col: d.col } : null;
       if (dst && moveTo(sel, dst)) after(); else { sel = (d.from === 'waste' || d.from === 'tab' || d.from === 'found') ? d : null; render(); }
     });
-    board.addEventListener('dblclick', e => {
-      if (won) return;
-      const el = e.target.closest('.card[data-from]'); if (!el || el.dataset.from === 'stock') return;
-      const d = { from: el.dataset.from, col: +el.dataset.col, i: +el.dataset.i };
-      if (d.from === 'tab' && d.i !== tab[d.col].length - 1) return;
-      if (autoFound(d)) after();
-    });
     root.querySelector('[data-sol="new"]').addEventListener('click', deal);
 
     function win() {                          // the cascade
@@ -131,7 +139,7 @@
       canvas.hidden = false; canvas.width = board.clientWidth; canvas.height = board.clientHeight;
       const ctx = canvas.getContext('2d');
       const queue = [];
-      for (let r = 12; r >= 0; r--) for (let k = 0; k < 4; k++) queue.push({ c: { s: SUITS[k], r, up: true }, x: LEFT + (3 + k) * (CW + GAP), y: TOP });
+      for (let r = 12; r >= 0; r--) for (let k = 0; k < 4; k++) queue.push({ c: { s: found[k][0].s, r, up: true }, x: LEFT + (3 + k) * (CW + GAP), y: TOP });
       let cur = null;
       const drawCard = (c, x, y) => {
         ctx.fillStyle = '#fff'; ctx.fillRect(x, y, CW, CH); ctx.strokeStyle = '#333'; ctx.strokeRect(x + .5, y + .5, CW - 1, CH - 1);
@@ -150,7 +158,7 @@
     }
 
     deal();
-    return () => cancelAnimationFrame(raf);
+    return () => { cancelAnimationFrame(raf); clearInterval(finishTimer); };
   }
   window.Solitaire = { mount };
 })();

@@ -72,6 +72,10 @@ Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show
 
 ## Working habits that paid off
 
+- Solitaire and Minesweeper redraw on every click, so the browser's `dblclick` never fires (the
+  second click lands on a new element). Detect double-clicks by time + card inside the click handler.
+  Test games with real `page.mouse` clicks, not `el.click()`, or bugs like this hide.
+
 - Verify in Chrome before every push (a local `python -m http.server 8765`); stop the server by
   port, never by killing all python.
 - Chrome screenshots of pages running the 360 tour often time out; composite images offline instead.
