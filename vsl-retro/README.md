@@ -56,7 +56,12 @@ index.html                  stage markup: photo, screen, desktop chrome, dialogs
 css/style.css               all styling; stage coordinates are in 1280×720 px
 js/app.js                   window manager, menus, power/boot, screensaver, degauss, keyboard eggs
 js/minesweeper.js           Minesweeper (9×9, 10 mines), mounted in a window from the Start menu
-js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card backs), same
+js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card backs): any ace on any
+                            foundation, double-click/tap detected in the click handler, plays itself out
+                            once every card is face up; mounted like Minesweeper
+js/extras.js                homepage 1998 extras, loaded on first use: Inbox (1998 e-mail, ends with a
+                            note from the clinic), Recycle Bin (1998 junk + an old prescription), and the
+                            once-per-visit dial-up dialog before the first 1998 page (modem sound on a button)
 js/tools.json               the 13 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 16 programs for home.html
@@ -100,8 +105,9 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 | Clock | live in the taskbar; the boot sequence prints the real date and time |
 | Power off / on | bezel button below the tube, or Start > Shut Down; boot sequence on power-on |
 | Screensaver | 45 s idle, or Start > Screensaver; click or any key to wake. The CVC logo bounces around a black screen, changing colour on each bounce; a dead-on corner hit shatters it into pixels |
-| Degauss | Start > Degauss, or type `dgs` |
-| Scanlines | off by default; Start > Toggle scanlines, or type `20/20` |
+| Monitor buttons | the four buttons under the screen, with an on-screen display: ☼ brightness, ◑ contrast (five levels each, cycling), ◀ degauss, ▶ scanlines on/off |
+| Degauss | ◀ button, or type `dgs` |
+| Scanlines | off by default; ▶ button, or type `20/20` |
 | Start menu | taskbar button; Esc closes |
 
 The screensaver sits above the glass overlay layers (a sibling of `.tube` inside `.screen`)

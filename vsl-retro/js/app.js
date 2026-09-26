@@ -60,6 +60,18 @@
   const CARD_ICON = '<svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="3" width="16" height="22" rx="2" fill="#1a4a7a" stroke="#000"/><rect x="5" y="8" width="16" height="22" rx="2" fill="#fff" stroke="#000"/><text x="8" y="17" font-family="Arial" font-weight="bold" font-size="9" fill="#c00">A</text><text x="10" y="27" font-size="11" fill="#c00">♥</text></svg>';
   const POWER_ICON = '<svg class="ti" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><rect x="6" y="6" width="20" height="18" fill="#000080"/><rect x="8" y="8" width="16" height="14" fill="#00ffff"/><rect x="10" y="24" width="12" height="2" fill="#000"/><rect x="6" y="26" width="20" height="2" fill="#808080"/></svg>';
   const esc = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  // scripts that only load when first needed (js/extras.js: Inbox, Recycle Bin, dial-up)
+  const loaded = {};
+  const need = src => loaded[src] ||= new Promise((ok, fail) => {
+    const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = fail; document.head.appendChild(el);
+  });
+  // a program icon: a link for web pages, a button for built-in programs (entries with "app")
+  const icoHtml = t => t.app
+    ? `<button type="button" class="ico" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></button>`
+    : `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`;
+  // 1998 pages (Wayback captures and our local screenshots) come over the modem
+  const overModem = t => !t.app && (/web\.archive\.org/.test(t.href) || t.href.startsWith('sites/'));
+  let online = false;                  // dial-up happens once per visit, as it did
 
   /* ---------- stage scaling ---------- */
   function fit() {
@@ -80,8 +92,7 @@
     data.tools.forEach(t => { (byGroup[t.group] ||= []).push(t); tools[t.id] = t; });
 
     // desktop icons, grouped in the JSON's order, in columns down the left
-    $('#desk').innerHTML = data.groups.map(g => (byGroup[g.id] || []).map(t =>
-      `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')).join('');
+    $('#desk').innerHTML = data.groups.map(g => (byGroup[g.id] || []).map(icoHtml).join('')).join('');
 
     // remember home geometry for every window (groups + dialogs)
     $$('.win', workspace).forEach(w => {
@@ -94,7 +105,7 @@
     $('#palm-list').innerHTML = data.groups.map(g => `
       <div class="bev pwin">
         <div class="titlebar"><span>${g.title}</span></div>
-        <div class="body icons">${(byGroup[g.id] || []).map(t => `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`).join('')}</div>
+        <div class="body icons">${(byGroup[g.id] || []).map(icoHtml).join('')}</div>
       </div>`).join('');
   }
 
@@ -106,15 +117,23 @@
   palmView.innerHTML = `
     <div class="titlebar main"><span class="pv-title"></span><span><button class="bev sysbtn x" type="button" data-pv="close" aria-label="Close"></button></span></div>
     <div class="pv-bar"><button class="bev btn" type="button" data-pv="close">&#9664; Back</button><a class="bev btn pv-out" target="_blank" rel="noopener">Full size &#8599;</a></div>
-    <div class="body frame"><iframe title=""></iframe></div>`;
+    <div class="body frame"><iframe title=""></iframe><div class="pv-app" hidden></div><div class="pv-dial bev" hidden></div></div>`;
   palmMain.after(palmView);
-  let palmFrom = null;
+  let palmFrom = null, palmDestroy = null;
   function palmOpen(t, from) {
     palmFrom = from;
     $('.pv-title', palmView).innerHTML = `${t.icon.replace('<svg ', '<svg class="ti" ')} ${esc(t.label.replace('\n', ' ').toUpperCase())}`;
-    $('.pv-out', palmView).href = t.href;
-    const f = $('iframe', palmView);
-    f.title = t.title; f.src = t.href;
+    const f = $('iframe', palmView), app = $('.pv-app', palmView), out = $('.pv-out', palmView);
+    out.hidden = !!t.app; f.hidden = !!t.app; app.hidden = !t.app;
+    if (t.app) need('js/extras.js').then(() => { app.innerHTML = ''; palmDestroy = Retro[t.app](app); });
+    else {
+      out.href = t.href; f.title = t.title; f.src = t.href;
+      if (!online && overModem(t)) {                         // the first 1998 page dials in, over the page loading behind
+        online = true;
+        const dial = $('.pv-dial', palmView); dial.hidden = false;
+        need('js/extras.js').then(() => Retro.dialup(dial, () => { dial.hidden = true; dial.innerHTML = ''; connected(); }));
+      }
+    }
     palmMain.hidden = true; palmView.hidden = false;
     $('[data-pv="close"].btn', palmView).focus();
   }
@@ -122,10 +141,11 @@
     if (palmView.hidden) return;
     palmView.hidden = true; palmMain.hidden = false;
     $('iframe', palmView).src = 'about:blank';               // stop sounds and animations
+    palmDestroy?.(); palmDestroy = null; $('.pv-app', palmView).innerHTML = '';
     palmFrom?.focus();
   }
   $('#palm-list').addEventListener('click', e => {
-    const a = e.target.closest('a[data-tool]');
+    const a = e.target.closest('.ico[data-tool]');
     if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;   // modified clicks still open a tab
     e.preventDefault();
     palmOpen(tools[a.dataset.tool], a);
@@ -206,6 +226,7 @@
   /* ---------- tool windows (iframe on the tube) ---------- */
   function runTool(id) {
     const t = tools[id]; if (!t) return;
+    if (t.app) { openRetro(t); return; }
     let win = $(`.win[data-win="tool-${id}"]`, workspace);
     if (!win) {
       const n = $$('.win.tool', workspace).length;
@@ -226,7 +247,38 @@
     }
     open(win);
     clearTimeout(hiresTimer);
+    if (!online && overModem(t)) { online = true; dialUp(() => { hiresTimer = setTimeout(() => showHires(t), 400); }); return; }
     hiresTimer = setTimeout(() => showHires(t), 900);      // pop in after the window lands
+  }
+
+  /* ---------- 1998 extras (js/extras.js, loaded on first use) ---------- */
+  function openRetro(t) {
+    const icon = t.icon.replace('<svg ', '<svg class="ti" ');
+    const geom = t.app === 'inbox' ? 'left:60px;top:30px;width:470px;height:330px' : 'left:90px;top:50px;width:440px;height:300px';
+    openApp(t.app, t.label.replace('\n', ' ').toUpperCase(), icon, geom, el => {
+      let destroy = null;
+      need('js/extras.js').then(() => { destroy = Retro[t.app](el); });
+      return () => destroy?.();
+    });
+    if (t.app === 'inbox') tray.querySelector('[data-mail]')?.remove();
+  }
+  // the dial-up dialog, over the first 1998 page while it loads
+  function dialUp(then) {
+    openApp('dialup', 'CONNECT TO', '', 'left:170px;top:120px;width:300px;height:132px', el => {
+      let stop = null, ended = false;
+      const end = () => { if (ended) return; ended = true; const w = el.closest('.win'); if (w?.isConnected) close(w); connected(); then(); };
+      need('js/extras.js').then(() => { if (!ended) stop = Retro.dialup(el, end); });
+      return () => { stop ? stop() : end(); };
+    });
+  }
+  // connected: the modem icon, and new mail
+  function connected() {
+    if (tray.querySelector('[data-online]')) return;
+    const modemIco = '<svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="6" width="13" height="10" fill="#c0c0c0" stroke="#000"/><rect x="4" y="8" width="9" height="6" fill="#008080"/><rect x="17" y="14" width="13" height="10" fill="#c0c0c0" stroke="#000"/><rect x="19" y="16" width="9" height="6" fill="#008080"/></svg>';
+    const mailIco = '<svg class="ti" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="8" width="26" height="17" fill="#fff" stroke="#000"/><path d="M3 8l13 10 13-10" fill="none" stroke="#000"/></svg>';
+    tray.insertAdjacentHTML('beforeend',
+      `<span class="ico" data-online title="Connected at 28,800 bps">${modemIco}<span>28.8K</span></span>` +
+      (tools.inbox ? `<button type="button" class="ico" data-tool="inbox" data-mail title="You've got mail!">${mailIco}<span>You've got mail!</span></button>` : ''));
   }
   let hiresTimer = null;
   function showHires(t) {
@@ -253,8 +305,9 @@
     $('#props-icon').innerHTML = t.icon;
     $('#props-name').textContent = t.title;
     $('#props-desc').textContent = t.desc || '';
-    $('#props-url').textContent = t.href.replace(/^https?:\/\//, '');
-    $('#props-open').href = t.href;
+    $('#props-url').textContent = t.app ? `C:\\WINDOWS\\${t.app.toUpperCase()}.EXE` : t.href.replace(/^https?:\/\//, '');
+    $('#props-open').hidden = !!t.app;
+    if (!t.app) $('#props-open').href = t.href;
     $('#props-run').onclick = () => { close(win); runTool(id); };
     open(win);
   }
@@ -305,7 +358,7 @@
   workspace.addEventListener('click', e => {
     const run = e.target.closest('[data-run]');
     if (run) { const dlg = run.closest('.win'); if (dlg) close(dlg); runTool(run.dataset.run); return; }
-    const ico = e.target.closest('a.ico[data-tool]');
+    const ico = e.target.closest('.ico[data-tool]');
     if (ico) {
       if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
       e.preventDefault(); runTool(ico.dataset.tool); return;
@@ -318,6 +371,11 @@
     }
     const r = e.target.closest('[data-restore]');
     if (r) restore(r.dataset.restore);
+  });
+  // the taskbar sits outside the workspace: minimized windows, and the new-mail envelope
+  tray.addEventListener('click', e => {
+    const r = e.target.closest('[data-restore]'); if (r) { restore(r.dataset.restore); return; }
+    const t = e.target.closest('[data-tool]'); if (t) runTool(t.dataset.tool);
   });
   // double-click titlebar = maximize (as in the original)
   workspace.addEventListener('dblclick', e => {
@@ -340,9 +398,7 @@
     <button type="button" data-start="home">${WIN_ICON} Arrange windows</button>
     <button type="button" data-start="reopen">${WIN_ICON} Reopen closed windows</button>
     <span class="sep"></span>
-    <button type="button" data-start="degauss">${EYE_ICON} Degauss</button>
     <button type="button" data-start="saver">${EYE_ICON} Screensaver</button>
-    <button type="button" data-start="scanlines">${EYE_ICON} Toggle scanlines</button>
     <button type="button" data-start="about">${EYE_ICON} About…</button>
     <span class="sep"></span>
     <button type="button" data-start="power-off">${POWER_ICON} Shut Down…</button>`;
@@ -353,7 +409,7 @@
     startmenu.hidden = true;
     ({ minesweeper: openMinesweeper, solitaire: openSolitaire,
        cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
-       degauss, saver: showSaver, scanlines: () => $('#scanlines').classList.toggle('hidden'),
+       saver: showSaver,
        about: () => open($('.win[data-win="about"]')), 'power-off': () => setPower(false) })[b.dataset.start]?.();
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('.startmenu, .startbtn')) startmenu.hidden = true; });
@@ -523,6 +579,32 @@
     tube.classList.add('degauss');
     setTimeout(() => tube.classList.remove('degauss'), 750);
   }
+
+  /* ---------- front-panel buttons: brightness, contrast, degauss, scanlines ----------
+     Each press shows the monitor's on-screen display. Brightness and contrast
+     filter the whole screen, as the knobs did; no filter at the default levels. */
+  const screenEl = $('#screen'), osd = $('#osd');
+  const BRIGHT = [0.6, 0.75, 0.9, 1, 1.12], CONTRAST = [0.75, 0.88, 1, 1.12, 1.25];
+  let bright = 3, contrast = 2, osdTimer = 0;
+  function picture() {
+    const f = [];
+    if (BRIGHT[bright] !== 1) f.push(`brightness(${BRIGHT[bright]})`);
+    if (CONTRAST[contrast] !== 1) f.push(`contrast(${CONTRAST[contrast]})`);
+    screenEl.style.filter = f.join(' ');
+  }
+  function showOsd(name, level) {
+    osd.textContent = level ? `${name}\n${'█'.repeat(level * 2)}${'░'.repeat(10 - level * 2)}` : name;
+    osd.hidden = false;
+    clearTimeout(osdTimer); osdTimer = setTimeout(() => { osd.hidden = true; }, 1600);
+  }
+  $$('.mbtn').forEach(b => b.addEventListener('click', () => {
+    if (power !== 'on') return;                               // no picture, no menu
+    const k = b.dataset.mon;
+    if (k === 'bright') { bright = (bright + 1) % BRIGHT.length; picture(); showOsd('BRIGHTNESS', bright + 1); }
+    else if (k === 'contrast') { contrast = (contrast + 1) % CONTRAST.length; picture(); showOsd('CONTRAST', contrast + 1); }
+    else if (k === 'degauss') { degauss(); showOsd('DEGAUSS'); }
+    else if (k === 'scan') showOsd(`SCANLINES ${$('#scanlines').classList.toggle('hidden') ? 'OFF' : 'ON'}`);
+  }));
 
   /* ---------- keyboard easter eggs (global keys are fine here) ---------- */
   let typed = '';
