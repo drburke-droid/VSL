@@ -265,13 +265,14 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
           <input type="number" id="eye" min="0" max="2000" step="0.1" value="1.7">
         </div>
         <div class="field">
-          <label class="label" for="radius">Search nearby</label>
+          <label class="label" for="radius">Climb to highest point</label>
           <select id="radius">
-            <option value="0">This spot only</option>
+            <option value="0">No, stay here</option>
             <option value="1000">Within 1 km</option>
             <option value="2000">Within 2 km</option>
             <option value="5000">Within 5 km</option>
             <option value="10000" selected>Within 10 km</option>
+            <option value="20000">Within 20 km</option>
           </select>
         </div>
         <div class="field">
@@ -320,7 +321,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         <div class="legend">
           <span><i class="sw"></i>Longest sightline</span>
           <span><i class="sw area"></i>Farthest visible ground on each bearing</span>
-          <span><i class="sw dot"></i>Spots tested</span>
+          <span><i class="sw dot"></i>Viewpoint</span>
         </div>
       </div>
       <section class="card profile">
@@ -348,10 +349,10 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       </div>
       <div>
         <p><strong>Ground only.</strong> Trees and buildings are not in the elevation data, so a house across the street can block a line the finder calls clear. For a tower or a high floor, enter your height above the ground.</p>
-        <p><strong>Searching nearby.</strong> The finder tests your point, the lookouts, summits and observation decks mapped in OpenStreetMap within the radius, and up to eight of the highest spots of open ground, all at standing eye height (decks at their mapped height). A spot with 10 or more buildings within 150 m counts as built-up: high ground like that is skipped, and if your own point is built-up and you are below 30 m, it is reported but not chosen. A named public place wins over unnamed high ground when it comes within 3%.</p>
+        <p><strong>Climbing to the highest point.</strong> Within the radius you pick, the viewpoint is whichever is highest: the top of the terrain (found pixel by pixel), a public observation deck mapped in OpenStreetMap at its mapped height, or your own point at the height you entered. Summits are viewed at standing eye height and take the name of a mapped peak or lookout beside them. A spot with 10 or more buildings within 150 m counts as built-up: the finder moves on to the highest open ground instead, and a built-up point of yours is reported but not used unless you are 30 m or more up.</p>
         <p><strong>Seeing it.</strong> The result assumes clear air. Haze lowers contrast as e<sup>−3.912·d/V</sup> (Koschmieder), where V is the visual range and about 2% contrast is the threshold. The clearance figure is how far the target rises above the skyline just in front of it, compared with the 1′ of arc that 20/20 vision resolves.</p>
         <p><strong>Water.</strong> Sea-floor depths are flattened to sea level, which also flattens the few land areas below sea level.</p>
-        <p><strong>Place names.</strong> Cities are looked up with Open-Meteo’s geocoder (GeoNames data), and anything it doesn’t know with OpenStreetMap’s Nominatim. A city lands on its centre, and “Search nearby” then looks for the place to stand within 10 km.</p>
+        <p><strong>Place names.</strong> Cities are looked up with Open-Meteo’s geocoder (GeoNames data), and anything it doesn’t know with OpenStreetMap’s Nominatim. A city lands on its centre, and the finder then climbs to the highest point within the radius.</p>
       </div>
     </div>
   </details>
@@ -566,6 +567,29 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     return picked;
   }
 
+  // The single highest pixel of the finest grid inside a disc: the true top of the terrain there.
+  function highestPoint(field, lat, lon, radius) {
+    var L = field.levels[0], d = L.data, w = L.w;
+    var px0 = lamN(field, lon) * L.scale - L.offX;
+    var py0 = (0.5 - mercY(lat) / TAU) * L.scale - L.offY;
+    var rp = radius / (TAU * R * Math.cos(lat * D2R) / L.scale), rp2 = rp * rp;
+    var x0 = Math.max(0, Math.floor(px0 - rp)), x1 = Math.min(L.w - 1, Math.ceil(px0 + rp));
+    var y0 = Math.max(0, Math.floor(py0 - rp)), y1 = Math.min(L.h - 1, Math.ceil(py0 + rp));
+    var best = -Infinity, bx = Math.round(px0), by = Math.round(py0);
+    for (var y = y0; y <= y1; y++) {
+      var dy = y - py0, row = y * w;
+      for (var x = x0; x <= x1; x++) {
+        var dx = x - px0;
+        if (dx * dx + dy * dy > rp2) continue;
+        if (d[row + x] > best) { best = d[row + x]; bx = x; by = y; }
+      }
+    }
+    var my = (0.5 - (by + L.offY) / L.scale) * TAU;
+    var la = Math.atan(Math.sinh(my)) * R2D;
+    var lo = wrapLon(((bx + L.offX) / L.scale - 0.5) * 360);
+    return { lat: la, lon: lo, h: elevAt(field, la, lo, 0) };
+  }
+
   // Steepest-ascent walk on the finest grid, at most maxMove metres from the start.
   function climb(field, lat, lon, maxMove) {
     var L = field.levels[0];
@@ -621,7 +645,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   root.SightEngine = {
     R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
-    candidates: candidates, climb: climb, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
+    candidates: candidates, climb: climb, highestPoint: highestPoint, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
     tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
     mercY: mercY, wrapLon: wrapLon
   };
@@ -825,7 +849,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   function spotLabel(c) {
     if (c.name) return c.name;
-    return { tower: 'the observation tower', viewpoint: 'a mapped lookout', peak: 'a mapped summit', high: 'open high ground', you: 'your point' }[c.kind];
+    return { tower: 'the observation tower', viewpoint: 'a mapped lookout', peak: 'the summit', high: 'the top', you: 'your point' }[c.kind];
   }
 
   // ---- Map ----
@@ -906,16 +930,22 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var dirURL = 'https://www.google.com/maps/dir/?api=1&destination=' + res.lat.toFixed(5) + '%2C' + res.lon.toFixed(5);
     var goBlock = '', youBlock = '';
     if (moved) {
+      var within = nf(inp.radius / 1000) + ' km';
+      var isDeck = best.kind === 'tower' && best.eye > 2;
+      var what = isDeck ? 'Highest viewpoint within ' + within + ', from its deck about ' + nf(best.eye) + ' m up'
+        : (run.skippedBuilt ? 'Highest open ground within ' : 'Highest point within ') + within + ', ' + nf(res.ground) + ' m';
+      var climbM = res.ground - (you.ground || 0);
       goBlock = '<div class="goto"><p class="go-title">Go to <strong>' + esc(spotLabel(best)) + '</strong></p>' +
-        '<p>' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point. ' +
-        (best.kind === 'tower' && best.eye > 2 ? 'Seen from the observation deck, about ' + nf(best.eye) + ' m up.' : 'Seen standing on the ground.') + '</p>' +
+        '<p>' + what + '. ' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point' +
+        (!isDeck && climbM > 50 ? ' and ' + nf(climbM) + ' m above it' : '') + '.' +
+        (!isDeck && climbM > 300 ? ' Summits can be hard or unsafe to reach, so check the route before you go.' : '') + '</p>' +
         '<a class="btn-ghost" href="' + dirURL + '" target="_blank" rel="noopener">Directions</a></div>';
       youBlock = run.urbanYou
         ? '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings, so at street level they block the view.' + (youKm ? ' With nothing built in the way it would reach ' + youKm + '.' : '') + '</p>'
         : (youKm ? '<p class="note">Your point itself reaches ' + youKm + '.</p>' : '');
     } else if (run.urbanYou) {
       youBlock = '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings. At street level they will block this; it is the view with nothing built in the way.' +
-        (inp.radius < 10000 ? ' Set “Search nearby” to 10 km to find open high ground.' : ' No open high ground nearby does better.') + '</p>';
+        (inp.radius > 0 ? ' Nothing open nearby is higher.' : ' Set “Climb to highest point” to 10 km to find open high ground.') + '</p>';
     }
     var bare = 'Bare ground only: the elevation data has no buildings or trees, so check that nothing close to the spot is in the way.' +
       (run.osmOK ? '' : ' The lookup of nearby lookouts and buildings didn’t respond, so this run used terrain alone.');
@@ -1141,65 +1171,68 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       var nearYou = osm ? osm.buildingsNearYou : null;
       var urbanYou = nearYou != null && nearYou >= CONFIG.builtUpThreshold && inp.eye < 30;
 
-      // Named lookouts, summits and observation decks from OpenStreetMap.
-      var named = [];
-      if (osm && inp.radius > 0) {
-        var inR = osm.places.filter(function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; });
-        inR.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
-        var towers = inR.filter(function (p) { return p.kind === 'tower'; }).slice(0, 3);
-        var others = inR.filter(function (p) { return p.kind !== 'tower'; }).sort(function (a, b) { return b.ground - a.ground; }).slice(0, 6);
-        named = towers.concat(others).map(function (p) {
-          return { lat: p.lat, lon: p.lon, eye: p.kind === 'tower' && p.deck ? p.deck : 1.7, kind: p.kind, name: p.name };
-        });
+      // Climb to the highest point in the radius: the viewpoint is whichever eye sits highest
+      // (ground plus eye height) among the top of the terrain, observation decks, and your point.
+      setStatus('Finding the highest point…'); setBar(0.7);
+      await tick();
+      var tops = [], named = [];
+      if (inp.radius > 0) {
+        tops = [E.highestPoint(field, inp.lat, inp.lon, inp.radius)].concat(E.candidates(field, inp.lat, inp.lon, inp.radius, 12));
+        tops = tops.filter(function (p, i) {
+          return !tops.slice(0, i).some(function (q) { return E.distBearing(p.lat, p.lon, q.lat, q.lon)[0] < 150; });
+        }).sort(function (a, b) { return b.h - a.h; });
+        if (osm) {
+          named = osm.places.filter(function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; });
+          named.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
+        }
       }
-
-      // Highest open ground: terrain summits in the radius that aren't surrounded by buildings.
-      var highs = inp.radius > 0 ? E.candidates(field, inp.lat, inp.lon, inp.radius, 12) : [];
-      highs = highs.filter(function (h) {
-        return !named.some(function (n) { return E.distBearing(h.lat, h.lon, n.lat, n.lon)[0] < 200; });
-      });
+      // A hilltop covered in houses isn't somewhere to stand, so skip built-up tops.
       var openKnown = false;
-      if (highs.length && osm) {
+      if (tops.length && osm) {
+        var checked = tops.slice(0, 8);
         try {
-          var counts = await buildingCounts(highs);
-          if (counts.length === highs.length) {
-            highs.forEach(function (h, i) { h.built = counts[i]; });
-            openKnown = true;
-          }
+          var counts = await buildingCounts(checked);
+          if (counts.length === checked.length) { checked.forEach(function (t, i) { t.built = counts[i]; }); openKnown = true; }
         } catch (e) { console.warn('Building count failed', e); }
       }
-      var openHighs = openKnown ? highs.filter(function (h) { return h.built < CONFIG.builtUpThreshold; }) : highs;
-      openHighs = openHighs.slice(0, 8).map(function (h) { return { lat: h.lat, lon: h.lon, eye: 1.7, kind: 'high', name: null }; });
-
-      var cands = [you].concat(named, openHighs);
-      for (var i = 0; i < cands.length; i++) {
-        if (cands.length === 1) break;
-        setStatus('Checking spot ' + (i + 1) + ' of ' + cands.length + '…'); setBar(0.7 + 0.2 * i / cands.length);
-        await tick();
-        var rq = E.sweep(field, cands[i].lat, cands[i].lon, cands[i].eye, { rays: 360, maxRange: inp.range, k: inp.k });
-        cands[i].d = rq.farD[rq.best];
+      var openTop = null;
+      for (var ti = 0; ti < tops.length && !openTop; ti++) {
+        if (!(tops[ti].built >= CONFIG.builtUpThreshold)) openTop = tops[ti];
       }
-      // Pick the winner in order (your point, named places, open high ground). A later spot has to
-      // win clearly, so ray-spacing noise doesn't pull the answer off your point or a summit.
-      var eligible = cands.filter(function (c) { return !(c === you && urbanYou); });
-      if (!eligible.length) eligible = [you];
-      var bestC = eligible[0], bestD = eligible[0].d == null ? -1 : eligible[0].d;
-      eligible.forEach(function (c) {
-        if (c.d != null && c.d > bestD + Math.max(500, bestD * 0.005)) { bestD = c.d; bestC = c; }
+      var cands = [you];
+      you.ground = E.elevAt(field, you.lat, you.lon, 0);
+      if (openTop) {
+        // Name the top after a mapped peak or lookout beside it.
+        var tag = null, tagD = 400;
+        named.forEach(function (n) {
+          if (n.kind === 'tower' || !n.name) return;
+          var dn = E.distBearing(openTop.lat, openTop.lon, n.lat, n.lon)[0];
+          if (dn < tagD) { tagD = dn; tag = n; }
+        });
+        cands.push({ lat: openTop.lat, lon: openTop.lon, eye: 1.7, ground: openTop.h,
+                     kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
+      }
+      named.forEach(function (n) {
+        if (n.kind === 'tower' && n.deck) cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
       });
-      // A named public place within 3% of unnamed high ground is the more useful answer.
-      if (bestC.kind === 'high') {
-        var pick = null;
-        named.forEach(function (n) { if (n.d >= bestC.d * 0.97 && (!pick || n.d > pick.d)) pick = n; });
-        if (pick) bestC = pick;
-      }
+      cands.forEach(function (c) { c.top = c.ground + c.eye; });
+      var eligible = cands.filter(function (c) { return !(c === you && urbanYou && cands.length > 1); });
+      var bestC = eligible[0];
+      eligible.forEach(function (c) { if (c.top > bestC.top + 1) bestC = c; });
 
+      if (bestC !== you) {
+        setStatus('Checking your own point…'); setBar(0.8);
+        await tick();
+        var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k });
+        you.d = rq.farD[rq.best];
+      }
       setStatus('Sweeping 1,440 bearings…'); setBar(0.92);
       await tick();
       var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k });
       bestC.d = res.farD[res.best];
       lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true,
-                  urbanYou: urbanYou, osmOK: !!osm, openKnown: openKnown };
+                  urbanYou: urbanYou, osmOK: !!osm, openKnown: openKnown,
+                  skippedBuilt: !!(openTop && tops[0] && openTop !== tops[0]) };
       activeRay = null;
       renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
       setBar(1);
