@@ -121,6 +121,9 @@ input:focus, select:focus { border-color: var(--sky); }
 }
 .chip:hover { border-color: var(--ink); }
 .chip[aria-pressed="true"] { border-color: var(--tape); color: var(--tape); }
+.chip-sm { font-size: 12px; padding: 5px 10px; }
+.matches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.matches strong { color: var(--ink); font-weight: 600; }
 .btn-ghost {
   font: 500 14px/1 var(--font-body); color: var(--ink); background: transparent;
   border: 1px solid var(--rule); border-radius: 4px; padding: 9px 12px; cursor: pointer; white-space: nowrap;
@@ -240,10 +243,11 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       <div class="field">
         <label class="label" for="loc">Location</label>
         <div class="row">
-          <input type="text" id="loc" inputmode="text" autocomplete="off" spellcheck="false" placeholder="51.117, -114.117">
+          <input type="text" id="loc" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="Calgary, or 51.117, -114.117">
           <button type="button" class="btn-ghost" id="geo">Use my location</button>
         </div>
-        <p class="hint">Coordinates, a Google Maps link, or tap the map.</p>
+        <div class="matches" id="matches" hidden></div>
+        <p class="hint">A city or place, coordinates, or a Google Maps link. Or tap the map.</p>
       </div>
 
       <div class="field">
@@ -347,6 +351,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         <p><strong>Searching nearby.</strong> The finder tests your point, the lookouts, summits and observation decks mapped in OpenStreetMap within the radius, and up to eight of the highest spots of open ground, all at standing eye height (decks at their mapped height). A spot with 10 or more buildings within 150 m counts as built-up: high ground like that is skipped, and if your own point is built-up and you are below 30 m, it is reported but not chosen. A named public place wins over unnamed high ground when it comes within 3%.</p>
         <p><strong>Seeing it.</strong> The result assumes clear air. Haze lowers contrast as e<sup>−3.912·d/V</sup> (Koschmieder), where V is the visual range and about 2% contrast is the threshold. The clearance figure is how far the target rises above the skyline just in front of it, compared with the 1′ of arc that 20/20 vision resolves.</p>
         <p><strong>Water.</strong> Sea-floor depths are flattened to sea level, which also flattens the few land areas below sea level.</p>
+        <p><strong>Place names.</strong> Cities are looked up with Open-Meteo’s geocoder (GeoNames data), and anything it doesn’t know with OpenStreetMap’s Nominatim. A city lands on its centre, and “Search nearby” then looks for the place to stand within 10 km.</p>
       </div>
     </div>
   </details>
@@ -641,6 +646,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     basemapAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles</a>',
     // OpenStreetMap Overpass API: lookouts, summits, observation decks, and building counts.
     overpass: ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'],
+    // Place-name lookup: cities first, then anything else.
+    geocoder: 'https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=',
+    placeSearch: 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&q=',
     builtUpRadius: 150,     // metres around a spot to count buildings
     builtUpThreshold: 10,   // this many buildings or more = built-up
     autoRun: true,
@@ -833,6 +841,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     map.on('click', function (e) {
       var ll = e.latlng.wrap();
       els.loc.value = fmtLL(ll.lat, ll.lng);
+      hideMatches();
       clearPresetPress();
       showPick(ll.lat, ll.lng);
       setStatus('Location set. Press “Find longest sightline”.');
@@ -1017,15 +1026,81 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   // ---- Run ----
   var busy = false;
+  var OUT_OF_RANGE = 'That location is outside the elevation data (it covers latitudes up to 80°).';
   function readInputs() {
-    var ll = parseLocation(els.loc.value);
-    if (!ll) return { error: 'Enter coordinates like “51.117, -114.117”, paste a Google Maps link, or tap the map.' };
-    if (Math.abs(ll[0]) > 80 || Math.abs(ll[1]) > 180) return { error: 'That location is outside the elevation data (it covers latitudes up to 80°).' };
     var eye = parseFloat(els.eye.value);
     if (!(eye >= 0) || eye > 2000) return { error: 'Eye height must be between 0 and 2,000 m.' };
-    return { lat: ll[0], lon: E.wrapLon(ll[1]), eye: eye, radius: +els.radius.value, range: +els.range.value,
-             k: +els.refr.value, vis: +els.vis.value };
+    var inp = { eye: eye, radius: +els.radius.value, range: +els.range.value, k: +els.refr.value, vis: +els.vis.value };
+    var text = els.loc.value.trim();
+    if (!text) return { error: 'Enter a city or place, coordinates like “51.117, -114.117”, or tap the map.' };
+    var ll = parseLocation(text);
+    if (!ll) {
+      var known = placeCache.get(text.toLowerCase());
+      if (!known) { inp.query = text; return inp; }   // a name: look it up in run()
+      ll = [known.lat, known.lon]; inp.place = known.label;
+    }
+    if (Math.abs(ll[0]) > 80 || Math.abs(ll[1]) > 180) return { error: OUT_OF_RANGE };
+    inp.lat = ll[0]; inp.lon = E.wrapLon(ll[1]);
+    return inp;
   }
+
+  // ---- Place search: city and place names ----
+  // Open-Meteo's geocoder (GeoNames data) is quick for cities; Nominatim (OpenStreetMap) catches
+  // everything else, such as parks, addresses and "Town, BC" style names.
+  var placeCache = new Map(), matchState = null;
+  async function fetchJSON(url, ms) {
+    var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms) : null;
+    try {
+      var resp = await fetch(url, { signal: ctl ? ctl.signal : undefined });
+      if (!resp.ok) throw new Error(url + ' returned ' + resp.status);
+      return await resp.json();
+    } finally { if (timer) clearTimeout(timer); }
+  }
+  function uniqueJoin(parts) {
+    return parts.filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(', ');
+  }
+  async function geocode(text) {
+    var parts = text.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var quals = parts.slice(1).map(function (s) { return s.toLowerCase(); });
+    var out = [];
+    try {
+      var j = await fetchJSON(CONFIG.geocoder + encodeURIComponent(parts[0]), 8000);
+      var rs = (j.results || []).filter(function (r) {
+        return quals.every(function (q) {
+          return [r.admin1, r.admin2, r.country, r.country_code].some(function (v) { return v && v.toLowerCase().indexOf(q) === 0; });
+        });
+      });
+      rs.sort(function (a, b) { return (b.population || 0) - (a.population || 0); });
+      out = rs.map(function (r) { return { lat: r.latitude, lon: r.longitude, label: uniqueJoin([r.name, r.admin1, r.country]) }; });
+    } catch (e) { console.warn('City lookup failed', e); }
+    if (!out.length) {
+      try {
+        var n = await fetchJSON(CONFIG.placeSearch + encodeURIComponent(text), 10000);
+        out = (n || []).map(function (r) {
+          var a = r.address || {}, first = String(r.display_name || '').split(',')[0].trim();
+          var label = uniqueJoin([r.name || first, a.city || a.town || a.village || a.hamlet || a.municipality, a.state, a.country].slice(0, 4))
+            .split(', ').slice(0, 3).join(', ');
+          return { lat: parseFloat(r.lat), lon: parseFloat(r.lon), label: label || first };
+        });
+      } catch (e) { console.warn('Place lookup failed', e); }
+    }
+    var seen = new Set();
+    return out.filter(function (p) {
+      var k = p.label.toLowerCase();
+      if (!isFinite(p.lat) || !isFinite(p.lon) || seen.has(k)) return false;
+      seen.add(k); return true;
+    }).slice(0, 5);
+  }
+  function showMatches() {
+    var box = $('matches');
+    if (!matchState) { box.hidden = true; box.innerHTML = ''; return; }
+    var list = matchState.list, sel = matchState.sel;
+    var others = list.map(function (p, i) { return i === sel ? '' : '<button type="button" class="chip chip-sm" data-match="' + i + '">' + esc(p.label) + '</button>'; }).join('');
+    box.innerHTML = '<span>Showing <strong>' + esc(list[sel].label) + '</strong>.' + (others ? ' Not it?' : '') + '</span>' + others;
+    box.hidden = false;
+  }
+  function hideMatches() { matchState = null; showMatches(); }
 
   async function run() {
     if (busy) return;
@@ -1034,6 +1109,24 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     busy = true; els.go.disabled = true; setBar(0);
     var t0 = performance.now();
     try {
+      if (inp.query) {
+        setStatus('Looking up “' + inp.query + '”…');
+        var found = await geocode(inp.query);
+        if (!found.length) {
+          setStatus('Couldn’t find “' + inp.query + '”. Add the province, state or country, paste coordinates, or tap the map.', true);
+          hideMatches();
+          return;
+        }
+        found.forEach(function (p) { placeCache.set(p.label.toLowerCase(), p); });
+        placeCache.set(inp.query.toLowerCase(), found[0]);
+        matchState = { list: found, sel: 0 };
+        showMatches();
+        if (Math.abs(found[0].lat) > 80) { setStatus(OUT_OF_RANGE, true); return; }
+        inp.lat = found[0].lat; inp.lon = E.wrapLon(found[0].lon); inp.place = found[0].label;
+      } else if (matchState) {
+        var idx = matchState.list.findIndex(function (p) { return inp.place && p.label === inp.place; });
+        if (idx >= 0) { matchState.sel = idx; showMatches(); } else hideMatches();
+      }
       setStatus('Loading terrain…');
       var placesP = findPlaces(inp).catch(function (e) { console.warn('OSM lookup failed', e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
@@ -1163,6 +1256,14 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     run();
   });
   ['loc', 'eye'].forEach(function (id) { els[id].addEventListener('input', clearPresetPress); });
+  els.loc.addEventListener('input', function () { if (matchState) hideMatches(); });
+  $('matches').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-match]');
+    if (!b || !matchState) return;
+    var p = matchState.list[+b.getAttribute('data-match')];
+    els.loc.value = p.label;
+    run();
+  });
   els.form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
   els.geo.addEventListener('click', function () {
     if (!navigator.geolocation) { setStatus('This browser can’t share its location. Type coordinates or tap the map.', true); return; }
