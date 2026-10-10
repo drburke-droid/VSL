@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Longest Sightline Finder</title>
+<meta name="description" content="Pick a spot and find the farthest ground you could theoretically see from it, using global elevation data, Earth's curvature and atmospheric refraction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* Layout: control rail (form, result, compass sectors) on the left; map and terrain profile on the right.
+   One column on phones: form, result, map, profile, sectors. */
+:root {
+  --bg: #E7ECEB;
+  --panel: #F7F9F8;
+  --ink: #15232A;
+  --muted: #55666C;
+  --rule: #C5CFCF;
+  --tape: #EE5220;          /* survey flagging-tape orange: the sightline itself */
+  --btn-bg: #C2410F;
+  --btn-fg: #FFFFFF;
+  --sky: #2A7A9C;           /* visible ground */
+  --terrain: #6F8460;
+  --terrain-fill: #B9C6AB;
+  --ok: #2F7D4F;
+  --warn: #A3570B;
+  --map-filter: none;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E161A; --panel: #142027; --ink: #E2EBEB; --muted: #93A4A8; --rule: #2A3A41;
+    --tape: #FF6A33; --btn-bg: #FF6A33; --btn-fg: #10181C; --sky: #62B6D6;
+    --terrain: #8DA57C; --terrain-fill: #33452F; --ok: #6CC48F; --warn: #E9A55A;
+    --map-filter: invert(0.9) hue-rotate(180deg) saturate(0.55) brightness(0.95);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E161A; --panel: #142027; --ink: #E2EBEB; --muted: #93A4A8; --rule: #2A3A41;
+  --tape: #FF6A33; --btn-bg: #FF6A33; --btn-fg: #10181C; --sky: #62B6D6;
+  --terrain: #8DA57C; --terrain-fill: #33452F; --ok: #6CC48F; --warn: #E9A55A;
+  --map-filter: invert(0.9) hue-rotate(180deg) saturate(0.55) brightness(0.95);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--font-body);
+  padding-inline: 16px;
+  padding-block: 0 48px;
+}
+a { color: var(--sky); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
+
+.wrap { max-width: 1240px; margin-inline: auto; }
+
+/* Masthead */
+.masthead { display: grid; gap: 6px; padding-block: 28px 20px; }
+.eyebrow {
+  margin: 0; font: 500 12px/1.2 var(--font-data); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  margin: 0; font: 700 clamp(2.2rem, 5vw, 3.4rem)/0.95 var(--font-display);
+  letter-spacing: -0.01em; text-wrap: balance;
+}
+.lede { margin: 6px 0 0; max-width: 62ch; color: var(--muted); }
+.lede a { white-space: nowrap; }
+
+/* App grid */
+.app {
+  display: grid; gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "form" "result" "stage" "sectors";
+}
+@media (min-width: 960px) {
+  .app {
+    grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+    grid-template-areas: "form stage" "result stage" "sectors stage";
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
+  }
+  .stage { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+}
+.card {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 18px; min-width: 0;
+}
+.form { grid-area: form; display: grid; gap: 16px; }
+.result { grid-area: result; }
+.sectors { grid-area: sectors; }
+.stage { grid-area: stage; display: grid; gap: 16px; min-width: 0; }
+
+/* Form */
+.field { display: grid; gap: 6px; }
+.label {
+  font: 500 12px/1.2 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+input[type="text"], input[type="number"], select {
+  width: 100%; min-width: 0; font: 500 15px/1.3 var(--font-data); color: var(--ink);
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 10px;
+}
+select { font: 500 15px/1.3 var(--font-body); padding-right: 6px; }
+input:focus, select:focus { border-color: var(--sky); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row > input { flex: 1 1 180px; }
+.grid2 { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.chip {
+  font: 500 13px/1 var(--font-body); color: var(--ink); background: transparent;
+  border: 1px solid var(--rule); border-radius: 999px; padding: 7px 12px; cursor: pointer;
+}
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { border-color: var(--tape); color: var(--tape); }
+.btn-ghost {
+  font: 500 14px/1 var(--font-body); color: var(--ink); background: transparent;
+  border: 1px solid var(--rule); border-radius: 4px; padding: 9px 12px; cursor: pointer; white-space: nowrap;
+}
+.btn-ghost:hover { border-color: var(--ink); }
+.go {
+  font: 600 1.2rem/1 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--btn-fg); background: var(--btn-bg); border: 0; border-radius: 4px;
+  padding: 14px 16px; cursor: pointer; width: 100%;
+}
+.go:disabled { opacity: 0.6; cursor: progress; }
+.status { margin: 0; min-height: 1.5em; font: 400 13px/1.5 var(--font-data); color: var(--muted); }
+.status.error { color: var(--warn); }
+.progress { height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.progress > i { display: block; height: 100%; width: 0; background: var(--tape); transition: width 0.15s; }
+
+/* Result */
+.result h2, .sectors h2, .profile h2 {
+  margin: 0 0 8px; font: 500 12px/1.2 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.big { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.big .num {
+  font: 600 clamp(3.2rem, 9vw, 4.4rem)/0.9 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.big .unit { font: 600 1.6rem/1 var(--font-display); }
+.big .alt { font: 400 14px/1 var(--font-data); color: var(--muted); }
+.headline { margin: 10px 0 0; font-size: 17px; }
+.headline strong { font-weight: 600; }
+.note { margin: 8px 0 0; font-size: 14px; color: var(--muted); }
+dl.facts { margin: 16px 0 0; display: grid; gap: 0; border-top: 1px solid var(--rule); }
+dl.facts > div {
+  display: grid; grid-template-columns: minmax(0, 9.5em) minmax(0, 1fr); gap: 12px;
+  padding-block: 9px; border-bottom: 1px solid var(--rule);
+}
+dl.facts dt { font-size: 14px; color: var(--muted); }
+dl.facts dd { margin: 0; font: 400 14px/1.45 var(--font-data); font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: var(--muted); margin-top: 2px; }
+.pill {
+  display: inline-block; font: 600 11px/1 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; margin-left: 6px; vertical-align: 1px;
+}
+.pill.ok { color: var(--ok); }
+.pill.warn { color: var(--warn); }
+.links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.empty { color: var(--muted); margin: 0; }
+
+/* Sectors */
+.sector-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.sector-list button {
+  width: 100%; display: grid; grid-template-columns: 2.6em minmax(0, 1fr) 5.2em; align-items: center; gap: 10px;
+  background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 6px 8px; cursor: pointer;
+  color: var(--ink); font: 400 14px/1.2 var(--font-data); font-variant-numeric: tabular-nums; text-align: left;
+}
+.sector-list button:hover { border-color: var(--rule); }
+.sector-list button[aria-pressed="true"] { border-color: var(--tape); }
+.sector-list .dir { font: 600 15px/1 var(--font-display); letter-spacing: 0.04em; }
+.sector-list .bar { height: 8px; background: var(--rule); border-radius: 1px; position: relative; overflow: hidden; }
+.sector-list .bar > i { position: absolute; inset: 0 auto 0 0; background: var(--sky); }
+.sector-list .win .bar > i { background: var(--tape); }
+.sector-list .km { text-align: right; }
+
+/* Map + profile */
+#map {
+  height: clamp(320px, 56vh, 600px); border-radius: 6px; border: 1px solid var(--rule);
+  background: var(--panel); z-index: 0;
+}
+#map .leaflet-tile-pane { filter: var(--map-filter); }
+.leaflet-container { font: 400 12px/1.4 var(--font-body); }
+.map-fallback { display: grid; place-items: center; height: 100%; color: var(--muted); padding: 16px; text-align: center; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 0; border-top: 3px solid var(--tape); display: inline-block; }
+.sw.area { height: 10px; border: 1px solid var(--sky); background: color-mix(in srgb, var(--sky) 18%, transparent); }
+.sw.dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink); }
+.profile figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.profile figure { margin: 0; }
+.svgbox { overflow-x: auto; }
+#prof { display: block; width: 100%; height: auto; }
+@media (max-width: 520px) { dl.facts > div { grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr); } }
+#prof text { fill: var(--muted); font: 400 11px var(--font-data); }
+#prof .t-strong { fill: var(--ink); font-weight: 500; }
+#prof .grid { stroke: var(--rule); stroke-width: 1; }
+#prof .p-terrain { fill: var(--terrain-fill); stroke: var(--terrain); stroke-width: 1.2; stroke-linejoin: round; }
+#prof .p-datum { fill: none; stroke: var(--sky); stroke-width: 1.2; stroke-dasharray: 5 4; }
+#prof .p-sight { stroke: var(--tape); stroke-width: 2; fill: none; }
+#prof .p-eye { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
+#prof .p-target { fill: var(--tape); stroke: var(--panel); stroke-width: 1.5; }
+
+/* Method notes */
+.method { margin-top: 24px; }
+.method summary { cursor: pointer; font: 600 1.15rem/1.2 var(--font-display); letter-spacing: 0.03em; text-transform: uppercase; }
+.method .cols { display: grid; gap: 4px 32px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); margin-top: 8px; }
+.method p { margin: 8px 0; max-width: 65ch; color: var(--muted); font-size: 15px; }
+.method strong { color: var(--ink); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) { .progress > i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Visual Systems Lab · Calgary Vision Centre</p>
+    <h1>Longest Sightline Finder</h1>
+    <p class="lede">Pick a spot. The finder sweeps 1,440 compass bearings across real terrain, bends each one over the curve of the Earth, and reports the farthest ground you could see on a perfectly clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/news/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">The Longest Sightline on Earth&nbsp;→</a></p>
+  </header>
+
+  <main class="app">
+    <form class="card form" id="form" novalidate>
+      <div class="field">
+        <label class="label" for="loc">Location</label>
+        <div class="row">
+          <input type="text" id="loc" inputmode="text" autocomplete="off" spellcheck="false" placeholder="51.117, -114.117">
+          <button type="button" class="btn-ghost" id="geo">Use my location</button>
+        </div>
+        <p class="hint">Coordinates, a Google Maps link, or tap the map.</p>
+      </div>
+
+      <div class="field">
+        <span class="label" id="presetLabel">Try</span>
+        <div class="row" role="group" aria-labelledby="presetLabel" id="presets">
+          <button type="button" class="chip" data-preset="nose">Nose Hill</button>
+          <button type="button" class="chip" data-preset="bow">Top of Bow Tower</button>
+          <button type="button" class="chip" data-preset="whitney">Mt. Whitney</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label class="label" for="eye">Eye height (m)</label>
+          <input type="number" id="eye" min="0" max="2000" step="0.1" value="1.7">
+        </div>
+        <div class="field">
+          <label class="label" for="radius">Search nearby</label>
+          <select id="radius">
+            <option value="0">This spot only</option>
+            <option value="1000">Within 1 km</option>
+            <option value="2000" selected>Within 2 km</option>
+            <option value="5000">Within 5 km</option>
+            <option value="10000">Within 10 km</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="range">Look out to</label>
+          <select id="range">
+            <option value="100000">100 km</option>
+            <option value="150000">150 km</option>
+            <option value="250000" selected>250 km</option>
+            <option value="350000">350 km</option>
+            <option value="500000">500 km</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="refr">Refraction</label>
+          <select id="refr">
+            <option value="0">None</option>
+            <option value="0.13" selected>Standard · k 0.13</option>
+            <option value="0.2">Cold air · k 0.20</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="vis">Air clarity, for the haze estimate</label>
+        <select id="vis">
+          <option value="40">Hazy · 40 km visual range</option>
+          <option value="100">Clear · 100 km</option>
+          <option value="200" selected>Very clear · 200 km</option>
+          <option value="300">Pristine · 300 km</option>
+        </select>
+      </div>
+
+      <button type="submit" class="go" id="go">Find longest sightline</button>
+      <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="card result" id="result" aria-live="polite">
+      <h2>Longest sightline</h2>
+      <p class="empty" id="emptyResult">Loading the first example…</p>
+      <div id="resultBody" hidden></div>
+    </section>
+
+    <div class="stage">
+      <div class="card" style="padding:10px">
+        <div id="map" role="region" aria-label="Map of the sightline"></div>
+        <div class="legend">
+          <span><i class="sw"></i>Longest sightline</span>
+          <span><i class="sw area"></i>Farthest visible ground on each bearing</span>
+          <span><i class="sw dot"></i>Spots tested</span>
+        </div>
+      </div>
+      <section class="card profile">
+        <h2 id="profTitle">Profile along the sightline</h2>
+        <figure>
+          <div class="svgbox"><svg id="prof" viewBox="0 0 640 250" role="img" aria-label="Terrain profile"></svg></div>
+          <figcaption id="profCap">Terrain is drawn against a straight line from your eye, so the bulge of the Earth shows.</figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <section class="card sectors">
+      <h2>Longest in each direction</h2>
+      <ul class="sector-list" id="sectorList"><li class="empty">Appears after a search.</li></ul>
+    </section>
+  </main>
+
+  <details class="method card">
+    <summary>How it works and what it leaves out</summary>
+    <div class="cols">
+      <div>
+        <p><strong>Terrain.</strong> Elevation comes from the free Terrain Tiles dataset on AWS Open Data, which blends SRTM, Canada's CDEM, the US NED and other sources. Resolution is about 20–50 m within 10 km of you, about 100 m out to 60 km, and a few hundred metres beyond that.</p>
+        <p><strong>The sweep.</strong> From the eye, each bearing is stepped outward along a great circle. A point counts as visible when its elevation angle is at least as steep as everything closer to you. The last visible point on a bearing is that bearing's sightline.</p>
+        <p><strong>Curvature and refraction.</strong> Each point is lowered by d²/2R′, where R′ = R/(1−k) is the effective Earth radius. With k = 0.13, the standard value, light bends slightly downward and you see a little past the geometric horizon. Cold air near the ground bends it more.</p>
+      </div>
+      <div>
+        <p><strong>Ground only.</strong> Trees and buildings are not in the data. For a tower or a high floor, enter your height above the ground.</p>
+        <p><strong>Searching nearby.</strong> Up to eight of the highest spots in the search radius are tested at standing eye height (1.7 m), along with your own point at the height you entered. The winner gets the full sweep.</p>
+        <p><strong>Seeing it.</strong> The result assumes clear air. Haze lowers contrast as e<sup>−3.912·d/V</sup> (Koschmieder), where V is the visual range and about 2% contrast is the threshold. The clearance figure is how far the target rises above the skyline just in front of it, compared with the 1′ of arc that 20/20 vision resolves.</p>
+        <p><strong>Water.</strong> Sea-floor depths are flattened to sea level, which also flattens the few land areas below sea level.</p>
+      </div>
+    </div>
+  </details>
+</div>
+
+<!-- Sightline engine: pure functions, no DOM. -->
+<script id="engine">
+(function (root) {
+  'use strict';
+  var R = 6371008.8;
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI, TAU = 2 * Math.PI;
+  var M_PER_DEG = R * D2R;
+
+  var stepCache = new Map();
+  function steps(maxRange) {
+    if (stepCache.has(maxRange)) return stepCache.get(maxRange);
+    var arr = [0], d = 0;
+    while (d < maxRange) {
+      var s = Math.min(350, Math.max(20, d * 0.0025));
+      d = Math.min(maxRange, d + s);
+      arr.push(d);
+    }
+    var n = arr.length;
+    var D = Float64Array.from(arr), sinD = new Float64Array(n), cosD = new Float64Array(n), invD = new Float64Array(n);
+    for (var i = 0; i < n; i++) {
+      var a = D[i] / R;
+      sinD[i] = Math.sin(a); cosD[i] = Math.cos(a); invD[i] = i ? 1 / D[i] : 0;
+    }
+    var out = { D: D, sinD: sinD, cosD: cosD, invD: invD, n: n };
+    stepCache.set(maxRange, out);
+    return out;
+  }
+
+  function wrapLon(lon) { return ((lon + 540) % 360) - 180; }
+  function mercY(lat) {
+    var s = Math.sin(lat * D2R);
+    s = Math.max(-0.9999999, Math.min(0.9999999, s));
+    return 0.5 * Math.log((1 + s) / (1 - s));
+  }
+  // Normalised x (0..1 across the world, unwrapped around the field's centre longitude).
+  function lamN(field, lon) { return (field.lon0 + wrapLon(lon - field.lon0)) / 360 + 0.5; }
+
+  // Level: { z, x0, y0, w, h, data(Float32Array), scale, offX, offY, maxD }
+  function makeLevel(z, x0, y0, nx, ny, data, maxD) {
+    var scale = 256 * Math.pow(2, z);
+    return { z: z, x0: x0, y0: y0, w: nx * 256, h: ny * 256, data: data, scale: scale,
+             offX: x0 * 256 + 0.5, offY: y0 * 256 + 0.5, maxD: maxD };
+  }
+
+  function sampleLevel(L, xn, my) {
+    var px = xn * L.scale - L.offX;
+    var py = (0.5 - my / TAU) * L.scale - L.offY;
+    var wMax = L.w - 1.001, hMax = L.h - 1.001;
+    if (px < 0) px = 0; else if (px > wMax) px = wMax;
+    if (py < 0) py = 0; else if (py > hMax) py = hMax;
+    var xi = px | 0, yi = py | 0, fx = px - xi, fy = py - yi;
+    var i = yi * L.w + xi, d = L.data, w = L.w;
+    var a = d[i], b = d[i + 1], c = d[i + w], e = d[i + w + 1];
+    var top = a + (b - a) * fx, bot = c + (e - c) * fx;
+    return top + (bot - top) * fy;
+  }
+
+  function elevAt(field, lat, lon, li) {
+    var h = sampleLevel(field.levels[li || 0], lamN(field, lon), mercY(lat));
+    return (field.seaClamp !== false && h < 0) ? 0 : h;
+  }
+
+  function dest(lat, lon, bearingDeg, d) {
+    var p1 = lat * D2R, th = bearingDeg * D2R, a = d / R;
+    var sp2 = Math.sin(p1) * Math.cos(a) + Math.cos(p1) * Math.sin(a) * Math.cos(th);
+    var p2 = Math.asin(Math.max(-1, Math.min(1, sp2)));
+    var l2 = lon * D2R + Math.atan2(Math.sin(th) * Math.sin(a) * Math.cos(p1), Math.cos(a) - Math.sin(p1) * sp2);
+    return [p2 * R2D, wrapLon(l2 * R2D)];
+  }
+
+  function distBearing(lat1, lon1, lat2, lon2) {
+    var p1 = lat1 * D2R, p2 = lat2 * D2R, dl = (lon2 - lon1) * D2R;
+    var a = Math.sin((p2 - p1) / 2), b = Math.sin(dl / 2);
+    var h = a * a + Math.cos(p1) * Math.cos(p2) * b * b;
+    var d = 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    var y = Math.sin(dl) * Math.cos(p2), x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+    return [d, (Math.atan2(y, x) * R2D + 360) % 360];
+  }
+
+  function levelIndex(field, st) {
+    var lv = new Uint8Array(st.n), L = field.levels;
+    for (var i = 0; i < st.n; i++) {
+      var j = 0;
+      while (j < L.length - 1 && st.D[i] > L[j].maxD) j++;
+      lv[i] = j;
+    }
+    return lv;
+  }
+
+  // Radial line-of-sight sweep. Returns per-bearing farthest visible ground.
+  function sweep(field, lat, lon, eyeH, opt) {
+    var rays = opt.rays, k = opt.k, st = steps(opt.maxRange);
+    var D = st.D, sinD = st.sinD, cosD = st.cosD, invD = st.invD, n = st.n;
+    var Reff = R / (1 - k);
+    var drop = new Float64Array(n);
+    for (var i = 0; i < n; i++) drop[i] = D[i] * D[i] / (2 * Reff);
+    var levels = field.levels, lv = levelIndex(field, st);
+    var phi1 = lat * D2R, sp1 = Math.sin(phi1), cp1 = Math.cos(phi1);
+    var x0 = lamN(field, lon);
+    var ground = elevAt(field, lat, lon, 0);
+    var hEye = ground + eyeH;
+    var clampSea = field.seaClamp !== false;
+    var farI = new Int32Array(rays), farD = new Float64Array(rays), farH = new Float32Array(rays);
+    var farT = new Float64Array(rays), clear = new Float64Array(rays);
+    var hist = new Float64Array(n);
+    for (var r = 0; r < rays; r++) {
+      var th = r * TAU / rays, sth = Math.sin(th), cth = Math.cos(th);
+      var maxT = -Infinity, fi = 0, fh = ground;
+      for (i = 1; i < n; i++) {
+        var sd = sinD[i], cd = cosD[i];
+        var sp2 = sp1 * cd + cp1 * sd * cth;
+        if (sp2 > 0.9999999) sp2 = 0.9999999; else if (sp2 < -0.9999999) sp2 = -0.9999999;
+        var dl = Math.atan2(sth * sd * cp1, cd - sp1 * sp2);
+        var my = 0.5 * Math.log((1 + sp2) / (1 - sp2));
+        var h = sampleLevel(levels[lv[i]], x0 + dl / TAU, my);
+        if (clampSea && h < 0) h = 0;
+        var t = (h - drop[i] - hEye) * invD[i];
+        if (t >= maxT) { maxT = t; fi = i; fh = h; }
+        hist[i] = maxT;
+      }
+      farI[r] = fi; farD[r] = D[fi]; farH[r] = fh; farT[r] = maxT;
+      // Clearance: how far the target's elevation angle rises above the skyline
+      // just in front of its own slope (max angle up to d - max(2 km, 3% of d)).
+      var lim = D[fi] - Math.max(2000, 0.03 * D[fi]);
+      var lo = 0, hi = fi;
+      while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (D[mid] <= lim) lo = mid; else hi = mid - 1; }
+      clear[r] = lo >= 1 ? maxT - hist[lo] : NaN;
+    }
+    var best = 0;
+    for (r = 1; r < rays; r++) if (farD[r] > farD[best]) best = r;
+    return { lat: lat, lon: lon, eyeH: eyeH, ground: ground, hEye: hEye, rays: rays, k: k,
+             maxRange: opt.maxRange, Reff: Reff, farI: farI, farD: farD, farH: farH, farT: farT,
+             clear: clear, best: best };
+  }
+
+  function bearingOf(res, r) { return r * 360 / res.rays; }
+  function target(res, r) {
+    var p = dest(res.lat, res.lon, bearingOf(res, r), res.farD[r]);
+    return { lat: p[0], lon: p[1], d: res.farD[r], h: res.farH[r], bearing: bearingOf(res, r),
+             drop: res.farD[r] * res.farD[r] / (2 * res.Reff), clearRad: res.clear[r] };
+  }
+
+  // Samples along one bearing for drawing, bucketed so peaks survive downsampling.
+  function profile(field, res, r, maxPts) {
+    maxPts = maxPts || 640;
+    var st = steps(res.maxRange), lv = levelIndex(field, st);
+    var fi = res.farI[r];
+    var endD = Math.min(res.maxRange, Math.max(res.farD[r] * 1.06, res.farD[r] + 3000));
+    var end = fi; while (end < st.n - 1 && st.D[end] < endD) end++;
+    var th = bearingOf(res, r) * D2R, sth = Math.sin(th), cth = Math.cos(th);
+    var phi1 = res.lat * D2R, sp1 = Math.sin(phi1), cp1 = Math.cos(phi1), x0 = lamN(field, res.lon);
+    var bucket = Math.max(1, Math.ceil(end / maxPts));
+    var d = [0], h = [res.ground], drop = [0];
+    var bd = 0, bh = -Infinity, ba = -Infinity, bdr = 0;
+    for (var i = 1; i <= end; i++) {
+      var sp2 = sp1 * st.cosD[i] + cp1 * st.sinD[i] * cth;
+      sp2 = Math.max(-0.9999999, Math.min(0.9999999, sp2));
+      var dl = Math.atan2(sth * st.sinD[i] * cp1, st.cosD[i] - sp1 * sp2);
+      var my = 0.5 * Math.log((1 + sp2) / (1 - sp2));
+      var hh = sampleLevel(field.levels[lv[i]], x0 + dl / TAU, my);
+      if (field.seaClamp !== false && hh < 0) hh = 0;
+      var dr = st.D[i] * st.D[i] / (2 * res.Reff);
+      if (hh - dr > ba) { ba = hh - dr; bd = st.D[i]; bh = hh; bdr = dr; }
+      if (i % bucket === 0 || i === end || i === fi) {
+        d.push(bd); h.push(bh); drop.push(bdr);
+        ba = -Infinity;
+      }
+    }
+    return { d: d, h: h, drop: drop, hEye: res.hEye, target: target(res, r), endD: st.D[end] };
+  }
+
+  var SECTOR_NAMES = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  function sectors(res) {
+    var out = SECTOR_NAMES.map(function (name) { return { name: name, r: -1, d: 0 }; });
+    for (var r = 0; r < res.rays; r++) {
+      var b = bearingOf(res, r);
+      var s = Math.floor(((b + 22.5) % 360) / 45);
+      if (res.farD[r] > out[s].d) { out[s].d = res.farD[r]; out[s].r = r; }
+    }
+    return out;
+  }
+
+  // Highest spots in a disc, spread apart, for the "search nearby" mode.
+  function candidates(field, lat, lon, radius, maxN) {
+    if (!(radius > 0)) return [];
+    maxN = maxN || 8;
+    var spacing = Math.max(radius / 25, 30), pts = [];
+    var cosLat = Math.max(0.05, Math.cos(lat * D2R));
+    for (var dy = -radius; dy <= radius; dy += spacing) {
+      for (var dx = -radius; dx <= radius; dx += spacing) {
+        if (dx * dx + dy * dy > radius * radius) continue;
+        var la = lat + dy / M_PER_DEG, lo = lon + dx / (M_PER_DEG * cosLat);
+        pts.push({ lat: la, lon: wrapLon(lo), h: elevAt(field, la, lo, 0) });
+      }
+    }
+    pts.sort(function (a, b) { return b.h - a.h; });
+    var sep = Math.max(radius / 4, 250), picked = [];
+    for (var i = 0; i < pts.length && picked.length < maxN; i++) {
+      var p = pts[i], ok = true;
+      for (var j = 0; j < picked.length; j++) {
+        if (distBearing(p.lat, p.lon, picked[j].lat, picked[j].lon)[0] < sep) { ok = false; break; }
+      }
+      if (ok) picked.push(p);
+    }
+    return picked;
+  }
+
+  // Tile coverage for a square of half-width hw metres around a point.
+  function tileRange(lat, lon, hw, z) {
+    var n = Math.pow(2, z), dLat = hw / M_PER_DEG;
+    var latN = Math.min(85, lat + dLat), latS = Math.max(-85, lat - dLat);
+    var cosMin = Math.max(0.05, Math.cos(Math.max(Math.abs(latN), Math.abs(latS)) * D2R));
+    var dLon = Math.min(179, hw / (M_PER_DEG * cosMin));
+    var xf = function (lo) { return (lo / 360 + 0.5) * n; };
+    var yf = function (la) { return (0.5 - mercY(la) / TAU) * n; };
+    var x0 = Math.floor(xf(lon - dLon)), x1 = Math.floor(xf(lon + dLon));
+    var y0 = Math.max(0, Math.floor(yf(latN))), y1 = Math.min(n - 1, Math.floor(yf(latS)));
+    return { z: z, x0: x0, x1: x1, y0: y0, y1: y1, nx: x1 - x0 + 1, ny: y1 - y0 + 1, count: (x1 - x0 + 1) * (y1 - y0 + 1) };
+  }
+  function chooseRange(lat, lon, hw, zMax, zMin, maxTiles) {
+    for (var z = zMax; z >= zMin; z--) {
+      var tr = tileRange(lat, lon, hw, z);
+      if (tr.count <= maxTiles) return tr;
+    }
+    return tileRange(lat, lon, hw, zMin);
+  }
+  function levelSpecs(maxRange, searchR) {
+    return [
+      { maxD: 10000, hw: searchR + 10000 + 300, zMax: 12, zMin: 8, maxTiles: 25 },
+      { maxD: 60000, hw: searchR + 60000 + 600, zMax: 10, zMin: 7, maxTiles: 42 },
+      { maxD: Infinity, hw: searchR + maxRange + 1500, zMax: 9, zMin: 5, maxTiles: 64 }
+    ];
+  }
+
+  function compass16(b) {
+    var names = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    return names[Math.round(((b % 360) + 360) % 360 / 22.5) % 16];
+  }
+
+  root.SightEngine = {
+    R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
+    candidates: candidates, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
+    tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
+    mercY: mercY, wrapLon: wrapLon
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+(function () {
+  'use strict';
+  var E = window.SightEngine;
+
+  // ---- Settings you may want to change when hosting this page ----
+  var CONFIG = {
+    // Same AWS bucket, two address styles; the second is tried if the first fails.
+    elevationTiles: [
+      function (z, x, y) { return 'https://elevation-tiles-prod.s3.amazonaws.com/terrarium/' + z + '/' + x + '/' + y + '.png'; },
+      function (z, x, y) { return 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/' + z + '/' + x + '/' + y + '.png'; }
+    ],
+    basemap: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    basemapAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles</a>',
+    autoRun: true,
+    fetchConcurrency: 6
+  };
+
+  var PRESETS = {
+    nose:    { lat: 51.117,  lon: -114.117,  eye: 1.7, radius: 2000, range: 250000 },
+    bow:     { lat: 51.04778, lon: -114.06222, eye: 230, radius: 0,   range: 250000 },
+    whitney: { lat: 36.5786, lon: -118.2920, eye: 1.7, radius: 1000, range: 350000 }
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {
+    form: $('form'), loc: $('loc'), geo: $('geo'), eye: $('eye'), radius: $('radius'), range: $('range'),
+    refr: $('refr'), vis: $('vis'), go: $('go'), status: $('status'), bar: $('bar'),
+    emptyResult: $('emptyResult'), resultBody: $('resultBody'), sectorList: $('sectorList'),
+    prof: $('prof'), profTitle: $('profTitle'), profCap: $('profCap')
+  };
+
+  var nf = function (x, dp) { return x.toLocaleString('en-CA', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); };
+  function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function setStatus(msg, isError) { els.status.textContent = msg; els.status.classList.toggle('error', !!isError); }
+  function setBar(frac) { els.bar.style.width = Math.round(Math.max(0, Math.min(1, frac)) * 100) + '%'; }
+  function tick() { return new Promise(function (r) { requestAnimationFrame(function () { setTimeout(r, 0); }); }); }
+
+  // ---- Location parsing ----
+  function parseLocation(s) {
+    s = (s || '').trim();
+    var m = s.match(/@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/) ||
+            s.match(/[?&](?:q|query|ll|center)=(-?\d+(?:\.\d+)?)(?:,|%2C)\s*(-?\d+(?:\.\d+)?)/i) ||
+            s.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
+    if (m) return [parseFloat(m[1]), parseFloat(m[2])];
+    m = s.match(/^\s*(-?\d+(?:\.\d+)?)\s*°?\s*([NS])?\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*°?\s*([EW])?\s*$/i);
+    if (m) {
+      var la = parseFloat(m[1]), lo = parseFloat(m[3]);
+      if (m[2] && /s/i.test(m[2])) la = -Math.abs(la);
+      if (m[4] && /w/i.test(m[4])) lo = -Math.abs(lo);
+      return [la, lo];
+    }
+    return null;
+  }
+  function fmtLL(lat, lon) { return lat.toFixed(5) + ', ' + lon.toFixed(5); }
+
+  // ---- Elevation tiles ----
+  var tileCache = new Map();
+  var sourceIdx = 0;
+  var decodeCanvas = null;
+  function getCtx() {
+    if (decodeCanvas) return decodeCanvas;
+    var c = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(256, 256) : Object.assign(document.createElement('canvas'), { width: 256, height: 256 });
+    decodeCanvas = c.getContext('2d', { willReadFrequently: true });
+    return decodeCanvas;
+  }
+  async function fetchTile(z, x, y) {
+    var n = Math.pow(2, z), xw = ((x % n) + n) % n;
+    var key = z + '/' + xw + '/' + y;
+    if (tileCache.has(key)) return tileCache.get(key);
+    var resp = null, lastErr = null;
+    for (var a = sourceIdx; a < CONFIG.elevationTiles.length; a++) {
+      try {
+        resp = await fetch(CONFIG.elevationTiles[a](z, xw, y), { mode: 'cors' });
+        if (!resp.ok) throw new Error('Tile ' + key + ' returned ' + resp.status);
+        sourceIdx = a;
+        break;
+      } catch (e) { lastErr = e; resp = null; }
+    }
+    if (!resp) throw lastErr;
+    var blob = await resp.blob();
+    var bmp = await createImageBitmap(blob, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
+    var ctx = getCtx();
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.drawImage(bmp, 0, 0);
+    if (bmp.close) bmp.close();
+    var px = ctx.getImageData(0, 0, 256, 256).data;
+    var out = new Float32Array(65536);
+    for (var i = 0, j = 0; i < 65536; i++, j += 4) out[i] = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
+    tileCache.set(key, out);
+    return out;
+  }
+
+  async function loadField(lat, lon, maxRange, searchR, onProgress) {
+    var specs = E.levelSpecs(maxRange, searchR);
+    var ranges = specs.map(function (s) { return E.chooseRange(lat, lon, s.hw, s.zMax, s.zMin, s.maxTiles); });
+    var jobs = [], seen = new Set();
+    ranges.forEach(function (tr) {
+      for (var y = tr.y0; y <= tr.y1; y++) for (var x = tr.x0; x <= tr.x1; x++) {
+        var k = tr.z + '/' + x + '/' + y;
+        if (!seen.has(k)) { seen.add(k); jobs.push([tr.z, x, y]); }
+      }
+    });
+    var got = new Map(), done = 0, failed = 0, idx = 0;
+    async function worker() {
+      while (idx < jobs.length) {
+        var j = jobs[idx++];
+        try { got.set(j.join('/'), await fetchTile(j[0], j[1], j[2])); }
+        catch (e) { failed++; console.warn(e); }
+        done++; onProgress(done, jobs.length);
+      }
+    }
+    var pool = [];
+    for (var w = 0; w < CONFIG.fetchConcurrency; w++) pool.push(worker());
+    await Promise.all(pool);
+    if (failed === jobs.length) throw new Error('No elevation tiles could be loaded.');
+    var levels = ranges.map(function (tr, li) {
+      var w = tr.nx * 256, data = new Float32Array(w * tr.ny * 256);
+      for (var ty = 0; ty < tr.ny; ty++) for (var tx = 0; tx < tr.nx; tx++) {
+        var t = got.get(tr.z + '/' + (tr.x0 + tx) + '/' + (tr.y0 + ty));
+        if (!t) continue;
+        for (var row = 0; row < 256; row++) {
+          data.set(t.subarray(row * 256, row * 256 + 256), (ty * 256 + row) * w + tx * 256);
+        }
+      }
+      return E.makeLevel(tr.z, tr.x0, tr.y0, tr.nx, tr.ny, data, specs[li].maxD);
+    });
+    return { lon0: lon, levels: levels, tiles: jobs.length, failed: failed };
+  }
+
+  // ---- Map ----
+  var map = null, overlay = null, pickMarker = null;
+  function initMap() {
+    if (!window.L) {
+      $('map').innerHTML = '<div class="map-fallback">The map library did not load. Results still work below.</div>';
+      return;
+    }
+    map = L.map('map', { zoomControl: true, worldCopyJump: true }).setView([51.05, -114.07], 8);
+    L.tileLayer(CONFIG.basemap, { maxZoom: 17, attribution: CONFIG.basemapAttribution }).addTo(map);
+    overlay = L.layerGroup().addTo(map);
+    map.on('click', function (e) {
+      var ll = e.latlng.wrap();
+      els.loc.value = fmtLL(ll.lat, ll.lng);
+      clearPresetPress();
+      showPick(ll.lat, ll.lng);
+      setStatus('Location set. Press “Find longest sightline”.');
+    });
+  }
+  function showPick(lat, lon) {
+    if (!map) return;
+    if (pickMarker) pickMarker.remove();
+    pickMarker = L.circleMarker([lat, lon], { radius: 7, color: cssVar('--ink'), weight: 2, fillColor: cssVar('--panel'), fillOpacity: 1 }).addTo(map);
+  }
+
+  var lastRun = null, activeRay = null;
+
+  function drawMap(run) {
+    if (!map) return;
+    if (pickMarker) { pickMarker.remove(); pickMarker = null; }
+    overlay.clearLayers();
+    var res = run.res, ink = cssVar('--ink'), tape = cssVar('--tape'), sky = cssVar('--sky'), panel = cssVar('--panel');
+    var pts = [];
+    var stride = Math.max(1, Math.round(res.rays / 360));
+    for (var r = 0; r < res.rays; r += stride) pts.push(E.dest(res.lat, res.lon, r * 360 / res.rays, res.farD[r]));
+    var poly = L.polygon(pts, { color: sky, weight: 1, fillColor: sky, fillOpacity: 0.14, interactive: false }).addTo(overlay);
+    run.cands.forEach(function (c) {
+      if (c === run.bestC) return;
+      L.circleMarker([c.lat, c.lon], { radius: 4, color: ink, weight: 1.5, fillOpacity: 0, interactive: false }).addTo(overlay);
+    });
+    var r0 = activeRay == null ? res.best : activeRay;
+    var t = E.target(res, r0);
+    L.polyline([[res.lat, res.lon], [t.lat, t.lon]], { color: tape, weight: 3.5, opacity: 0.95 }).addTo(overlay);
+    L.circleMarker([res.lat, res.lon], { radius: 7, color: ink, weight: 2.5, fillColor: panel, fillOpacity: 1 })
+      .bindTooltip('You · ' + nf(res.hEye) + ' m').addTo(overlay);
+    L.circleMarker([t.lat, t.lon], { radius: 7, color: panel, weight: 2, fillColor: tape, fillOpacity: 1 })
+      .bindTooltip(nf(t.d / 1000, 1) + ' km · ' + nf(t.h) + ' m').addTo(overlay);
+    if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, t.lon]), { padding: [24, 24] }); run.fit = false; }
+  }
+
+  // ---- Result panel ----
+  function renderResult(run) {
+    var res = run.res, t = E.target(res, res.best), inp = run.input;
+    var clearArc = t.clearRad * 180 / Math.PI * 60;
+    var V = inp.vis;
+    var contrast = Math.exp(-3.912 * (t.d / 1000) / V) * 100;
+    var seen = contrast >= 2;
+    var gm = function (la, lo) { return 'https://www.google.com/maps/search/?api=1&query=' + la.toFixed(5) + '%2C' + lo.toFixed(5); };
+    var moved = run.bestC !== run.cands[0];
+    var off = moved ? E.distBearing(inp.lat, inp.lon, res.lat, res.lon) : null;
+
+    var acuity;
+    if (!isFinite(clearArc)) acuity = '<small>Too close to separate from the foreground.</small>';
+    else if (clearArc >= 1) acuity = '<small>About ' + nf(Math.round(clearArc)) + '× the 1′ detail that 20/20 vision resolves.</small>';
+    else acuity = '<small>Thinner than the 1′ detail that 20/20 vision resolves, so a faint bump at best.</small>';
+
+    var html = '' +
+      '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
+      '<span class="alt">' + nf(t.d / 1609.344, 1) + ' mi</span></div>' +
+      '<p class="headline">Looking <strong>' + E.compass16(t.bearing) + '</strong> (' + nf(t.bearing, 1) + '°) to ground at <strong>' + nf(t.h) + ' m</strong></p>' +
+      (moved
+        ? '<p class="note">From high ground ' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point, at standing eye height. Your point itself reaches ' + nf(run.cands[0].d / 1000, 1) + ' km.</p>'
+        : '') +
+      '<dl class="facts">' +
+        '<div><dt>Your eye</dt><dd>' + nf(res.hEye) + ' m<small>' + nf(res.ground) + ' m ground + ' + nf(res.eyeH, res.eyeH < 10 ? 1 : 0) + ' m height</small></dd></div>' +
+        '<div><dt>Target</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">' + fmtLL(t.lat, t.lon) + '</a></dd></div>' +
+        '<div><dt>Hidden by the curve</dt><dd>' + nf(t.drop) + ' m<small>How far the Earth’s curve (with refraction) drops the target below a flat line.</small></dd></div>' +
+        '<div><dt>Clearance</dt><dd>' + (isFinite(clearArc) ? nf(clearArc, 1) + '′ of arc' : '—') + acuity + '</dd></div>' +
+        '<div><dt>Through haze</dt><dd>' + (contrast < 0.01 ? '&lt; 0.01' : nf(contrast, contrast < 1 ? 2 : 1)) + '% contrast left' +
+          '<span class="pill ' + (seen ? 'ok' : 'warn') + '">' + (seen ? 'Visible' : 'Lost in haze') + '</span>' +
+          '<small>At ' + nf(V) + ' km visual range. The eye needs about 2%.</small></dd></div>' +
+      '</dl>' +
+      '<div class="links">' +
+        '<a class="btn-ghost" href="' + gm(res.lat, res.lon) + '" target="_blank" rel="noopener">Open your spot in Maps</a>' +
+        '<button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button>' +
+      '</div>';
+    els.emptyResult.hidden = true;
+    els.resultBody.innerHTML = html;
+    els.resultBody.hidden = false;
+    $('copyLink').addEventListener('click', copyLink);
+  }
+
+  function renderSectors(run) {
+    var sec = E.sectors(run.res), maxD = Math.max.apply(null, sec.map(function (s) { return s.d; })) || 1;
+    var winR = run.res.best;
+    els.sectorList.innerHTML = sec.map(function (s, i) {
+      var isWin = s.r === winR;
+      var pressed = (activeRay == null ? winR : activeRay) === s.r;
+      return '<li class="' + (isWin ? 'win' : '') + '"><button type="button" data-ray="' + s.r + '" aria-pressed="' + pressed + '">' +
+        '<span class="dir">' + s.name + '</span>' +
+        '<span class="bar"><i style="width:' + (s.d / maxD * 100).toFixed(1) + '%"></i></span>' +
+        '<span class="km">' + nf(s.d / 1000, 1) + ' km</span></button></li>';
+    }).join('');
+  }
+
+  els.sectorList.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-ray]');
+    if (!b || !lastRun) return;
+    var r = parseInt(b.getAttribute('data-ray'), 10);
+    if (r < 0) return;
+    activeRay = (r === lastRun.res.best) ? null : r;
+    renderSectors(lastRun);
+    drawMap(lastRun);
+    renderProfile(lastRun);
+  });
+
+  // ---- Profile chart ----
+  function niceStep(span, target) {
+    var raw = span / target, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p;
+  }
+  function renderProfile(run) {
+    var r = activeRay == null ? run.res.best : activeRay;
+    var p = E.profile(run.field, run.res, r, 600), t = p.target;
+    var W = Math.max(300, Math.round(els.prof.parentNode.clientWidth || 640)), H = W < 480 ? 220 : 250;
+    var m = { l: 52, r: 14, t: 16, b: 34 };
+    els.prof.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var app = p.h.map(function (h, i) { return h - p.drop[i]; });
+    var datum = p.drop.map(function (d) { return -d; });
+    var yMin = Math.min(Math.min.apply(null, app), Math.min.apply(null, datum));
+    var yMax = Math.max(Math.max.apply(null, app), p.hEye);
+    var pad = (yMax - yMin) * 0.08 || 50; yMin -= pad; yMax += pad;
+    var xMax = p.endD;
+    var X = function (d) { return m.l + d / xMax * pw; };
+    var Y = function (v) { return m.t + (yMax - v) / (yMax - yMin) * ph; };
+    var out = [];
+    var xs = niceStep(xMax / 1000, W < 480 ? 4 : 6), ys = niceStep(yMax - yMin, 5);
+    for (var gx = 0; gx <= xMax / 1000 + 1e-9; gx += xs) {
+      out.push('<line class="grid" x1="' + X(gx * 1000).toFixed(1) + '" x2="' + X(gx * 1000).toFixed(1) + '" y1="' + m.t + '" y2="' + (m.t + ph) + '"/>');
+      out.push('<text x="' + X(gx * 1000).toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle">' + nf(gx) + '</text>');
+    }
+    for (var gy = Math.ceil(yMin / ys) * ys; gy <= yMax; gy += ys) {
+      out.push('<line class="grid" x1="' + m.l + '" x2="' + (m.l + pw) + '" y1="' + Y(gy).toFixed(1) + '" y2="' + Y(gy).toFixed(1) + '"/>');
+      out.push('<text x="' + (m.l - 6) + '" y="' + (Y(gy) + 4).toFixed(1) + '" text-anchor="end">' + nf(gy) + '</text>');
+    }
+    out.push('<text x="' + (m.l + pw) + '" y="' + (H - 1) + '" text-anchor="end">km</text>');
+    out.push('<text x="4" y="' + (m.t - 4) + '">m</text>');
+    var path = 'M' + X(0).toFixed(1) + ',' + (m.t + ph);
+    for (var i = 0; i < p.d.length; i++) path += 'L' + X(p.d[i]).toFixed(1) + ',' + Y(app[i]).toFixed(1);
+    path += 'L' + X(p.d[p.d.length - 1]).toFixed(1) + ',' + (m.t + ph) + 'Z';
+    out.push('<path class="p-terrain" d="' + path + '"/>');
+    var dpath = '';
+    for (i = 0; i < p.d.length; i++) dpath += (i ? 'L' : 'M') + X(p.d[i]).toFixed(1) + ',' + Y(datum[i]).toFixed(1);
+    out.push('<path class="p-datum" d="' + dpath + '"/>');
+    var tx = X(t.d), ty = Y(t.h - t.drop);
+    out.push('<line class="p-sight" x1="' + X(0).toFixed(1) + '" y1="' + Y(p.hEye).toFixed(1) + '" x2="' + tx.toFixed(1) + '" y2="' + ty.toFixed(1) + '"/>');
+    out.push('<circle class="p-eye" cx="' + X(0).toFixed(1) + '" cy="' + Y(p.hEye).toFixed(1) + '" r="5"/>');
+    out.push('<circle class="p-target" cx="' + tx.toFixed(1) + '" cy="' + ty.toFixed(1) + '" r="5"/>');
+    out.push('<text class="t-strong" x="' + (X(0) + 9).toFixed(1) + '" y="' + (Y(p.hEye) - 8).toFixed(1) + '">You</text>');
+    var lblX = Math.min(tx, m.l + pw - 4);
+    out.push('<text class="t-strong" x="' + lblX.toFixed(1) + '" y="' + (ty - 10).toFixed(1) + '" text-anchor="end">' + nf(t.d / 1000, 1) + ' km</text>');
+    var mid = 0; while (mid < p.d.length - 1 && p.d[mid] < xMax * 0.55) mid++;
+    out.push('<text x="' + X(p.d[mid]).toFixed(1) + '" y="' + (Y(datum[mid]) + 14).toFixed(1) + '" text-anchor="middle">sea level, curved</text>');
+    els.prof.innerHTML = out.join('');
+    var vex = (xMax / pw) / ((yMax - yMin) / ph);
+    var isBest = r === run.res.best;
+    els.profTitle.textContent = isBest ? 'Profile along the sightline' : 'Profile looking ' + E.compass16(t.bearing) + ' (' + nf(t.bearing, 1) + '°)';
+    els.profCap.textContent = 'Terrain is drawn against a straight line from your eye, so the bulge of the Earth shows. Vertical scale exaggerated about ' + nf(Math.round(vex)) + '×.';
+  }
+
+  // ---- Run ----
+  var busy = false;
+  function readInputs() {
+    var ll = parseLocation(els.loc.value);
+    if (!ll) return { error: 'Enter coordinates like “51.117, -114.117”, paste a Google Maps link, or tap the map.' };
+    if (Math.abs(ll[0]) > 80 || Math.abs(ll[1]) > 180) return { error: 'That location is outside the elevation data (it covers latitudes up to 80°).' };
+    var eye = parseFloat(els.eye.value);
+    if (!(eye >= 0) || eye > 2000) return { error: 'Eye height must be between 0 and 2,000 m.' };
+    return { lat: ll[0], lon: E.wrapLon(ll[1]), eye: eye, radius: +els.radius.value, range: +els.range.value,
+             k: +els.refr.value, vis: +els.vis.value };
+  }
+
+  async function run() {
+    if (busy) return;
+    var inp = readInputs();
+    if (inp.error) { setStatus(inp.error, true); return; }
+    busy = true; els.go.disabled = true; setBar(0);
+    var t0 = performance.now();
+    try {
+      setStatus('Loading terrain…');
+      var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
+        setStatus('Loading terrain tiles ' + d + ' of ' + n + '…'); setBar(d / n * 0.7);
+      });
+      await tick();
+      var cands = [{ lat: inp.lat, lon: inp.lon, eye: inp.eye, user: true }]
+        .concat(E.candidates(field, inp.lat, inp.lon, inp.radius, 8).map(function (c) { return { lat: c.lat, lon: c.lon, eye: 1.7 }; }));
+      var bestC = cands[0];
+      if (cands.length > 1) {
+        var bestD = -1;
+        for (var i = 0; i < cands.length; i++) {
+          setStatus('Checking spot ' + (i + 1) + ' of ' + cands.length + '…'); setBar(0.7 + 0.2 * i / cands.length);
+          await tick();
+          var rq = E.sweep(field, cands[i].lat, cands[i].lon, cands[i].eye, { rays: 360, maxRange: inp.range, k: inp.k });
+          cands[i].d = rq.farD[rq.best];
+          // Spots are ordered your point first, then highest ground. A later spot has to win
+          // clearly, so ray-spacing noise doesn't pull the answer off your point or the summit.
+          if (cands[i].d > bestD + Math.max(500, bestD * 0.005)) { bestD = cands[i].d; bestC = cands[i]; }
+        }
+      }
+      setStatus('Sweeping 1,440 bearings…'); setBar(0.92);
+      await tick();
+      var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k });
+      if (cands.length === 1) cands[0].d = res.farD[res.best];
+      else if (bestC === cands[0]) cands[0].d = res.farD[res.best];
+      lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true };
+      activeRay = null;
+      renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
+      setBar(1);
+      var secs = (performance.now() - t0) / 1000;
+      setStatus('Done in ' + nf(secs, 1) + ' s · ' + field.tiles + ' terrain tiles' + (field.failed ? ' (' + field.failed + ' missing, treated as sea level)' : '') + '.');
+      writeHash(inp);
+    } catch (e) {
+      console.error(e);
+      setStatus('Couldn’t reach the elevation data. If this page is open inside an app’s file preview, open its web address in your browser instead. Otherwise check your connection and try again.', true);
+      setBar(0);
+    } finally {
+      busy = false; els.go.disabled = false;
+    }
+  }
+
+  // ---- Shareable link: #51.11700,-114.11700,h1.7,r2000,d250000,k0.13,v100 ----
+  function writeHash(inp) {
+    var h = '#' + inp.lat.toFixed(5) + ',' + inp.lon.toFixed(5) + ',h' + inp.eye + ',r' + inp.radius + ',d' + inp.range + ',k' + inp.k + ',v' + inp.vis;
+    try { history.replaceState(null, '', h); } catch (e) { /* file:// or sandboxed */ }
+  }
+  function readHash() {
+    var s = decodeURIComponent((location.hash || '').slice(1));
+    var m = s.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(.*)$/);
+    if (!m) return false;
+    els.loc.value = fmtLL(+m[1], +m[2]);
+    var rest = m[3];
+    var get = function (key) { var r = rest.match(new RegExp(',' + key + '(-?\\d+(?:\\.\\d+)?)')); return r ? r[1] : null; };
+    var setSel = function (el, v) { if (v != null && Array.prototype.some.call(el.options, function (o) { return o.value === String(+v); })) el.value = String(+v); };
+    if (get('h') != null) els.eye.value = get('h');
+    setSel(els.radius, get('r')); setSel(els.range, get('d')); setSel(els.refr, get('k')); setSel(els.vis, get('v'));
+    return true;
+  }
+  function copyLink() {
+    var btn = $('copyLink'), url = location.href;
+    var done = function () { btn.textContent = 'Link copied'; setTimeout(function () { btn.textContent = 'Copy link to this result'; }, 2000); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, function () { window.prompt('Copy this link:', url); });
+    } else { window.prompt('Copy this link:', url); }
+  }
+
+  // ---- Controls ----
+  function clearPresetPress() { document.querySelectorAll('#presets .chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); }); }
+  function applyPreset(name) {
+    var p = PRESETS[name]; if (!p) return;
+    els.loc.value = fmtLL(p.lat, p.lon);
+    els.eye.value = p.eye; els.radius.value = String(p.radius); els.range.value = String(p.range);
+    clearPresetPress();
+    var chip = document.querySelector('#presets [data-preset="' + name + '"]');
+    if (chip) chip.setAttribute('aria-pressed', 'true');
+  }
+  document.getElementById('presets').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-preset]'); if (!b) return;
+    applyPreset(b.getAttribute('data-preset'));
+    run();
+  });
+  ['loc', 'eye'].forEach(function (id) { els[id].addEventListener('input', clearPresetPress); });
+  els.form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
+  els.geo.addEventListener('click', function () {
+    if (!navigator.geolocation) { setStatus('This browser can’t share its location. Type coordinates or tap the map.', true); return; }
+    setStatus('Finding your location…');
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      els.loc.value = fmtLL(pos.coords.latitude, pos.coords.longitude);
+      clearPresetPress();
+      showPick(pos.coords.latitude, pos.coords.longitude);
+      run();
+    }, function () {
+      setStatus('Location access was blocked. Type coordinates or tap the map instead.', true);
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+  });
+  var resizeTimer = null, lastW = 0;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var w = els.prof.parentNode.clientWidth;
+      if (lastRun && Math.abs(w - lastW) > 8) { lastW = w; renderProfile(lastRun); }
+    }, 150);
+  });
+  try {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+      if (lastRun) drawMap(lastRun);
+    });
+  } catch (e) { /* older Safari */ }
+
+  // ---- Start ----
+  initMap();
+  var fromHash = readHash();
+  if (!fromHash) applyPreset('nose');
+  if (CONFIG.autoRun) run();
+  else { els.emptyResult.textContent = 'Pick a spot and press “Find longest sightline”.'; }
+
+  window.__sightline = { run: run, last: function () { return lastRun; } };
+})();
+</script>
+</body>
+</html>
