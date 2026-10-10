@@ -165,6 +165,14 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 .pill.ok { color: var(--ok); }
 .pill.warn { color: var(--warn); }
 .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.goto {
+  margin-top: 14px; padding: 12px 14px; display: grid; gap: 6px; justify-items: start;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 4px;
+}
+.goto p { margin: 0; font-size: 14px; color: var(--muted); }
+.goto .go-title { font: 600 1.25rem/1.15 var(--font-display); letter-spacing: 0.01em; color: var(--ink); }
+.goto .go-title strong { font-weight: 700; }
+.note .pill { margin: 0 6px 0 0; }
 .empty { color: var(--muted); margin: 0; }
 
 /* Sectors */
@@ -257,9 +265,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
           <select id="radius">
             <option value="0">This spot only</option>
             <option value="1000">Within 1 km</option>
-            <option value="2000" selected>Within 2 km</option>
+            <option value="2000">Within 2 km</option>
             <option value="5000">Within 5 km</option>
-            <option value="10000">Within 10 km</option>
+            <option value="10000" selected>Within 10 km</option>
           </select>
         </div>
         <div class="field">
@@ -335,8 +343,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         <p><strong>Curvature and refraction.</strong> Each point is lowered by d²/2R′, where R′ = R/(1−k) is the effective Earth radius. With k = 0.13, the standard value, light bends slightly downward and you see a little past the geometric horizon. Cold air near the ground bends it more.</p>
       </div>
       <div>
-        <p><strong>Ground only.</strong> Trees and buildings are not in the data. For a tower or a high floor, enter your height above the ground.</p>
-        <p><strong>Searching nearby.</strong> Up to eight of the highest spots in the search radius are tested at standing eye height (1.7 m), along with your own point at the height you entered. The winner gets the full sweep.</p>
+        <p><strong>Ground only.</strong> Trees and buildings are not in the elevation data, so a house across the street can block a line the finder calls clear. For a tower or a high floor, enter your height above the ground.</p>
+        <p><strong>Searching nearby.</strong> The finder tests your point, the lookouts, summits and observation decks mapped in OpenStreetMap within the radius, and up to eight of the highest spots of open ground, all at standing eye height (decks at their mapped height). A spot with 10 or more buildings within 150 m counts as built-up: high ground like that is skipped, and if your own point is built-up and you are below 30 m, it is reported but not chosen. A named public place wins over unnamed high ground when it comes within 3%.</p>
         <p><strong>Seeing it.</strong> The result assumes clear air. Haze lowers contrast as e<sup>−3.912·d/V</sup> (Koschmieder), where V is the visual range and about 2% contrast is the threshold. The clearance figure is how far the target rises above the skyline just in front of it, compared with the 1′ of arc that 20/20 vision resolves.</p>
         <p><strong>Water.</strong> Sea-floor depths are flattened to sea level, which also flattens the few land areas below sea level.</p>
       </div>
@@ -540,15 +548,38 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       }
     }
     pts.sort(function (a, b) { return b.h - a.h; });
-    var sep = Math.max(radius / 4, 250), picked = [];
+    var sep = Math.max(radius / 5, 250), picked = [];
     for (var i = 0; i < pts.length && picked.length < maxN; i++) {
-      var p = pts[i], ok = true;
+      // Walk each pick uphill to its local summit so a narrow hilltop between lattice points isn't missed.
+      var p = climb(field, pts[i].lat, pts[i].lon, Math.max(spacing * 2, 150)), ok = true;
+      if (distBearing(lat, lon, p.lat, p.lon)[0] > radius * 1.05) p = pts[i];
       for (var j = 0; j < picked.length; j++) {
         if (distBearing(p.lat, p.lon, picked[j].lat, picked[j].lon)[0] < sep) { ok = false; break; }
       }
       if (ok) picked.push(p);
     }
     return picked;
+  }
+
+  // Steepest-ascent walk on the finest grid, at most maxMove metres from the start.
+  function climb(field, lat, lon, maxMove) {
+    var L = field.levels[0];
+    var step = Math.max(10, TAU * R * Math.cos(lat * D2R) / L.scale);
+    var cosLat = Math.max(0.05, Math.cos(lat * D2R));
+    var la = lat, lo = lon, h = elevAt(field, lat, lon, 0);
+    for (var it = 0; it < 80; it++) {
+      var bh = h, bla = la, blo = lo;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        var nla = la + dy * step / M_PER_DEG, nlo = lo + dx * step / (M_PER_DEG * cosLat);
+        var nh = elevAt(field, nla, nlo, 0);
+        if (nh > bh + 0.05) { bh = nh; bla = nla; blo = nlo; }
+      }
+      if (bla === la && blo === lo) break;
+      if (distBearing(lat, lon, bla, blo)[0] > maxMove) break;
+      la = bla; lo = blo; h = bh;
+    }
+    return { lat: la, lon: wrapLon(lo), h: h };
   }
 
   // Tile coverage for a square of half-width hw metres around a point.
@@ -573,7 +604,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   function levelSpecs(maxRange, searchR) {
     return [
       { maxD: 10000, hw: searchR + 10000 + 300, zMax: 12, zMin: 8, maxTiles: 25 },
-      { maxD: 60000, hw: searchR + 60000 + 600, zMax: 10, zMin: 7, maxTiles: 42 },
+      { maxD: 60000, hw: searchR + 60000 + 600, zMax: 10, zMin: 7, maxTiles: 49 },
       { maxD: Infinity, hw: searchR + maxRange + 1500, zMax: 9, zMin: 5, maxTiles: 64 }
     ];
   }
@@ -585,7 +616,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   root.SightEngine = {
     R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
-    candidates: candidates, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
+    candidates: candidates, climb: climb, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
     tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
     mercY: mercY, wrapLon: wrapLon
   };
@@ -608,6 +639,10 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     ],
     basemap: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     basemapAttribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles</a>',
+    // OpenStreetMap Overpass API: lookouts, summits, observation decks, and building counts.
+    overpass: ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'],
+    builtUpRadius: 150,     // metres around a spot to count buildings
+    builtUpThreshold: 10,   // this many buildings or more = built-up
     autoRun: true,
     fetchConcurrency: 6
   };
@@ -725,6 +760,66 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     return { lon0: lon, levels: levels, tiles: jobs.length, failed: failed };
   }
 
+  // ---- OpenStreetMap: named lookouts nearby, and how built-up a spot is ----
+  // The elevation data is bare ground, so buildings and trees are invisible to the sweep.
+  // OSM tells us where the public lookouts are and which candidate spots sit among houses.
+  async function overpass(query, ms) {
+    var last = null;
+    for (var i = 0; i < CONFIG.overpass.length; i++) {
+      var ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms || 15000) : null;
+      try {
+        var resp = await fetch(CONFIG.overpass[i], {
+          method: 'POST', body: 'data=' + encodeURIComponent(query),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl ? ctl.signal : undefined
+        });
+        if (!resp.ok) throw new Error('Overpass returned ' + resp.status);
+        return await resp.json();
+      } catch (e) { last = e; } finally { if (timer) clearTimeout(timer); }
+    }
+    throw last || new Error('Overpass unavailable');
+  }
+  function ll5(lat, lon) { return lat.toFixed(5) + ',' + lon.toFixed(5); }
+
+  async function findPlaces(inp) {
+    var at = ll5(inp.lat, inp.lon), r = Math.round(inp.radius), q = '[out:json][timeout:20];';
+    if (r > 0) {
+      q += '(node["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
+           'way["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
+           'node["natural"~"^(peak|hill)$"](around:' + r + ',' + at + ');' +
+           'nwr["man_made"="tower"]["tower:type"="observation"](around:' + r + ',' + at + '););out center 80;';
+    }
+    q += 'way["building"](around:' + CONFIG.builtUpRadius + ',' + at + ');out count;';
+    var json = await overpass(q, 15000), places = [], count = null;
+    (json.elements || []).forEach(function (el) {
+      var t = el.tags || {};
+      if (el.type === 'count') { count = parseInt(t.ways || t.total || '0', 10); return; }
+      var lat = el.lat != null ? el.lat : (el.center && el.center.lat);
+      var lon = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (lat == null || lon == null) return;
+      var kind = t['tower:type'] === 'observation' ? 'tower' : t.tourism === 'viewpoint' ? 'viewpoint' : 'peak';
+      var height = parseFloat(t.height);
+      // Observation decks usually sit a little below a tower's full height.
+      var deck = kind === 'tower' && height > 3 ? Math.round(height * 0.85) : null;
+      places.push({ lat: lat, lon: lon, kind: kind, name: t.name || null, deck: deck });
+    });
+    return { places: places, buildingsNearYou: count };
+  }
+
+  async function buildingCounts(spots) {
+    var q = '[out:json][timeout:20];' + spots.map(function (s) {
+      return 'way["building"](around:' + CONFIG.builtUpRadius + ',' + ll5(s.lat, s.lon) + ');out count;';
+    }).join('');
+    var json = await overpass(q, 15000);
+    return (json.elements || []).filter(function (el) { return el.type === 'count'; })
+      .map(function (el) { return parseInt((el.tags || {}).ways || '0', 10); });
+  }
+
+  function spotLabel(c) {
+    if (c.name) return c.name;
+    return { tower: 'the observation tower', viewpoint: 'a mapped lookout', peak: 'a mapped summit', high: 'open high ground', you: 'your point' }[c.kind];
+  }
+
   // ---- Map ----
   var map = null, overlay = null, pickMarker = null;
   function initMap() {
@@ -760,15 +855,22 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var stride = Math.max(1, Math.round(res.rays / 360));
     for (var r = 0; r < res.rays; r += stride) pts.push(E.dest(res.lat, res.lon, r * 360 / res.rays, res.farD[r]));
     var poly = L.polygon(pts, { color: sky, weight: 1, fillColor: sky, fillOpacity: 0.14, interactive: false }).addTo(overlay);
+    var you = run.cands[0], moved = run.bestC !== you;
     run.cands.forEach(function (c) {
-      if (c === run.bestC) return;
-      L.circleMarker([c.lat, c.lon], { radius: 4, color: ink, weight: 1.5, fillOpacity: 0, interactive: false }).addTo(overlay);
+      if (c === run.bestC || c === you) return;
+      L.circleMarker([c.lat, c.lon], { radius: 4, color: ink, weight: 1.5, fillOpacity: 0 })
+        .bindTooltip(spotLabel(c) + (c.d != null ? ' · ' + nf(c.d / 1000, 1) + ' km' : '')).addTo(overlay);
     });
     var r0 = activeRay == null ? res.best : activeRay;
     var t = E.target(res, r0);
+    if (moved) {
+      L.polyline([[you.lat, you.lon], [res.lat, res.lon]], { color: ink, weight: 1.5, dashArray: '4 5', opacity: 0.8, interactive: false }).addTo(overlay);
+      L.circleMarker([you.lat, you.lon], { radius: 5, color: panel, weight: 1.5, fillColor: ink, fillOpacity: 1 })
+        .bindTooltip('Your point').addTo(overlay);
+    }
     L.polyline([[res.lat, res.lon], [t.lat, t.lon]], { color: tape, weight: 3.5, opacity: 0.95 }).addTo(overlay);
     L.circleMarker([res.lat, res.lon], { radius: 7, color: ink, weight: 2.5, fillColor: panel, fillOpacity: 1 })
-      .bindTooltip('You · ' + nf(res.hEye) + ' m').addTo(overlay);
+      .bindTooltip((moved ? 'Go here: ' + spotLabel(run.bestC) : 'You') + ' · eye ' + nf(res.hEye) + ' m').addTo(overlay);
     L.circleMarker([t.lat, t.lon], { radius: 7, color: panel, weight: 2, fillColor: tape, fillOpacity: 1 })
       .bindTooltip(nf(t.d / 1000, 1) + ' km · ' + nf(t.h) + ' m').addTo(overlay);
     if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, t.lon]), { padding: [24, 24] }); run.fit = false; }
@@ -790,15 +892,33 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     else if (clearArc >= 1) acuity = '<small>About ' + nf(Math.round(clearArc)) + '× the 1′ detail that 20/20 vision resolves.</small>';
     else acuity = '<small>Thinner than the 1′ detail that 20/20 vision resolves, so a faint bump at best.</small>';
 
+    // Where to stand, and what your own point would see.
+    var best = run.bestC, you = run.cands[0], youKm = you.d != null ? nf(you.d / 1000, 1) + ' km' : null;
+    var dirURL = 'https://www.google.com/maps/dir/?api=1&destination=' + res.lat.toFixed(5) + '%2C' + res.lon.toFixed(5);
+    var goBlock = '', youBlock = '';
+    if (moved) {
+      goBlock = '<div class="goto"><p class="go-title">Go to <strong>' + esc(spotLabel(best)) + '</strong></p>' +
+        '<p>' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point. ' +
+        (best.kind === 'tower' && best.eye > 2 ? 'Seen from the observation deck, about ' + nf(best.eye) + ' m up.' : 'Seen standing on the ground.') + '</p>' +
+        '<a class="btn-ghost" href="' + dirURL + '" target="_blank" rel="noopener">Directions</a></div>';
+      youBlock = run.urbanYou
+        ? '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings, so at street level they block the view.' + (youKm ? ' With nothing built in the way it would reach ' + youKm + '.' : '') + '</p>'
+        : (youKm ? '<p class="note">Your point itself reaches ' + youKm + '.</p>' : '');
+    } else if (run.urbanYou) {
+      youBlock = '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings. At street level they will block this; it is the view with nothing built in the way.' +
+        (inp.radius < 10000 ? ' Set “Search nearby” to 10 km to find open high ground.' : ' No open high ground nearby does better.') + '</p>';
+    }
+    var bare = 'Bare ground only: the elevation data has no buildings or trees, so check that nothing close to the spot is in the way.' +
+      (run.osmOK ? '' : ' The lookup of nearby lookouts and buildings didn’t respond, so this run used terrain alone.');
+
     var html = '' +
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
       '<span class="alt">' + nf(t.d / 1609.344, 1) + ' mi</span></div>' +
       '<p class="headline">Looking <strong>' + E.compass16(t.bearing) + '</strong> (' + nf(t.bearing, 1) + '°) to ground at <strong>' + nf(t.h) + ' m</strong></p>' +
-      (moved
-        ? '<p class="note">From high ground ' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point, at standing eye height. Your point itself reaches ' + nf(run.cands[0].d / 1000, 1) + ' km.</p>'
-        : '') +
+      goBlock + youBlock +
+      '<p class="note">' + bare + '</p>' +
       '<dl class="facts">' +
-        '<div><dt>Your eye</dt><dd>' + nf(res.hEye) + ' m<small>' + nf(res.ground) + ' m ground + ' + nf(res.eyeH, res.eyeH < 10 ? 1 : 0) + ' m height</small></dd></div>' +
+        '<div><dt>Eye height</dt><dd>' + nf(res.hEye) + ' m<small>' + nf(res.ground) + ' m ground + ' + nf(res.eyeH, res.eyeH < 10 ? 1 : 0) + ' m ' + (moved && run.bestC.kind === 'tower' && res.eyeH > 2 ? 'deck' : 'height') + '</small></dd></div>' +
         '<div><dt>Target</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">' + fmtLL(t.lat, t.lon) + '</a></dd></div>' +
         '<div><dt>Hidden by the curve</dt><dd>' + nf(t.drop) + ' m<small>How far the Earth’s curve (with refraction) drops the target below a flat line.</small></dd></div>' +
         '<div><dt>Clearance</dt><dd>' + (isFinite(clearArc) ? nf(clearArc, 1) + '′ of arc' : '—') + acuity + '</dd></div>' +
@@ -807,7 +927,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
           '<small>At ' + nf(V) + ' km visual range. The eye needs about 2%.</small></dd></div>' +
       '</dl>' +
       '<div class="links">' +
-        '<a class="btn-ghost" href="' + gm(res.lat, res.lon) + '" target="_blank" rel="noopener">Open your spot in Maps</a>' +
+        (moved ? '' : '<a class="btn-ghost" href="' + gm(res.lat, res.lon) + '" target="_blank" rel="noopener">Open your spot in Maps</a>') +
         '<button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button>' +
       '</div>';
     els.emptyResult.hidden = true;
@@ -915,31 +1035,78 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var t0 = performance.now();
     try {
       setStatus('Loading terrain…');
+      var placesP = findPlaces(inp).catch(function (e) { console.warn('OSM lookup failed', e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
-        setStatus('Loading terrain tiles ' + d + ' of ' + n + '…'); setBar(d / n * 0.7);
+        setStatus('Loading terrain tiles ' + d + ' of ' + n + '…'); setBar(d / n * 0.65);
       });
-      await tick();
-      var cands = [{ lat: inp.lat, lon: inp.lon, eye: inp.eye, user: true }]
-        .concat(E.candidates(field, inp.lat, inp.lon, inp.radius, 8).map(function (c) { return { lat: c.lat, lon: c.lon, eye: 1.7 }; }));
-      var bestC = cands[0];
-      if (cands.length > 1) {
-        var bestD = -1;
-        for (var i = 0; i < cands.length; i++) {
-          setStatus('Checking spot ' + (i + 1) + ' of ' + cands.length + '…'); setBar(0.7 + 0.2 * i / cands.length);
-          await tick();
-          var rq = E.sweep(field, cands[i].lat, cands[i].lon, cands[i].eye, { rays: 360, maxRange: inp.range, k: inp.k });
-          cands[i].d = rq.farD[rq.best];
-          // Spots are ordered your point first, then highest ground. A later spot has to win
-          // clearly, so ray-spacing noise doesn't pull the answer off your point or the summit.
-          if (cands[i].d > bestD + Math.max(500, bestD * 0.005)) { bestD = cands[i].d; bestC = cands[i]; }
-        }
+      setStatus('Looking up lookouts and buildings nearby…');
+      var osm = await placesP;
+
+      // Your point. At street level among buildings it can't really see out, so it competes
+      // only when nothing else is on offer (or when you've said you're above the rooftops).
+      var you = { lat: inp.lat, lon: inp.lon, eye: inp.eye, kind: 'you', name: null };
+      var nearYou = osm ? osm.buildingsNearYou : null;
+      var urbanYou = nearYou != null && nearYou >= CONFIG.builtUpThreshold && inp.eye < 30;
+
+      // Named lookouts, summits and observation decks from OpenStreetMap.
+      var named = [];
+      if (osm && inp.radius > 0) {
+        var inR = osm.places.filter(function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; });
+        inR.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
+        var towers = inR.filter(function (p) { return p.kind === 'tower'; }).slice(0, 3);
+        var others = inR.filter(function (p) { return p.kind !== 'tower'; }).sort(function (a, b) { return b.ground - a.ground; }).slice(0, 6);
+        named = towers.concat(others).map(function (p) {
+          return { lat: p.lat, lon: p.lon, eye: p.kind === 'tower' && p.deck ? p.deck : 1.7, kind: p.kind, name: p.name };
+        });
       }
+
+      // Highest open ground: terrain summits in the radius that aren't surrounded by buildings.
+      var highs = inp.radius > 0 ? E.candidates(field, inp.lat, inp.lon, inp.radius, 12) : [];
+      highs = highs.filter(function (h) {
+        return !named.some(function (n) { return E.distBearing(h.lat, h.lon, n.lat, n.lon)[0] < 200; });
+      });
+      var openKnown = false;
+      if (highs.length && osm) {
+        try {
+          var counts = await buildingCounts(highs);
+          if (counts.length === highs.length) {
+            highs.forEach(function (h, i) { h.built = counts[i]; });
+            openKnown = true;
+          }
+        } catch (e) { console.warn('Building count failed', e); }
+      }
+      var openHighs = openKnown ? highs.filter(function (h) { return h.built < CONFIG.builtUpThreshold; }) : highs;
+      openHighs = openHighs.slice(0, 8).map(function (h) { return { lat: h.lat, lon: h.lon, eye: 1.7, kind: 'high', name: null }; });
+
+      var cands = [you].concat(named, openHighs);
+      for (var i = 0; i < cands.length; i++) {
+        if (cands.length === 1) break;
+        setStatus('Checking spot ' + (i + 1) + ' of ' + cands.length + '…'); setBar(0.7 + 0.2 * i / cands.length);
+        await tick();
+        var rq = E.sweep(field, cands[i].lat, cands[i].lon, cands[i].eye, { rays: 360, maxRange: inp.range, k: inp.k });
+        cands[i].d = rq.farD[rq.best];
+      }
+      // Pick the winner in order (your point, named places, open high ground). A later spot has to
+      // win clearly, so ray-spacing noise doesn't pull the answer off your point or a summit.
+      var eligible = cands.filter(function (c) { return !(c === you && urbanYou); });
+      if (!eligible.length) eligible = [you];
+      var bestC = eligible[0], bestD = eligible[0].d == null ? -1 : eligible[0].d;
+      eligible.forEach(function (c) {
+        if (c.d != null && c.d > bestD + Math.max(500, bestD * 0.005)) { bestD = c.d; bestC = c; }
+      });
+      // A named public place within 3% of unnamed high ground is the more useful answer.
+      if (bestC.kind === 'high') {
+        var pick = null;
+        named.forEach(function (n) { if (n.d >= bestC.d * 0.97 && (!pick || n.d > pick.d)) pick = n; });
+        if (pick) bestC = pick;
+      }
+
       setStatus('Sweeping 1,440 bearings…'); setBar(0.92);
       await tick();
       var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k });
-      if (cands.length === 1) cands[0].d = res.farD[res.best];
-      else if (bestC === cands[0]) cands[0].d = res.farD[res.best];
-      lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true };
+      bestC.d = res.farD[res.best];
+      lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true,
+                  urbanYou: urbanYou, osmOK: !!osm, openKnown: openKnown };
       activeRay = null;
       renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
       setBar(1);
