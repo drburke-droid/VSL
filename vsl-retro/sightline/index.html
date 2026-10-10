@@ -135,6 +135,9 @@ input:focus, select:focus { border-color: var(--sky); }
   padding: 14px 16px; cursor: pointer; width: 100%;
 }
 .go:disabled { opacity: 0.6; cursor: progress; }
+.advanced { border-top: 1px solid var(--rule); padding-top: 12px; display: grid; gap: 12px; }
+.advanced summary { cursor: pointer; font: 500 14px/1.3 var(--font-body); color: var(--ink); }
+.advanced[open] summary { margin-bottom: 4px; }
 .status { margin: 0; min-height: 1.5em; font: 400 13px/1.5 var(--font-data); color: var(--muted); }
 .status.error { color: var(--warn); }
 .progress { height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
@@ -159,7 +162,7 @@ dl.facts > div {
   padding-block: 9px; border-bottom: 1px solid var(--rule);
 }
 dl.facts dt { font-size: 14px; color: var(--muted); }
-dl.facts dd { margin: 0; font: 400 14px/1.45 var(--font-data); font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+dl.facts dd { margin: 0; font: 400 14px/1.45 var(--font-body); font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
 dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: var(--muted); margin-top: 2px; }
 .pill {
   display: inline-block; font: 600 11px/1 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase;
@@ -176,18 +179,25 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 .goto .go-title { font: 600 1.25rem/1.15 var(--font-display); letter-spacing: 0.01em; color: var(--ink); }
 .goto .go-title strong { font-weight: 700; }
 .note .pill { margin: 0 6px 0 0; }
+.startline { margin: 8px 0 0; font-size: 15px; }
+.startline strong, .headline strong { font-weight: 600; }
+.leaflet-tooltip.map-tag {
+  font: 500 12px/1.2 var(--font-body); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--rule); border-radius: 3px; box-shadow: none; padding: 3px 6px;
+}
+.leaflet-tooltip.map-tag::before { display: none; }
 .empty { color: var(--muted); margin: 0; }
 
 /* Sectors */
 .sector-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .sector-list button {
-  width: 100%; display: grid; grid-template-columns: 2.6em minmax(0, 1fr) 5.2em; align-items: center; gap: 10px;
+  width: 100%; display: grid; grid-template-columns: 6.4em minmax(0, 1fr) 5.2em; align-items: center; gap: 10px;
   background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 6px 8px; cursor: pointer;
   color: var(--ink); font: 400 14px/1.2 var(--font-data); font-variant-numeric: tabular-nums; text-align: left;
 }
 .sector-list button:hover { border-color: var(--rule); }
 .sector-list button[aria-pressed="true"] { border-color: var(--tape); }
-.sector-list .dir { font: 600 15px/1 var(--font-display); letter-spacing: 0.04em; }
+.sector-list .dir { font: 600 15px/1 var(--font-display); letter-spacing: 0.02em; }
 .sector-list .bar { height: 8px; background: var(--rule); border-radius: 1px; position: relative; overflow: hidden; }
 .sector-list .bar > i { position: absolute; inset: 0 auto 0 0; background: var(--sky); }
 .sector-list .win .bar > i { background: var(--tape); }
@@ -235,82 +245,86 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   <header class="masthead">
     <p class="eyebrow">Visual Systems Lab · Calgary Vision Centre</p>
     <h1>Longest Sightline Finder</h1>
-    <p class="lede">Pick a spot. The finder sweeps 1,440 compass bearings across real terrain, bends each one over the curve of the Earth, and reports the farthest ground you could see on a perfectly clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/news/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">The Longest Sightline on Earth&nbsp;→</a></p>
+    <p class="lede">How far could you see from your town? Type a place, tap the map, or use your location. The finder goes to the highest spot nearby, a hilltop, a mountain or the top of a skyscraper, and works out the farthest point you could see from there on a clear day, allowing for the curve of the Earth. <a id="blogLink" href="https://calgaryvisioncentre.com/news/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
   </header>
 
   <main class="app">
     <form class="card form" id="form" novalidate>
       <div class="field">
-        <label class="label" for="loc">Location</label>
+        <label class="label" for="loc">Where?</label>
         <div class="row">
-          <input type="text" id="loc" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="Calgary, or 51.117, -114.117">
+          <input type="text" id="loc" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false" placeholder="A town, city or place">
           <button type="button" class="btn-ghost" id="geo">Use my location</button>
         </div>
         <div class="matches" id="matches" hidden></div>
-        <p class="hint">A city or place, coordinates, or a Google Maps link. Or tap the map.</p>
+        <p class="hint">Or tap anywhere on the map. Coordinates and Google Maps links work too.</p>
       </div>
 
       <div class="field">
-        <span class="label" id="presetLabel">Try</span>
+        <span class="label" id="presetLabel">Or try</span>
         <div class="row" role="group" aria-labelledby="presetLabel" id="presets">
-          <button type="button" class="chip" data-preset="nose">Nose Hill</button>
+          <button type="button" class="chip" data-preset="nose">Nose Hill, Calgary</button>
           <button type="button" class="chip" data-preset="bow">Top of Bow Tower</button>
           <button type="button" class="chip" data-preset="whitney">Mt. Whitney</button>
         </div>
       </div>
 
-      <div class="grid2">
-        <div class="field">
-          <label class="label" for="eye">Eye height (m)</label>
-          <input type="number" id="eye" min="0" max="2000" step="0.1" value="1.7">
-        </div>
-        <div class="field">
-          <label class="label" for="radius">Climb to highest point</label>
-          <select id="radius">
-            <option value="0">No, stay here</option>
-            <option value="1000">Within 1 km</option>
-            <option value="2000">Within 2 km</option>
-            <option value="5000">Within 5 km</option>
-            <option value="10000" selected>Within 10 km</option>
-            <option value="20000">Within 20 km</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="label" for="range">Look out to</label>
-          <select id="range">
-            <option value="100000">100 km</option>
-            <option value="150000">150 km</option>
-            <option value="250000" selected>250 km</option>
-            <option value="350000">350 km</option>
-            <option value="500000">500 km</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="label" for="refr">Refraction</label>
-          <select id="refr">
-            <option value="0">None</option>
-            <option value="0.13" selected>Standard · k 0.13</option>
-            <option value="0.2">Cold air · k 0.20</option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label class="label" for="vis">Air clarity, for the haze estimate</label>
-        <select id="vis">
-          <option value="40">Hazy · 40 km visual range</option>
-          <option value="100">Clear · 100 km</option>
-          <option value="200" selected>Very clear · 200 km</option>
-          <option value="300">Pristine · 300 km</option>
-        </select>
-      </div>
-
-      <button type="submit" class="go" id="go">Find longest sightline</button>
+      <button type="submit" class="go" id="go">Find the longest view</button>
       <div class="progress" aria-hidden="true"><i id="bar"></i></div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <details class="advanced" id="advanced">
+        <summary>More options</summary>
+        <div class="grid2">
+          <div class="field">
+            <label class="label" for="radius">Look for high ground</label>
+            <select id="radius">
+              <option value="0">Stay exactly here</option>
+              <option value="1000">Within 1 km</option>
+              <option value="2000">Within 2 km</option>
+              <option value="5000">Within 5 km</option>
+              <option value="10000" selected>Within 10 km</option>
+              <option value="20000">Within 20 km</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="eye">Your height above ground</label>
+            <input type="number" id="eye" min="0" max="2000" step="0.1" value="1.7" aria-describedby="eyeHint">
+          </div>
+          <div class="field">
+            <label class="label" for="range">Look as far as</label>
+            <select id="range">
+              <option value="100000">100 km</option>
+              <option value="150000">150 km</option>
+              <option value="250000" selected>250 km</option>
+              <option value="350000">350 km</option>
+              <option value="500000">500 km</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="label" for="refr">Air bending light</label>
+            <select id="refr">
+              <option value="0.13" selected>Normal</option>
+              <option value="0">None (pure geometry)</option>
+              <option value="0.2">Extra (cold, still air)</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" id="eyeHint">Height is in metres: 1.7 is standing on the ground. Add more for a balcony or tower, or choose “Stay exactly here” to use only your spot.</p>
+        <div class="field">
+          <label class="label" for="vis">How clear is the air?</label>
+          <select id="vis">
+            <option value="40">Hazy (you can see about 40 km)</option>
+            <option value="100">Clear (about 100 km)</option>
+            <option value="200" selected>Very clear (about 200 km)</option>
+            <option value="300">Crystal clear (about 300 km)</option>
+          </select>
+        </div>
+      </details>
     </form>
 
     <section class="card result" id="result" aria-live="polite">
-      <h2>Longest sightline</h2>
+      <h2 id="resultTitle">The longest view</h2>
       <p class="empty" id="emptyResult">Loading the first example…</p>
       <div id="resultBody" hidden></div>
     </section>
@@ -319,40 +333,38 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       <div class="card" style="padding:10px">
         <div id="map" role="region" aria-label="Map of the sightline"></div>
         <div class="legend">
-          <span><i class="sw"></i>Longest sightline</span>
-          <span><i class="sw area"></i>Farthest visible ground on each bearing</span>
-          <span><i class="sw dot"></i>Viewpoint</span>
+          <span><i class="sw dot"></i>Where the view starts</span>
+          <span><i class="sw"></i>Line of sight</span>
+          <span><i class="sw area"></i>Farthest ground visible in each direction</span>
         </div>
       </div>
       <section class="card profile">
-        <h2 id="profTitle">Profile along the sightline</h2>
+        <h2 id="profTitle">Side view</h2>
         <figure>
-          <div class="svgbox"><svg id="prof" viewBox="0 0 640 250" role="img" aria-label="Terrain profile"></svg></div>
-          <figcaption id="profCap">Terrain is drawn against a straight line from your eye, so the bulge of the Earth shows.</figcaption>
+          <div class="svgbox"><svg id="prof" viewBox="0 0 640 250" role="img" aria-label="Side view of the line of sight over the terrain"></svg></div>
+          <figcaption id="profCap">Your eye is on the left. The orange line is your line of sight skimming over the hills, and the dashed line is sea level curving away with the Earth.</figcaption>
         </figure>
       </section>
     </div>
 
     <section class="card sectors">
-      <h2>Longest in each direction</h2>
+      <h2>How far you can see in each direction</h2>
       <ul class="sector-list" id="sectorList"><li class="empty">Appears after a search.</li></ul>
     </section>
   </main>
 
   <details class="method card">
-    <summary>How it works and what it leaves out</summary>
+    <summary>How it works</summary>
     <div class="cols">
       <div>
-        <p><strong>Terrain.</strong> Elevation comes from the free Terrain Tiles dataset on AWS Open Data, which blends SRTM, Canada's CDEM, the US NED and other sources. Resolution is about 20–50 m within 10 km of you, about 100 m out to 60 km, and a few hundred metres beyond that.</p>
-        <p><strong>The sweep.</strong> From the eye, each bearing is stepped outward along a great circle. A point counts as visible when its elevation angle is at least as steep as everything closer to you. The last visible point on a bearing is that bearing's sightline.</p>
-        <p><strong>Curvature and refraction.</strong> Each point is lowered by d²/2R′, where R′ = R/(1−k) is the effective Earth radius. With k = 0.13, the standard value, light bends slightly downward and you see a little past the geometric horizon. Cold air near the ground bends it more.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
+        <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
       <div>
-        <p><strong>Ground only.</strong> Trees and buildings are not in the elevation data, so a house across the street can block a line the finder calls clear. For a tower or a high floor, enter your height above the ground.</p>
-        <p><strong>Climbing to the highest point.</strong> Within the radius you pick, the viewpoint is whichever is highest: the top of the terrain (found pixel by pixel), a public observation deck mapped in OpenStreetMap at its mapped height, or your own point at the height you entered. Summits are viewed at standing eye height and take the name of a mapped peak or lookout beside them. A spot with 10 or more buildings within 150 m counts as built-up: the finder moves on to the highest open ground instead, and a built-up point of yours is reported but not used unless you are 30 m or more up.</p>
-        <p><strong>Seeing it.</strong> The result assumes clear air. Haze lowers contrast as e<sup>−3.912·d/V</sup> (Koschmieder), where V is the visual range and about 2% contrast is the threshold. The clearance figure is how far the target rises above the skyline just in front of it, compared with the 1′ of arc that 20/20 vision resolves.</p>
-        <p><strong>Water.</strong> Sea-floor depths are flattened to sea level, which also flattens the few land areas below sea level.</p>
-        <p><strong>Place names.</strong> Cities are looked up with Open-Meteo’s geocoder (GeoNames data), and anything it doesn’t know with OpenStreetMap’s Nominatim. A city lands on its centre, and the finder then climbs to the highest point within the radius.</p>
+        <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
+        <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
+        <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level.</p>
       </div>
     </div>
   </details>
@@ -457,7 +469,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var levels = field.levels, lv = levelIndex(field, st);
     var phi1 = lat * D2R, sp1 = Math.sin(phi1), cp1 = Math.cos(phi1);
     var x0 = lamN(field, lon);
-    var ground = elevAt(field, lat, lon, 0);
+    var ground = opt.ground != null ? opt.ground : elevAt(field, lat, lon, 0);
     var hEye = ground + eyeH;
     var clampSea = field.seaClamp !== false;
     var farI = new Int32Array(rays), farD = new Float64Array(rays), farH = new Float32Array(rays);
@@ -590,6 +602,26 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     return { lat: la, lon: lo, h: elevAt(field, la, lo, 0) };
   }
 
+  // Raise the two finest grids where tall buildings stand, so they block lines of sight.
+  // Each obstacle: { lat, lon, ground, height, size (footprint side, m) }.
+  function addObstacles(field, obs) {
+    var n = 0;
+    for (var li = 0; li < Math.min(2, field.levels.length); li++) {
+      var L = field.levels[li], d = L.data, w = L.w;
+      obs.forEach(function (o) {
+        var px = lamN(field, o.lon) * L.scale - L.offX, py = (0.5 - mercY(o.lat) / TAU) * L.scale - L.offY;
+        var mpp = TAU * R * Math.cos(o.lat * D2R) / L.scale, half = Math.max(0.5, (o.size || 40) / 2 / mpp);
+        var top = o.ground + o.height;
+        for (var y = Math.max(0, Math.round(py - half)); y <= Math.min(L.h - 1, Math.round(py + half)); y++) {
+          for (var x = Math.max(0, Math.round(px - half)); x <= Math.min(w - 1, Math.round(px + half)); x++) {
+            if (d[y * w + x] < top) { d[y * w + x] = top; n++; }
+          }
+        }
+      });
+    }
+    return n;
+  }
+
   // Steepest-ascent walk on the finest grid, at most maxMove metres from the start.
   function climb(field, lat, lon, maxMove) {
     var L = field.levels[0];
@@ -645,7 +677,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   root.SightEngine = {
     R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
-    candidates: candidates, climb: climb, highestPoint: highestPoint, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
+    candidates: candidates, climb: climb, highestPoint: highestPoint, addObstacles: addObstacles, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
     tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
     mercY: mercY, wrapLon: wrapLon
   };
@@ -673,6 +705,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     // Place-name lookup: cities first, then anything else.
     geocoder: 'https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&format=json&name=',
     placeSearch: 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language=en&q=',
+    reverse: 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=en&',
+    tallBuilding: 60,       // metres: buildings this tall or taller are viewpoints and obstacles
     builtUpRadius: 150,     // metres around a spot to count buildings
     builtUpThreshold: 10,   // this many buildings or more = built-up
     autoRun: true,
@@ -680,9 +714,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   };
 
   var PRESETS = {
-    nose:    { lat: 51.117,  lon: -114.117,  eye: 1.7, radius: 2000, range: 250000 },
-    bow:     { lat: 51.04778, lon: -114.06222, eye: 230, radius: 0,   range: 250000 },
-    whitney: { lat: 36.5786, lon: -118.2920, eye: 1.7, radius: 1000, range: 350000 }
+    nose:    { name: 'Nose Hill', lat: 51.117,  lon: -114.117,  eye: 1.7, radius: 2000, range: 250000 },
+    bow:     { name: 'the top of Bow Tower', lat: 51.04778, lon: -114.06222, eye: 230, radius: 0, range: 250000 },
+    whitney: { name: 'Mt. Whitney', lat: 36.5786, lon: -118.2920, eye: 1.7, radius: 1000, range: 350000 }
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -690,8 +724,13 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     form: $('form'), loc: $('loc'), geo: $('geo'), eye: $('eye'), radius: $('radius'), range: $('range'),
     refr: $('refr'), vis: $('vis'), go: $('go'), status: $('status'), bar: $('bar'),
     emptyResult: $('emptyResult'), resultBody: $('resultBody'), sectorList: $('sectorList'),
-    prof: $('prof'), profTitle: $('profTitle'), profCap: $('profCap')
+    prof: $('prof'), profTitle: $('profTitle'), profCap: $('profCap'), resultTitle: $('resultTitle')
   };
+
+  // How the location was given decides how results are worded:
+  // 'geo' = the visitor's own position ("near you", with directions);
+  // 'place' = a typed town or place; 'preset' = one of the examples; 'point' = a map tap or coordinates.
+  var locSource = { kind: 'typed' };
 
   var nf = function (x, dp) { return x.toLocaleString('en-CA', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); };
   function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
@@ -847,9 +886,62 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       .map(function (el) { return parseInt((el.tags || {}).ways || '0', 10); });
   }
 
+  function parseHeight(t) {
+    var h = String(t.height || '').trim(), v = parseFloat(h);
+    if (isFinite(v)) return /ft|'/.test(h) ? v * 0.3048 : v;
+    var lv = parseFloat(t['building:levels']);
+    return isFinite(lv) ? lv * 3.5 : NaN;
+  }
+
+  // Buildings and towers 60 m or taller: possible viewpoints (their roofs) and obstacles.
+  async function findTowers(inp) {
+    var r = Math.round(Math.max(inp.radius, 5000)), at = ll5(inp.lat, inp.lon), H = CONFIG.tallBuilding;
+    var q = '[out:json][timeout:25];(' +
+      'nwr["building"](around:' + r + ',' + at + ')(if:number(t["height"])>=' + H + '||number(t["building:levels"])>=' + Math.round(H / 3.5) + ');' +
+      'nwr["man_made"="tower"](around:' + r + ',' + at + ')(if:number(t["height"])>=' + H + '););out center tags 3000;';
+    var json = await overpass(q, 25000), out = [];
+    (json.elements || []).forEach(function (el) {
+      var t = el.tags || {}, h = parseHeight(t);
+      var lat = el.lat != null ? el.lat : (el.center && el.center.lat), lon = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (!(h >= H) || lat == null || lon == null) return;
+      var isTower = t.man_made === 'tower';
+      // Masts don't block a view and can't be stood on; observation towers can.
+      var observation = isTower && (t['tower:type'] === 'observation' || !!t.tourism);
+      if (isTower && !observation) return;
+      out.push({ lat: lat, lon: lon, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
+                 deck: isTower ? Math.round(h * 0.85) : null });
+    });
+    return out;
+  }
+
+  // A friendly name for the far point: a named peak near it, or the area it lies in.
+  var nameCache = new Map();
+  async function nameFor(lat, lon) {
+    var key = lat.toFixed(3) + ',' + lon.toFixed(3);
+    if (nameCache.has(key)) return nameCache.get(key);
+    var found = null;
+    try {
+      var j = await overpass('[out:json][timeout:10];node["natural"~"^(peak|volcano|hill)$"]["name"](around:4000,' + ll5(lat, lon) + ');out 30;', 10000);
+      (j.elements || []).forEach(function (el) {
+        var d = E.distBearing(lat, lon, el.lat, el.lon)[0];
+        if (!found || d < found.d) found = { name: el.tags.name, d: d, kind: 'peak' };
+      });
+    } catch (e) { console.warn('Peak lookup failed', e); }
+    if (!found) {
+      try {
+        var r = await fetchJSON(CONFIG.reverse + 'lat=' + lat.toFixed(5) + '&lon=' + lon.toFixed(5), 8000);
+        var a = (r && r.address) || {};
+        var area = a.city || a.town || a.village || a.hamlet || a.municipality || a.county || a.state_district || a.state;
+        if (area) found = { name: area, d: Infinity, kind: 'area' };
+      } catch (e) { console.warn('Area lookup failed', e); }
+    }
+    nameCache.set(key, found);
+    return found;
+  }
+
   function spotLabel(c) {
     if (c.name) return c.name;
-    return { tower: 'the observation tower', viewpoint: 'a mapped lookout', peak: 'the summit', high: 'the top', you: 'your point' }[c.kind];
+    return { tower: 'the observation tower', building: 'a tall building', viewpoint: 'a lookout', peak: 'the summit', high: 'the highest ground', you: 'here' }[c.kind];
   }
 
   // ---- Map ----
@@ -865,10 +957,11 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     map.on('click', function (e) {
       var ll = e.latlng.wrap();
       els.loc.value = fmtLL(ll.lat, ll.lng);
+      locSource = { kind: 'point' };
       hideMatches();
       clearPresetPress();
       showPick(ll.lat, ll.lng);
-      setStatus('Location set. Press “Find longest sightline”.');
+      setStatus('Spot picked. Press “Find the longest view”.');
     });
   }
   function showPick(lat, lon) {
@@ -879,96 +972,128 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   var lastRun = null, activeRay = null;
 
+  var DIR8 = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'];
+  function dirWord(b) { return DIR8[Math.round((((b % 360) + 360) % 360) / 45) % 8]; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  // The place the search was centred on, as it reads in a sentence.
+  function whereName(inp) {
+    if (inp.source === 'geo') return 'you';
+    if (inp.placeName) return inp.placeName;
+    return 'this spot';
+  }
+  function startLabel(c, inp) {
+    if (c.kind === 'you') return inp.source === 'geo' ? 'You' : (inp.placeName ? cap(inp.placeName) : 'This spot');
+    if (c.kind === 'building') return c.name ? 'Roof of ' + c.name : 'Roof of a tall building';
+    if (c.kind === 'tower') return c.name ? c.name + ' deck' : 'Observation deck';
+    return c.name || 'Highest ground';
+  }
+
   function drawMap(run) {
     if (!map) return;
     if (pickMarker) { pickMarker.remove(); pickMarker = null; }
     overlay.clearLayers();
-    var res = run.res, ink = cssVar('--ink'), tape = cssVar('--tape'), sky = cssVar('--sky'), panel = cssVar('--panel');
+    var res = run.res, inp = run.input, ink = cssVar('--ink'), tape = cssVar('--tape'), sky = cssVar('--sky'), panel = cssVar('--panel');
     var pts = [];
     var stride = Math.max(1, Math.round(res.rays / 360));
     for (var r = 0; r < res.rays; r += stride) pts.push(E.dest(res.lat, res.lon, r * 360 / res.rays, res.farD[r]));
     var poly = L.polygon(pts, { color: sky, weight: 1, fillColor: sky, fillOpacity: 0.14, interactive: false }).addTo(overlay);
     var you = run.cands[0], moved = run.bestC !== you;
-    run.cands.forEach(function (c) {
-      if (c === run.bestC || c === you) return;
-      L.circleMarker([c.lat, c.lon], { radius: 4, color: ink, weight: 1.5, fillOpacity: 0 })
-        .bindTooltip(spotLabel(c) + (c.d != null ? ' · ' + nf(c.d / 1000, 1) + ' km' : '')).addTo(overlay);
-    });
     var r0 = activeRay == null ? res.best : activeRay;
     var t = E.target(res, r0);
-    if (moved) {
+    // Only someone using their own location gets a "you are here" marker and a path to the start.
+    if (moved && inp.source === 'geo') {
       L.polyline([[you.lat, you.lon], [res.lat, res.lon]], { color: ink, weight: 1.5, dashArray: '4 5', opacity: 0.8, interactive: false }).addTo(overlay);
       L.circleMarker([you.lat, you.lon], { radius: 5, color: panel, weight: 1.5, fillColor: ink, fillOpacity: 1 })
-        .bindTooltip('Your point').addTo(overlay);
+        .bindTooltip('You', { permanent: true, direction: 'left', className: 'map-tag' }).addTo(overlay);
     }
     L.polyline([[res.lat, res.lon], [t.lat, t.lon]], { color: tape, weight: 3.5, opacity: 0.95 }).addTo(overlay);
     L.circleMarker([res.lat, res.lon], { radius: 7, color: ink, weight: 2.5, fillColor: panel, fillOpacity: 1 })
-      .bindTooltip((moved ? 'Go here: ' + spotLabel(run.bestC) : 'You') + ' · eye ' + nf(res.hEye) + ' m').addTo(overlay);
+      .bindTooltip('Start: ' + esc(startLabel(run.bestC, inp)), { permanent: true, direction: 'right', className: 'map-tag' }).addTo(overlay);
     L.circleMarker([t.lat, t.lon], { radius: 7, color: panel, weight: 2, fillColor: tape, fillOpacity: 1 })
-      .bindTooltip(nf(t.d / 1000, 1) + ' km · ' + nf(t.h) + ' m').addTo(overlay);
-    if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, t.lon]), { padding: [24, 24] }); run.fit = false; }
+      .bindTooltip(nf(t.d / 1000, 1) + ' km', { permanent: true, direction: 'top', className: 'map-tag' }).addTo(overlay);
+    if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, t.lon]), { padding: [28, 28] }); run.fit = false; }
   }
 
   // ---- Result panel ----
+  var VIS_WORD = { 40: 'hazy', 100: 'clear', 200: 'very clear', 300: 'crystal-clear' };
   function renderResult(run) {
-    var res = run.res, t = E.target(res, res.best), inp = run.input;
-    var clearArc = t.clearRad * 180 / Math.PI * 60;
-    var V = inp.vis;
-    var contrast = Math.exp(-3.912 * (t.d / 1000) / V) * 100;
-    var seen = contrast >= 2;
+    var res = run.res, t = E.target(res, res.best), inp = run.input, best = run.bestC, you = run.cands[0];
+    var moved = best !== you, geo = inp.source === 'geo', where = whereName(inp), within = nf(inp.radius / 1000) + ' km';
     var gm = function (la, lo) { return 'https://www.google.com/maps/search/?api=1&query=' + la.toFixed(5) + '%2C' + lo.toFixed(5); };
-    var moved = run.bestC !== run.cands[0];
-    var off = moved ? E.distBearing(inp.lat, inp.lon, res.lat, res.lon) : null;
 
-    var acuity;
-    if (!isFinite(clearArc)) acuity = '<small>Too close to separate from the foreground.</small>';
-    else if (clearArc >= 1) acuity = '<small>About ' + nf(Math.round(clearArc)) + '× the 1′ detail that 20/20 vision resolves.</small>';
-    else acuity = '<small>Thinner than the 1′ detail that 20/20 vision resolves, so a faint bump at best.</small>';
+    els.resultTitle.textContent = geo ? 'The longest view near you' : 'The longest view from ' + where;
 
-    // Where to stand, and what your own point would see.
-    var best = run.bestC, you = run.cands[0], youKm = you.d != null ? nf(you.d / 1000, 1) + ' km' : null;
-    var dirURL = 'https://www.google.com/maps/dir/?api=1&destination=' + res.lat.toFixed(5) + '%2C' + res.lon.toFixed(5);
-    var goBlock = '', youBlock = '';
-    if (moved) {
-      var within = nf(inp.radius / 1000) + ' km';
-      var isDeck = best.kind === 'tower' && best.eye > 2;
-      var what = isDeck ? 'Highest viewpoint within ' + within + ', from its deck about ' + nf(best.eye) + ' m up'
-        : (run.skippedBuilt ? 'Highest open ground within ' : 'Highest point within ') + within + ', ' + nf(res.ground) + ' m';
-      var climbM = res.ground - (you.ground || 0);
-      goBlock = '<div class="goto"><p class="go-title">Go to <strong>' + esc(spotLabel(best)) + '</strong></p>' +
-        '<p>' + what + '. ' + nf(off[0] / 1000, 1) + ' km ' + E.compass16(off[1]) + ' of your point' +
-        (!isDeck && climbM > 50 ? ' and ' + nf(climbM) + ' m above it' : '') + '.' +
-        (!isDeck && climbM > 300 ? ' Summits can be hard or unsafe to reach, so check the route before you go.' : '') + '</p>' +
-        '<a class="btn-ghost" href="' + dirURL + '" target="_blank" rel="noopener">Directions</a></div>';
-      youBlock = run.urbanYou
-        ? '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings, so at street level they block the view.' + (youKm ? ' With nothing built in the way it would reach ' + youKm + '.' : '') + '</p>'
-        : (youKm ? '<p class="note">Your point itself reaches ' + youKm + '.</p>' : '');
-    } else if (run.urbanYou) {
-      youBlock = '<p class="note"><span class="pill warn">Built-up</span> Your point is among buildings. At street level they will block this; it is the view with nothing built in the way.' +
-        (inp.radius > 0 ? ' Nothing open nearby is higher.' : ' Set “Climb to highest point” to 10 km to find open high ground.') + '</p>';
+    // Where the view starts, in words.
+    var region = (run.skippedBuilt ? 'the highest open ground' : 'the highest ground') + ' within ' + within + ' of ' + esc(where);
+    var start;
+    if (best.kind === 'building' || best.kind === 'tower') {
+      start = (best.kind === 'building'
+        ? 'the roof of <strong>' + esc(best.name || 'a tall building') + '</strong> (' + nf(best.height) + ' m tall)'
+        : 'the observation deck of <strong>' + esc(best.name || 'the tower') + '</strong> (about ' + nf(best.eye) + ' m up)') +
+        ', the highest point within ' + within + ' of ' + esc(where);
+    } else if (best.kind === 'you') {
+      start = (geo ? 'right where you are' : esc(where)) + (best.eye >= 3 ? ', ' + nf(best.eye) + ' m above the ground' : '');
+    } else if (best.name) {
+      start = '<strong>' + esc(best.name) + '</strong> (' + nf(best.ground) + ' m), ' + region;
+    } else {
+      start = region + ', ' + nf(best.ground) + ' m above sea level';
     }
-    var bare = 'Bare ground only: the elevation data has no buildings or trees, so check that nothing close to the spot is in the way.' +
-      (run.osmOK ? '' : ' The lookup of nearby lookouts and buildings didn’t respond, so this run used terrain alone.');
+    var startHTML = '<p class="startline">From ' + start + '.</p>';
+
+    // Extra lines for someone using their own location: how to get there, and what they see from where they stand.
+    var goHTML = '';
+    if (geo && moved) {
+      var off = E.distBearing(you.lat, you.lon, res.lat, res.lon), climbM = best.ground - you.ground;
+      var dirURL = 'https://www.google.com/maps/dir/?api=1&destination=' + res.lat.toFixed(5) + '%2C' + res.lon.toFixed(5);
+      var roof = best.kind === 'building';
+      goHTML = '<div class="goto"><p>It’s ' + nf(off[0] / 1000, 1) + ' km ' + dirWord(off[1]) + ' of you' +
+        (!roof && climbM > 50 ? ' and ' + nf(climbM) + ' m higher' : '') + '.' +
+        (roof ? ' Most rooftops aren’t open to the public.' : '') +
+        (!roof && best.kind !== 'tower' && climbM > 300 ? ' Summits can be hard or unsafe to reach, so check the route before you go.' : '') + '</p>' +
+        '<a class="btn-ghost" href="' + (roof ? gm(res.lat, res.lon) : dirURL) + '" target="_blank" rel="noopener">' + (roof ? 'Show in Google Maps' : 'Directions') + '</a></div>';
+    }
+    var youHTML = '';
+    if (geo && moved) {
+      youHTML = run.urbanYou
+        ? '<p class="note"><span class="pill warn">Built-up</span>Right where you are, the buildings around you block the view at street level.</p>'
+        : (you.d != null ? '<p class="note">From right where you are, you could see about ' + nf(you.d / 1000, 0) + ' km.</p>' : '');
+    } else if (!moved && run.urbanYou) {
+      youHTML = '<p class="note"><span class="pill warn">Built-up</span>' + (geo ? 'You’re' : 'This spot is') +
+        ' surrounded by buildings, so at street level they would block this view.' +
+        (inp.radius > 0 ? '' : ' Under “More options”, let the finder look for high ground nearby.') + '</p>';
+    }
+
+    // Plain-language facts.
+    var clearArc = t.clearRad * 180 / Math.PI * 60, shows;
+    if (!isFinite(clearArc)) shows = 'Close enough to see clearly.';
+    else if (clearArc < 1) shows = 'Only the very tip pokes up, thinner than normal (20/20) vision can pick out.';
+    else if (clearArc < 5) shows = 'A thin sliver shows above the hills in front of it, enough for sharp eyes.';
+    else shows = 'It stands clearly above the hills in front of it.';
+    if (isFinite(clearArc)) shows += '<small>' + nf(clearArc, 1) + ' minutes of arc. 20/20 vision makes out about 1.</small>';
+    var V = inp.vis, word = VIS_WORD[V] || 'clear';
+    var contrast = Math.exp(-3.912 * (t.d / 1000) / V) * 100, seen = contrast >= 2;
+    var haze = (seen ? 'On a ' + word + ' day it would still show.' : 'Haze would probably hide it, even on a ' + word + ' day.') +
+      '<span class="pill ' + (seen ? 'ok' : 'warn') + '">' + (seen ? 'Visible' : 'Too hazy') + '</span>' +
+      '<small>About ' + (contrast < 0.1 ? 'none' : nf(contrast, contrast < 1 ? 1 : 0) + '%') + ' of its contrast is left; the eye needs about 2%. Change the air under “More options”.</small>';
+    var counted = run.towersOK
+      ? 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.'
+      : 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer), so check that nothing close by is in the way.';
 
     var html = '' +
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
-      '<span class="alt">' + nf(t.d / 1609.344, 1) + ' mi</span></div>' +
-      '<p class="headline">Looking <strong>' + E.compass16(t.bearing) + '</strong> (' + nf(t.bearing, 1) + '°) to ground at <strong>' + nf(t.h) + ' m</strong></p>' +
-      goBlock + youBlock +
-      '<p class="note">' + bare + '</p>' +
+      '<span class="alt">' + nf(t.d / 1609.344, 0) + ' miles</span></div>' +
+      '<p class="headline">Looking <strong>' + dirWord(t.bearing) + '</strong> to <span id="targetName">a point ' + nf(t.h) + ' m high</span>.</p>' +
+      startHTML + goHTML + youHTML +
       '<dl class="facts">' +
-        '<div><dt>Eye height</dt><dd>' + nf(res.hEye) + ' m<small>' + nf(res.ground) + ' m ground + ' + nf(res.eyeH, res.eyeH < 10 ? 1 : 0) + ' m ' + (moved && run.bestC.kind === 'tower' && res.eyeH > 2 ? 'deck' : 'height') + '</small></dd></div>' +
-        '<div><dt>Target</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">' + fmtLL(t.lat, t.lon) + '</a></dd></div>' +
-        '<div><dt>Hidden by the curve</dt><dd>' + nf(t.drop) + ' m<small>How far the Earth’s curve (with refraction) drops the target below a flat line.</small></dd></div>' +
-        '<div><dt>Clearance</dt><dd>' + (isFinite(clearArc) ? nf(clearArc, 1) + '′ of arc' : '—') + acuity + '</dd></div>' +
-        '<div><dt>Through haze</dt><dd>' + (contrast < 0.01 ? '&lt; 0.01' : nf(contrast, contrast < 1 ? 2 : 1)) + '% contrast left' +
-          '<span class="pill ' + (seen ? 'ok' : 'warn') + '">' + (seen ? 'Visible' : 'Lost in haze') + '</span>' +
-          '<small>At ' + nf(V) + ' km visual range. The eye needs about 2%.</small></dd></div>' +
+        '<div><dt>You’d be standing at</dt><dd>' + nf(res.hEye) + ' m above sea level</dd></div>' +
+        '<div><dt>Why not farther?</dt><dd>The Earth curves away. The far point sits ' + nf(t.drop) + ' m below a dead-level line from your eye.</dd></div>' +
+        '<div><dt>How much shows</dt><dd>' + shows + '</dd></div>' +
+        '<div><dt>Would haze hide it?</dt><dd>' + haze + '</dd></div>' +
+        '<div><dt>The far point</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">Show it in Google Maps</a>' +
+          '<small>' + fmtLL(t.lat, t.lon) + ' · ' + nf(t.bearing, 1) + '° from north</small></dd></div>' +
       '</dl>' +
-      '<div class="links">' +
-        (moved ? '' : '<a class="btn-ghost" href="' + gm(res.lat, res.lon) + '" target="_blank" rel="noopener">Open your spot in Maps</a>') +
-        '<button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button>' +
-      '</div>';
+      '<p class="note">' + counted + '</p>' +
+      '<div class="links"><button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button></div>';
     els.emptyResult.hidden = true;
     els.resultBody.innerHTML = html;
     els.resultBody.hidden = false;
@@ -982,7 +1107,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       var isWin = s.r === winR;
       var pressed = (activeRay == null ? winR : activeRay) === s.r;
       return '<li class="' + (isWin ? 'win' : '') + '"><button type="button" data-ray="' + s.r + '" aria-pressed="' + pressed + '">' +
-        '<span class="dir">' + s.name + '</span>' +
+        '<span class="dir">' + cap(DIR8[i]) + '</span>' +
         '<span class="bar"><i style="width:' + (s.d / maxD * 100).toFixed(1) + '%"></i></span>' +
         '<span class="km">' + nf(s.d / 1000, 1) + ' km</span></button></li>';
     }).join('');
@@ -1050,8 +1175,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     els.prof.innerHTML = out.join('');
     var vex = (xMax / pw) / ((yMax - yMin) / ph);
     var isBest = r === run.res.best;
-    els.profTitle.textContent = isBest ? 'Profile along the sightline' : 'Profile looking ' + E.compass16(t.bearing) + ' (' + nf(t.bearing, 1) + '°)';
-    els.profCap.textContent = 'Terrain is drawn against a straight line from your eye, so the bulge of the Earth shows. Vertical scale exaggerated about ' + nf(Math.round(vex)) + '×.';
+    els.profTitle.textContent = isBest ? 'Side view' : 'Side view looking ' + dirWord(t.bearing);
+    els.profCap.textContent = 'Your eye is on the left. The orange line is your line of sight skimming over the hills, and the dashed line is sea level curving away with the Earth. Heights are stretched about ' + nf(Math.round(vex)) + ' times so you can see them.';
   }
 
   // ---- Run ----
@@ -1065,9 +1190,17 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     if (!text) return { error: 'Enter a city or place, coordinates like “51.117, -114.117”, or tap the map.' };
     var ll = parseLocation(text);
     if (!ll) {
+      inp.source = 'place';
       var known = placeCache.get(text.toLowerCase());
       if (!known) { inp.query = text; return inp; }   // a name: look it up in run()
-      ll = [known.lat, known.lon]; inp.place = known.label;
+      ll = [known.lat, known.lon]; inp.place = known.label; inp.placeName = shortName(known.label);
+    } else {
+      inp.source = (locSource.kind === 'geo' || locSource.kind === 'preset') ? locSource.kind : 'point';
+      inp.placeName = locSource.name || null;
+      // An example carries its own settings for that run only; everything else uses the form,
+      // so the same place always gets the same treatment.
+      var pre = inp.source === 'preset' && PRESETS[locSource.id];
+      if (pre) { inp.eye = pre.eye; inp.radius = pre.radius; inp.range = pre.range; }
     }
     if (Math.abs(ll[0]) > 80 || Math.abs(ll[1]) > 180) return { error: OUT_OF_RANGE };
     inp.lat = ll[0]; inp.lon = E.wrapLon(ll[1]);
@@ -1087,6 +1220,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       return await resp.json();
     } finally { if (timer) clearTimeout(timer); }
   }
+  function shortName(label) { return String(label).split(',')[0].trim(); }
   function uniqueJoin(parts) {
     return parts.filter(function (v, i, a) { return v && a.indexOf(v) === i; }).join(', ');
   }
@@ -1152,40 +1286,42 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         matchState = { list: found, sel: 0 };
         showMatches();
         if (Math.abs(found[0].lat) > 80) { setStatus(OUT_OF_RANGE, true); return; }
-        inp.lat = found[0].lat; inp.lon = E.wrapLon(found[0].lon); inp.place = found[0].label;
+        inp.lat = found[0].lat; inp.lon = E.wrapLon(found[0].lon); inp.place = found[0].label; inp.placeName = shortName(found[0].label);
       } else if (matchState) {
         var idx = matchState.list.findIndex(function (p) { return inp.place && p.label === inp.place; });
         if (idx >= 0) { matchState.sel = idx; showMatches(); } else hideMatches();
       }
-      setStatus('Loading terrain…');
+      setStatus('Loading the landscape…');
       var placesP = findPlaces(inp).catch(function (e) { console.warn('OSM lookup failed', e); return null; });
+      var towersP = findTowers(inp).catch(function (e) { console.warn('Tall-building lookup failed', e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
-        setStatus('Loading terrain tiles ' + d + ' of ' + n + '…'); setBar(d / n * 0.65);
+        setStatus('Loading the landscape… ' + d + ' of ' + n); setBar(d / n * 0.65);
       });
-      setStatus('Looking up lookouts and buildings nearby…');
-      var osm = await placesP;
+      setStatus('Looking for the highest spot…'); setBar(0.68);
+      var osm = await placesP, towers = await towersP;
 
-      // Your point. At street level among buildings it can't really see out, so it competes
-      // only when nothing else is on offer (or when you've said you're above the rooftops).
+      // The starting point is simply the highest place to stand within the radius:
+      // the top of the ground, the roof of a tall building, an observation deck, or the point itself.
+      // All ground heights are read before buildings are added to the terrain.
       var you = { lat: inp.lat, lon: inp.lon, eye: inp.eye, kind: 'you', name: null };
+      you.ground = E.elevAt(field, you.lat, you.lon, 0);
       var nearYou = osm ? osm.buildingsNearYou : null;
       var urbanYou = nearYou != null && nearYou >= CONFIG.builtUpThreshold && inp.eye < 30;
-
-      // Climb to the highest point in the radius: the viewpoint is whichever eye sits highest
-      // (ground plus eye height) among the top of the terrain, observation decks, and your point.
-      setStatus('Finding the highest point…'); setBar(0.7);
       await tick();
-      var tops = [], named = [];
+
+      var tops = [];
       if (inp.radius > 0) {
         tops = [E.highestPoint(field, inp.lat, inp.lon, inp.radius)].concat(E.candidates(field, inp.lat, inp.lon, inp.radius, 12));
         tops = tops.filter(function (p, i) {
           return !tops.slice(0, i).some(function (q) { return E.distBearing(p.lat, p.lon, q.lat, q.lon)[0] < 150; });
         }).sort(function (a, b) { return b.h - a.h; });
-        if (osm) {
-          named = osm.places.filter(function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; });
-          named.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
-        }
       }
+      var inRadius = function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; };
+      var named = osm ? osm.places.filter(inRadius) : [];
+      named.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
+      var tall = towers || [];
+      tall.forEach(function (b) { b.ground = E.elevAt(field, b.lat, b.lon, 0); });
+
       // A hilltop covered in houses isn't somewhere to stand, so skip built-up tops.
       var openKnown = false;
       if (tops.length && osm) {
@@ -1199,8 +1335,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       for (var ti = 0; ti < tops.length && !openTop; ti++) {
         if (!(tops[ti].built >= CONFIG.builtUpThreshold)) openTop = tops[ti];
       }
+
       var cands = [you];
-      you.ground = E.elevAt(field, you.lat, you.lon, 0);
       if (openTop) {
         // Name the top after a mapped peak or lookout beside it.
         var tag = null, tagD = 400;
@@ -1212,32 +1348,46 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         cands.push({ lat: openTop.lat, lon: openTop.lon, eye: 1.7, ground: openTop.h,
                      kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
       }
-      named.forEach(function (n) {
-        if (n.kind === 'tower' && n.deck) cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
-      });
+      if (inp.radius > 0) {
+        tall.filter(inRadius).forEach(function (b) {
+          cands.push({ lat: b.lat, lon: b.lon, ground: b.ground, kind: b.kind, name: b.name, height: b.height,
+                       eye: b.kind === 'tower' ? b.deck : b.height + 1.7 });
+        });
+        named.forEach(function (n) {
+          if (n.kind !== 'tower' || !n.deck) return;
+          if (tall.some(function (b) { return E.distBearing(b.lat, b.lon, n.lat, n.lon)[0] < 60; })) return;
+          cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
+        });
+      }
       cands.forEach(function (c) { c.top = c.ground + c.eye; });
       var eligible = cands.filter(function (c) { return !(c === you && urbanYou && cands.length > 1); });
       var bestC = eligible[0];
       eligible.forEach(function (c) { if (c.top > bestC.top + 1) bestC = c; });
 
-      if (bestC !== you) {
-        setStatus('Checking your own point…'); setBar(0.8);
-        await tick();
-        var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k });
+      // Tall buildings become part of the terrain, except the one the view starts from.
+      var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
+        .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
+      if (obstacles.length) E.addObstacles(field, obstacles);
+
+      setStatus('Working out the view…'); setBar(0.8);
+      await tick();
+      if (bestC !== you && inp.source === 'geo') {
+        var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k, ground: you.ground });
         you.d = rq.farD[rq.best];
       }
-      setStatus('Sweeping 1,440 bearings…'); setBar(0.92);
+      setBar(0.9);
       await tick();
-      var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k });
+      var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
       bestC.d = res.farD[res.best];
       lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true,
-                  urbanYou: urbanYou, osmOK: !!osm, openKnown: openKnown,
-                  skippedBuilt: !!(openTop && tops[0] && openTop !== tops[0]) };
+                  urbanYou: urbanYou, osmOK: !!osm, towersOK: !!towers, openKnown: openKnown,
+                  skippedBuilt: !!(openTop && tops[0] && openTop !== tops[0] && bestC === cands[1]) };
       activeRay = null;
       renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
+      nameTarget(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
-      setStatus('Done in ' + nf(secs, 1) + ' s · ' + field.tiles + ' terrain tiles' + (field.failed ? ' (' + field.failed + ' missing, treated as sea level)' : '') + '.');
+      setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
     } catch (e) {
       console.error(e);
@@ -1246,6 +1396,17 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     } finally {
       busy = false; els.go.disabled = false;
     }
+  }
+
+  // Fill in a name for the far point once the lookup answers.
+  async function nameTarget(run) {
+    var t = E.target(run.res, run.res.best);
+    var nm = await nameFor(t.lat, t.lon);
+    if (!nm || lastRun !== run) return;
+    var el = $('targetName');
+    if (!el) return;
+    el.innerHTML = (nm.kind === 'peak' && nm.d < 1500 ? '<strong>' + esc(nm.name) + '</strong>' : 'high ground near <strong>' + esc(nm.name) + '</strong>') +
+      ' (' + nf(t.h) + ' m)';
   }
 
   // ---- Shareable link: #51.11700,-114.11700,h1.7,r2000,d250000,k0.13,v100 ----
@@ -1258,6 +1419,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var m = s.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(.*)$/);
     if (!m) return false;
     els.loc.value = fmtLL(+m[1], +m[2]);
+    locSource = { kind: 'point' };
     var rest = m[3];
     var get = function (key) { var r = rest.match(new RegExp(',' + key + '(-?\\d+(?:\\.\\d+)?)')); return r ? r[1] : null; };
     var setSel = function (el, v) { if (v != null && Array.prototype.some.call(el.options, function (o) { return o.value === String(+v); })) el.value = String(+v); };
@@ -1278,7 +1440,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   function applyPreset(name) {
     var p = PRESETS[name]; if (!p) return;
     els.loc.value = fmtLL(p.lat, p.lon);
-    els.eye.value = p.eye; els.radius.value = String(p.radius); els.range.value = String(p.range);
+    locSource = { kind: 'preset', name: p.name, id: name };
     clearPresetPress();
     var chip = document.querySelector('#presets [data-preset="' + name + '"]');
     if (chip) chip.setAttribute('aria-pressed', 'true');
@@ -1289,12 +1451,13 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     run();
   });
   ['loc', 'eye'].forEach(function (id) { els[id].addEventListener('input', clearPresetPress); });
-  els.loc.addEventListener('input', function () { if (matchState) hideMatches(); });
+  els.loc.addEventListener('input', function () { locSource = { kind: 'typed' }; if (matchState) hideMatches(); });
   $('matches').addEventListener('click', function (e) {
     var b = e.target.closest('[data-match]');
     if (!b || !matchState) return;
     var p = matchState.list[+b.getAttribute('data-match')];
     els.loc.value = p.label;
+    locSource = { kind: 'typed' };
     run();
   });
   els.form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
@@ -1303,6 +1466,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     setStatus('Finding your location…');
     navigator.geolocation.getCurrentPosition(function (pos) {
       els.loc.value = fmtLL(pos.coords.latitude, pos.coords.longitude);
+      locSource = { kind: 'geo' };
       clearPresetPress();
       showPick(pos.coords.latitude, pos.coords.longitude);
       run();
@@ -1329,7 +1493,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   var fromHash = readHash();
   if (!fromHash) applyPreset('nose');
   if (CONFIG.autoRun) run();
-  else { els.emptyResult.textContent = 'Pick a spot and press “Find longest sightline”.'; }
+  else { els.emptyResult.textContent = 'Pick a place and press “Find the longest view”.'; }
 
   window.__sightline = { run: run, last: function () { return lastRun; } };
 })();
