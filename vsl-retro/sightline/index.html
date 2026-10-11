@@ -254,7 +254,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   <header class="masthead">
     <p class="eyebrow">Visual Systems Lab · Calgary Vision Centre</p>
     <h1>Longest Sightline Finder</h1>
-    <p class="lede">Driving across the prairies, you can see about 4.7 km before the curve of the Earth gets in the way. From the top of the Bow Tower it’s about 54 km. Stand on a mountain and look at another mountain, and it gets a whole lot further. Type a place, tap the map or use your location, and the finder heads for the highest spot nearby and works out how far you could see from there on a clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/blog/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
+    <p class="lede">Standing on flat ground, you can see about 4.7 km before the curve of the Earth gets in the way. From the top of a 236 m skyscraper, like Calgary’s Bow Tower, it’s about 54 km. Stand on a mountain and look at another mountain, and it gets a whole lot further. Type a place, tap the map or use your location, and the finder heads for the highest spot nearby and works out how far you could see from there on a clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/blog/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
   </header>
 
   <main class="app">
@@ -1110,11 +1110,11 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       '<small>About ' + (contrast < 0.1 ? 'none' : nf(contrast, contrast < 1 ? 1 : 0) + '%') + ' of its contrast is left; the eye needs about 2%. Change the air under “More options”.</small>';
     var prairie = t.d / 4700;
     var yardstick = prairie >= 1.5
-      ? 'That’s ' + nf(Math.round(prairie)) + ' times farther than the 4.7 km horizon on the prairies.'
-      : 'About as far as the 4.7 km horizon on the prairies.';
+      ? 'That’s ' + nf(Math.round(prairie)) + ' times farther than the 4.7 km horizon on flat ground.'
+      : 'About as far as the 4.7 km horizon on flat ground.';
     var letter = t.d * Math.tan(5 / 60 * Math.PI / 180), compare;
-    if (letter >= 472) compare = 'about ' + nf(letter / 236, 1) + ' Bow Towers stacked up';
-    else if (letter >= 236) compare = 'taller than the Bow Tower (236 m)';
+    if (letter >= 830) compare = 'taller than any building on Earth';
+    else if (letter >= 350) compare = 'taller than almost every skyscraper';
     else if (letter >= 7) compare = 'about the height of a ' + nf(Math.max(2, Math.round(letter / 3.5))) + '-storey building';
     else compare = 'about the size of a garden shed';
     var chart = 'A 20/20 eye-chart letter would have to be ' + nf(letter, letter < 10 ? 1 : 0) + ' m tall to read from here, ' + compare + '.';
