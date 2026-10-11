@@ -160,6 +160,20 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   border: 1px solid var(--ink); border-radius: 3px; box-shadow: none; padding: 3px 6px;
 }
 .leaflet-tooltip.map-tag::before { display: none; }
+/* "Or try" suggestions: below the result, and as pins on the map */
+.try { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.try-icon { background: none; border: 0; }
+/* The result layer draws above the pins; let clicks on its empty space reach them. */
+.leaflet-overlay-pane > svg { pointer-events: none; }
+.try-pin {
+  display: grid; place-items: center; width: 30px; height: 30px; box-sizing: border-box;
+  color: var(--ink); background: var(--panel); border: 2px solid var(--ink); border-radius: 50%; cursor: pointer;
+}
+.try-pin svg { width: 18px; height: 18px; }
+.try-icon:hover .try-pin, .try-icon:focus-visible .try-pin, .try-icon.on .try-pin { color: var(--panel); background: var(--ink); }
+.leaflet-tooltip.map-tag.try-tag { font-weight: 500; }
+.try-pin.mini { width: 18px; height: 18px; border-width: 1.5px; flex: none; cursor: default; }
+.try-pin.mini svg { width: 11px; height: 11px; }
 .empty { color: var(--muted); margin: 0; }
 .steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
 .steps li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 15px; color: var(--muted); }
@@ -240,11 +254,6 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p class="hint">Or tap anywhere on the map. Coordinates and Google Maps links work too.</p>
       </div>
 
-      <div class="field">
-        <span class="label" id="presetLabel">Or try nearby</span>
-        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
-      </div>
-
       <button type="submit" class="go" id="go">Find the longest view</button>
       <div class="progress" aria-hidden="true"><i id="bar"></i></div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -305,6 +314,12 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       <p class="empty" id="emptyResult">Loading…</p>
       <div class="loading" id="resultLoading" hidden><ol class="steps" id="steps"></ol></div>
       <div id="resultBody" hidden></div>
+      <!-- Below the result, where a visitor already is after a search; also marked on the map. -->
+      <div class="field try" id="tryBox">
+        <span class="label" id="presetLabel">Or try nearby</span>
+        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
+        <p class="hint" id="tryHint" hidden>Both are marked on the map too. Tap a marker to start the view there.</p>
+      </div>
     </section>
 
     <div class="stage">
@@ -314,6 +329,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
           <span><i class="sw dot"></i>Where the view starts</span>
           <span><i class="sw"></i>Line of sight</span>
           <span><i class="sw area"></i>Farthest ground visible in each direction</span>
+          <span id="tryLegend" hidden><i class="try-pin mini" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 20.5 9.5 6l4 7.5 2.5-4 6 11z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></i>Nearby tower or peak: tap to start there</span>
         </div>
       </div>
       <section class="card profile">
@@ -1016,7 +1032,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Map ----
-  var map = null, overlay = null, pickMarker = null;
+  var map = null, overlay = null, tryLayer = null, tryPins = {}, pickMarker = null;
+  var lastFit = null, userMoved = false;   // the view a result was fitted to; whether the visitor moved the map since
   function initMap() {
     if (!window.L) {
       $('map').innerHTML = '<div class="map-fallback">The map library did not load. Results still work below.</div>';
@@ -1025,6 +1042,13 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     map = L.map('map', { zoomControl: true, worldCopyJump: true }).setView([51.05, -114.07], 8);
     L.tileLayer(CONFIG.basemap, { maxZoom: 17, attribution: CONFIG.basemapAttribution }).addTo(map);
     overlay = L.layerGroup().addTo(map);
+    // "Or try" pins: their own layer, kept when the view is redrawn, drawn under the start dot
+    // and the line of sight so they never hide the result.
+    map.createPane('tryPane').style.zIndex = 390;
+    tryLayer = L.layerGroup().addTo(map);
+    ['mousedown', 'touchstart', 'wheel', 'keydown'].forEach(function (ev) {
+      map.getContainer().addEventListener(ev, function () { userMoved = true; }, { passive: true });
+    });
     map.on('click', function (e) {
       var ll = e.latlng.wrap();
       els.loc.value = fmtLL(ll.lat, ll.lng);
@@ -1088,7 +1112,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       .bindTooltip('Start: ' + esc(startLabel(run.bestC, inp)), { permanent: true, direction: 'right', className: 'map-tag' }).addTo(overlay);
     L.circleMarker([t.lat, tLon], { radius: 7, color: panel, weight: 2, fillColor: tape, fillOpacity: 1 })
       .bindTooltip(nf(t.d / 1000, 1) + ' km', { permanent: true, direction: 'top', className: 'map-tag' }).addTo(overlay);
-    if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, tLon]), { padding: [28, 28] }); run.fit = false; }
+    if (run.fit) {
+      var fb = poly.getBounds().extend([t.lat, tLon]);
+      lastFit = L.latLngBounds(fb.getSouthWest(), fb.getNorthEast()); userMoved = false;
+      Object.keys(tryPins).forEach(function (k) { fb.extend(tryPins[k].getLatLng()); });   // keep "Or try" pins in view
+      // No animation: Leaflet ignores a fit asked for while an earlier zoom is still animating,
+      // which happens when a search finishes quickly after the map moved to the place.
+      map.fitBounds(fb, { padding: [28, 28], animate: false }); run.fit = false;
+    }
   }
 
   // ---- Result panel ----
@@ -1376,7 +1407,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   function moveMapTo(inp) {
     if (!map) return;
     showPick(inp.lat, inp.lon);
-    map.setView([inp.lat, inp.lon], Math.max(map.getZoom(), 9), { animate: true });
+    // Instant, like the result's fit: an animated zoom still running when the result arrives
+    // would finish afterwards and undo the result's view.
+    map.setView([inp.lat, inp.lon], Math.max(map.getZoom(), 9), { animate: false });
   }
   function setStep(key, state, detail) {
     var li = document.querySelector('#steps [data-step="' + key + '"]');
@@ -1646,7 +1679,10 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Controls ----
-  function clearPresetPress() { document.querySelectorAll('#presets .chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); }); }
+  function clearPresetPress() {
+    document.querySelectorAll('#presets .chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+    Object.keys(tryPins).forEach(function (k) { var el = tryPins[k].getElement(); if (el) el.classList.remove('on'); });
+  }
   function applyPreset(name) {
     var p = PRESETS[name]; if (!p) return;
     els.loc.value = fmtLL(p.lat, p.lon);
@@ -1654,12 +1690,49 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     clearPresetPress();
     var chip = document.querySelector('#presets [data-preset="' + name + '"]');
     if (chip) chip.setAttribute('aria-pressed', 'true');
+    var pin = tryPins[name] && tryPins[name].getElement();
+    if (pin) pin.classList.add('on');
+  }
+
+  // Small pins on the map for the suggestions, so they can be found without scrolling back.
+  var TRY_SVG = {
+    tower: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v4M8.5 8h7M9.5 8l-1.5 14h8L14.5 8M9 5.5h6v2.5H9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    building: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 22V4h10v18M4 22h16M10 7h1.5M12.5 7H14M10 10.5h1.5M12.5 10.5H14M10 14h1.5M12.5 14H14M10.5 22v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    peak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5 9.5 6l4 7.5 2.5-4 6 11z M7.6 9.6 9.5 11l1.9-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+  };
+  function drawTryPins(items) {
+    tryPins = {};
+    if (!tryLayer) return;
+    tryLayer.clearLayers();
+    (items || []).forEach(function (it) {
+      var icon = L.divIcon({ className: 'try-icon', iconSize: [30, 30], iconAnchor: [15, 15],
+                             html: '<span class="try-pin">' + (TRY_SVG[it.kind] || TRY_SVG.peak) + '</span>' });
+      var m = L.marker([it.lat, it.lon], { icon: icon, pane: 'tryPane', keyboard: true, title: 'Start the view from ' + it.chip, alt: it.chip })
+        // Names show on hover or keyboard focus; always-on labels crowd the map when zoomed out.
+        .bindTooltip('Start here: ' + esc(it.chip), { direction: 'top', offset: [0, -14], className: 'map-tag try-tag' })
+        .addTo(tryLayer);
+      var go = function () { applyPreset(it.id); run({ reveal: true }); };
+      m.on('click', go);
+      m.on('keypress', function (e) { if (e.originalEvent && (e.originalEvent.key === 'Enter' || e.originalEvent.key === ' ')) go(); });
+      tryPins[it.id] = m;
+    });
+    // A pin off the edge of the map can't be seen, so widen the result's view to take them in.
+    // This works from the view the result was fitted to (the map may still be zooming to it),
+    // and leaves the map alone once the visitor has moved it themselves.
+    var keys = Object.keys(tryPins);
+    if (!lastFit || userMoved || !keys.length) return;
+    var want = L.latLngBounds(lastFit.getSouthWest(), lastFit.getNorthEast());
+    keys.forEach(function (k) { want.extend(tryPins[k].getLatLng()); });
+    if (!want.equals(lastFit)) map.fitBounds(want, { padding: [28, 28], animate: false });
   }
 
   // Suggestions are anchored to the place the visitor chose, so trying one doesn't move them.
   function renderSuggestions(where, items) {
     var box = $('presets'), label = $('presetLabel');
     label.textContent = 'Or try, within 50 km of ' + where;
+    var have = Array.isArray(items) && items.length > 0;
+    $('tryHint').hidden = !have || !map; $('tryLegend').hidden = !have || !map;
+    drawTryPins(have ? items : null);
     if (items === 'wait') { box.innerHTML = '<span class="hint">Suggestions appear when the search finishes.</span>'; return; }
     if (items === null) { box.innerHTML = '<span class="hint">Finding the tallest building and highest peak…</span>'; return; }
     if (!items.length) { box.innerHTML = '<span class="hint">Nothing to suggest nearby.</span>'; return; }
@@ -1691,6 +1764,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     items.push({ id: 'p', kind: 'peak', lat: peak.lat, lon: peak.lon, radius: 1000, eye: 1.7,
                  title: peakName || 'the highest peak near ' + where, named: !!peakName,
                  chip: (peakName || 'Highest peak') + ' · ' + nf(peak.h) + ' m' });
+    // Don't suggest the spot the view already starts from (the CN Tower from Toronto, say).
+    items = items.filter(function (it) { return E.distBearing(it.lat, it.lon, run.res.lat, run.res.lon)[0] > 150; });
     PRESETS = {};
     items.forEach(function (it) { PRESETS[it.id] = it; });
     renderSuggestions(where, items);
