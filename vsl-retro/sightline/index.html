@@ -180,6 +180,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 .goto .go-title strong { font-weight: 700; }
 .note .pill { margin: 0 6px 0 0; }
 .startline { margin: 8px 0 0; font-size: 15px; }
+.note.yard { margin-top: 4px; }
 .startline strong, .headline strong { font-weight: 600; }
 .leaflet-tooltip.map-tag {
   font: 500 12px/1.2 var(--font-body); color: var(--ink); background: var(--panel);
@@ -253,7 +254,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   <header class="masthead">
     <p class="eyebrow">Visual Systems Lab · Calgary Vision Centre</p>
     <h1>Longest Sightline Finder</h1>
-    <p class="lede">How far could you see from your town? Type a place, tap the map, or use your location. The finder goes to the highest spot nearby, a hilltop, a mountain or the top of a skyscraper, and works out the farthest point you could see from there on a clear day, allowing for the curve of the Earth. <a id="blogLink" href="https://calgaryvisioncentre.com/news/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
+    <p class="lede">Standing on flat ground, you can see about 4.7 km before the curve of the Earth gets in the way. From the top of a 236 m skyscraper, like Calgary’s Bow Tower, it’s about 54 km. Stand on a mountain and look at another mountain, and it gets a whole lot further. Type a place, tap the map or use your location, and the finder heads for the highest spot nearby and works out how far you could see from there on a clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/blog/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
   </header>
 
   <main class="app">
@@ -303,6 +304,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
               <option value="250000" selected>250 km</option>
               <option value="350000">350 km</option>
               <option value="500000">500 km</option>
+              <option value="600000">600 km (record territory, slower)</option>
             </select>
           </div>
           <div class="field">
@@ -362,6 +364,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     <summary>How it works</summary>
     <div class="cols">
       <div>
+        <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
         <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
@@ -672,7 +675,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     return [
       { maxD: 10000, hw: searchR + 10000 + 300, zMax: 12, zMin: 8, maxTiles: 25 },
       { maxD: 60000, hw: searchR + 60000 + 600, zMax: 10, zMin: 7, maxTiles: 49 },
-      { maxD: Infinity, hw: searchR + maxRange + 1500, zMax: 9, zMin: 5, maxTiles: 64 }
+      { maxD: Infinity, hw: searchR + maxRange + 1500, zMax: 9, zMin: 5, maxTiles: maxRange >= 400000 ? 144 : 64 }
     ];
   }
 
@@ -1105,6 +1108,16 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var haze = (seen ? 'On a ' + word + ' day it would still show.' : 'Haze would probably hide it, even on a ' + word + ' day.') +
       '<span class="pill ' + (seen ? 'ok' : 'warn') + '">' + (seen ? 'Visible' : 'Too hazy') + '</span>' +
       '<small>About ' + (contrast < 0.1 ? 'none' : nf(contrast, contrast < 1 ? 1 : 0) + '%') + ' of its contrast is left; the eye needs about 2%. Change the air under “More options”.</small>';
+    var prairie = t.d / 4700;
+    var yardstick = prairie >= 1.5
+      ? 'That’s ' + nf(Math.round(prairie)) + ' times farther than the 4.7 km horizon on flat ground.'
+      : 'About as far as the 4.7 km horizon on flat ground.';
+    var letter = t.d * Math.tan(5 / 60 * Math.PI / 180), compare;
+    if (letter >= 830) compare = 'taller than any building on Earth';
+    else if (letter >= 350) compare = 'taller than almost every skyscraper';
+    else if (letter >= 7) compare = 'about the height of a ' + nf(Math.max(2, Math.round(letter / 3.5))) + '-storey building';
+    else compare = 'about the size of a garden shed';
+    var chart = 'A 20/20 eye-chart letter would have to be ' + nf(letter, letter < 10 ? 1 : 0) + ' m tall to read from here, ' + compare + '.';
     var counted = run.towersOK
       ? 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.'
       : 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer), so check that nothing close by is in the way.';
@@ -1113,11 +1126,13 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
       '<span class="alt">' + nf(t.d / 1609.344, 0) + ' miles</span></div>' +
       '<p class="headline">Looking <strong>' + dirWord(t.bearing) + '</strong> to <span id="targetName">a point ' + nf(t.h) + ' m high</span>.</p>' +
+      '<p class="note yard">' + yardstick + '</p>' +
       startHTML + goHTML + youHTML +
       '<dl class="facts">' +
         '<div><dt>You’d be standing at</dt><dd>' + nf(res.hEye) + ' m above sea level</dd></div>' +
         '<div><dt>Why not farther?</dt><dd>The Earth curves away. The far point sits ' + nf(t.drop) + ' m below a dead-level line from your eye.</dd></div>' +
         '<div><dt>How much shows</dt><dd>' + shows + '</dd></div>' +
+        '<div><dt>Read an eye chart there?</dt><dd>' + chart + '</dd></div>' +
         '<div><dt>Would haze hide it?</dt><dd>' + haze + '</dd></div>' +
         '<div><dt>The far point</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">Show it in Google Maps</a>' +
           '<small>' + fmtLL(t.lat, t.lon) + ' · ' + nf(t.bearing, 1) + '° from north</small></dd></div>' +
