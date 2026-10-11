@@ -375,7 +375,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
-        <p class="hint">Finder version 2026-10-11.7</p>
+        <p class="hint">Finder version 2026-10-11.9</p>
       </div>
     </div>
   </details>
@@ -859,6 +859,49 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     return out;
   }
 
+  // Check a spot in the coarse grids against the zoom-12 tile and correct faults there.
+  // The coarse tiles (zoom 8-10) have blobs of bad pixels the despike can't catch: near Chicago,
+  // 7-8 pixels reading up to 763 m where zooms 11-12 read 175 m. A coarse pixel is an average of
+  // the ground under it, so it can never truly sit above the finer data covering it; one more than
+  // 100 m above the median of the fine pixels under it is a fault and takes that median. Pixels
+  // within 150 m of a building raised into the terrain are left alone. Returns pixels corrected.
+  var FINE_Z = 12;
+  async function verifyTerrain(field, lat, lon, signal) {
+    var TAU = 2 * Math.PI, fn = Math.pow(2, FINE_Z) * 256, fixed = 0, R = 4, tiles = {};
+    var xn = (field.lon0 + E.wrapLon(lon - field.lon0)) / 360 + 0.5, yn = 0.5 - E.mercY(lat) / TAU;
+    var fine = async function (gx, gy) {
+      var tx = Math.floor(gx / 256), ty = Math.floor(gy / 256), k = tx + '/' + ty;
+      if (!(k in tiles)) { try { tiles[k] = await fetchTile(FINE_Z, tx, ty, signal); } catch (e) { tiles[k] = null; } }
+      var t = tiles[k]; return t ? t[(gy - ty * 256) * 256 + (gx - tx * 256)] : NaN;
+    };
+    var obs = field.obstacles || [];
+    for (var li = 0; li < field.levels.length; li++) {
+      var L = field.levels[li];
+      if (L.z >= FINE_Z - 1) continue;
+      var cx = Math.round(xn * L.scale - L.offX), cy = Math.round(yn * L.scale - L.offY);
+      for (var py = Math.max(0, cy - R); py <= Math.min(L.h - 1, cy + R); py++) {
+        for (var px = Math.max(0, cx - R); px <= Math.min(L.w - 1, cx + R); px++) {
+          var i = py * L.w + px, v = L.data[i];
+          var x0 = (px + L.offX - 0.5) / L.scale, x1 = (px + L.offX + 0.5) / L.scale;
+          var y0 = (py + L.offY - 0.5) / L.scale, y1 = (py + L.offY + 0.5) / L.scale;
+          var plat = Math.atan(Math.sinh(TAU * (0.5 - (y0 + y1) / 2))) * 180 / Math.PI, plon = ((x0 + x1) / 2 - 0.5) * 360;
+          if (obs.some(function (o) { return E.distBearing(plat, plon, o.lat, o.lon)[0] < 150; })) continue;
+          var vals = [], step = Math.max(1, Math.floor((x1 - x0) * fn / 4));   // up to 4x4 samples per pixel
+          for (var gy = Math.floor(y0 * fn); gy < Math.ceil(y1 * fn); gy += step) {
+            for (var gx = Math.floor(x0 * fn); gx < Math.ceil(x1 * fn); gx += step) {
+              var f = await fine(gx, gy); if (isFinite(f)) vals.push(f);
+            }
+          }
+          if (!vals.length) continue;
+          vals.sort(function (a, b) { return a - b; });
+          var med = vals[vals.length >> 1];
+          if (v > med + 100) { L.data[i] = med; fixed++; }
+        }
+      }
+    }
+    return fixed;
+  }
+
   // signal (optional): an AbortSignal; when a newer search starts, the downloads stop.
   async function loadField(lat, lon, maxRange, searchR, onProgress, signal) {
     var specs = E.levelSpecs(maxRange, searchR);
@@ -949,7 +992,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (kinds.every(function (k) { return k === 'slow'; })) return 'it took too long';
     if (kinds.indexOf('busy') >= 0) return n + (tried.length > 1 ? ' were busy' : ' was busy');
     if (kinds.every(function (k) { return k === 'big'; })) return 'it was too big for the map server';
-    var codes = tried.filter(function (t) { return t.status; }).map(function (t) { return t.status; });
+    var codes = tried.filter(function (t) { return t.status; }).map(function (t) { return t.status; })
+      .filter(function (c, i, a) { return a.indexOf(c) === i; });
     if (codes.length) return n + ' answered with an error (' + codes.join(', ') + ')';
     return 'your browser couldn’t reach ' + n + '; after many searches they may refuse for a few minutes';
   }
@@ -1015,32 +1059,43 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   // missed. So these ask for a box (cheap to search) and match the height text against simple
   // patterns, then check the distance here. The tallest come back first, in their own output,
   // so a cap on the number of results can never drop them.
+  // No {n,} repeat counts: from Chicago and New York, the requests whose patterns had them
+  // failed while the one without them answered. Written out, they mean the same.
   var TALL_RE = {
-    h60: '^([6-9][0-9]|[1-9][0-9]{2,})([.][0-9]+)?( ?(m|ft))?$',
-    h100: '^[1-9][0-9]{2,}([.][0-9]+)?( ?(m|ft))?$',
-    h150: '^(1[5-9][0-9]|[2-9][0-9]{2}|[1-9][0-9]{3,})([.][0-9]+)?( ?(m|ft))?$',
+    h60: '^([6-9][0-9]|[1-9][0-9][0-9]+)([.][0-9]+)?( ?(m|ft))?$',
+    h100: '^[1-9][0-9][0-9]+([.][0-9]+)?( ?(m|ft))?$',
+    h150: '^(1[5-9][0-9]|[2-9][0-9][0-9]|[1-9][0-9][0-9][0-9]+)([.][0-9]+)?( ?(m|ft))?$',
     h60to149: '^([6-9][0-9]|1[0-4][0-9])([.][0-9]+)?( ?(m|ft))?$',
-    l17: '^(1[7-9]|[2-9][0-9]|[1-9][0-9]{2,})$',
-    l29: '^(29|[3-9][0-9]|[1-9][0-9]{2,})$',
-    l43: '^(4[3-9]|[5-9][0-9]|[1-9][0-9]{2,})$',
+    l17: '^(1[7-9]|[2-9][0-9]|[1-9][0-9][0-9]+)$',
+    l29: '^(29|[3-9][0-9]|[1-9][0-9][0-9]+)$',
+    l43: '^(4[3-9]|[5-9][0-9]|[1-9][0-9][0-9]+)$',
     l17to42: '^(1[7-9]|[23][0-9]|4[0-2])$'
   };
   function bboxAround(lat, lon, r) {
     var dLat = r / 111320, dLon = r / (111320 * Math.max(0.05, Math.cos(lat * Math.PI / 180)));
     return [lat - dLat, lon - dLon, lat + dLat, lon + dLon].map(function (v) { return v.toFixed(5); }).join(',');
   }
-  function tallQuery(bb, hRe, lRe, towers, limit) {
+  function tallQuery(bb, hRe, lRe, towers, limit, parts) {
     return '(nwr["building"]["height"~"' + hRe + '"](' + bb + ');' +
            'nwr["building"]["building:levels"~"' + lRe + '"](' + bb + ');' +
+           // Skyscrapers mapped in 3D often keep their heights on the parts, not the outline.
+           (parts ? 'nwr["building:part"]["height"~"' + hRe + '"](' + bb + ');' : '') +
            (towers ? towers.replace(/BB/g, function () { return bb; }).replace(/HRE/g, function () { return hRe; }) : '') +
            ');out center tags' + (limit ? ' ' + limit : '') + ';';
   }
   // Mapped heights often run to the tip of a spire or mast. For a few well-known buildings
   // the roof is used instead; other buildings use their mapped height.
   var KNOWN_ROOFS = { 'one world trade center': 417, 'empire state building': 381, 'willis tower': 442 };
+  // Otherwise, a height far beyond what its floors explain includes an antenna or spire: One
+  // Prudential Plaza in Chicago is mapped at 278 m with 41 floors (6.8 m a floor), but its roof
+  // is at about 183 m. Office towers average about 4.4 m a floor, mechanical floors included;
+  // above 5.5 m a floor, the roof is taken as floors x 4.4 m.
   function roofHeight(t, h) {
     var known = KNOWN_ROOFS[String(t.name || '').trim().toLowerCase()];
-    return known && known < h ? known : h;
+    if (known && known < h) return known;
+    var floors = parseFloat(t['building:levels']);
+    if (floors >= 20 && h / floors > 5.5) return Math.round(floors * 4.4);
+    return h;
   }
   function tallElements(json, lat, lon, r, H) {
     var out = [], seen = new Set();
@@ -1067,7 +1122,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var r = Math.round(Math.max(inp.radius, 5000)), bb = bboxAround(inp.lat, inp.lon, r), H = CONFIG.tallBuilding;
     var q = which === 'mid'
       ? tallQuery(bb, TALL_RE.h60to149, TALL_RE.l17to42, '', 3000)
-      : tallQuery(bb, TALL_RE.h150, TALL_RE.l43, 'nwr["man_made"="tower"]["height"~"' + TALL_RE.h60 + '"](' + bb + ');');
+      : tallQuery(bb, TALL_RE.h150, TALL_RE.l43, 'nwr["man_made"="tower"]["height"~"' + TALL_RE.h60 + '"](' + bb + ');', 0, true);
     return overpass('[out:json][timeout:25];' + q, 25000).then(function (json) { return tallElements(json, inp.lat, inp.lon, r, H); });
   }
 
@@ -1079,7 +1134,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var bars = [[150, TALL_RE.h150, TALL_RE.l43], [100, TALL_RE.h100, TALL_RE.l29], [CONFIG.tallBuilding, TALL_RE.h60, TALL_RE.l17]];
     var towers = 'nwr["man_made"="tower"]["tower:type"="observation"]["height"~"HRE"](BB);nwr["man_made"="tower"]["tourism"]["height"~"HRE"](BB);';
     for (var i = 0; i < bars.length; i++) {
-      var q = '[out:json][timeout:25];' + tallQuery(bb, bars[i][1], bars[i][2], towers, 2000);
+      var q = '[out:json][timeout:25];' + tallQuery(bb, bars[i][1], bars[i][2], towers, 2000, bars[i][0] >= 150);
       var found = tallElements(await overpass(q, 25000), lat, lon, 50000, bars[i][0]), best = null;
       found.forEach(function (b) { if (!best || b.height > best.height) best = b; });
       if (best) return best;
@@ -1291,6 +1346,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var chart = 'A 20/20 eye-chart letter would have to be ' + size + ' tall to read from here, ' + compare + '.';
     var b = run.bld || { tall: run.towersOK ? 'ok' : 'failed', mid: run.towersOK ? 'ok' : 'failed', why: {} }, counted;
     if (b.tall === 'pending') counted = 'Hills are counted. Tall buildings are still being looked up; if one is higher than this start, the result will update.';
+    else if (b.tall === 'failed' && b.mid === 'ok') counted = 'Hills and buildings from 60 to 150 m are counted, but the lookup for the tallest buildings didn’t answer (' + (b.why.tall || 'the map server couldn’t be reached') + '), so a taller building nearby may be missing. Trees aren’t counted either.';
     else if (b.tall === 'failed') counted = 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer: ' + (b.why.tall || 'the map server couldn’t be reached') + '), so check that nothing close by is in the way.';
     else if (b.mid === 'ok') counted = 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.';
     else if (b.mid === 'pending') counted = 'Hills and buildings 150 m or taller are counted. Buildings from 60 m are still being looked up and will be added.';
@@ -1662,8 +1718,15 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
       // The highest ground within 50 km, for the "Or try" suggestions, read from the coarser grid
       // that reaches that far, and read now, before buildings are added to the terrain.
-      var peak50 = inp.source === 'preset' ? null
-        : E.highestPoint(field, inp.lat, inp.lon, 50000, Math.min(1, field.levels.length - 1));
+      var peak50 = null;
+      if (inp.source !== 'preset') {
+        var peakLevel = Math.min(1, field.levels.length - 1);
+        for (var pr = 0; pr < 4; pr++) {
+          peak50 = E.highestPoint(field, inp.lat, inp.lon, 50000, peakLevel);
+          if (!(await verifyTerrain(field, peak50.lat, peak50.lon, signal))) break;
+          if (stale()) return;
+        }
+      }
 
       // Pick the start and work out the view. This runs again if the tall-building lookup
       // answers after the result is shown (in a big city it can take a while), so a skyscraper
@@ -1703,7 +1766,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         // (Later passes add the same buildings again, which changes nothing: each raise is to a fixed top.)
         var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
           .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
-        if (obstacles.length) E.addObstacles(field, obstacles);
+        if (obstacles.length) { E.addObstacles(field, obstacles); field.obstacles = (field.obstacles || []).concat(obstacles); }
 
         if (!late) { setStep('high', 'done'); setStep('view', 'active'); setStatus('Working out the view…'); setBar(0.8); }
         await tick();
@@ -1716,6 +1779,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         await tick();
         if (stale()) return false;
         var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
+        // A far point on a fault in the coarse data would invent a peak; check it against finer data.
+        for (var vr = 0; vr < 4; vr++) {
+          var ft = E.target(res, res.best);
+          if (!(await verifyTerrain(field, ft.lat, ft.lon, signal))) break;
+          if (stale()) return false;
+          res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
+        }
+        if (stale()) return false;
         bestC.d = res.farD[res.best];
         var fromTop = !!openTop && bestC === cands[1];
         lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50,
