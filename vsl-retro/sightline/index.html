@@ -367,7 +367,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     <div class="cols">
       <div>
         <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
-        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller (where a mapped height runs to the tip of a spire, as it does for One World Trade Center, the roof is used); or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller (where a mapped height runs to the tip of a spire, as it does for One World Trade Center, the roof is used); or a public observation deck. For 53 decks in 42 big cities (from One World Observatory and the CN Tower’s SkyPod to the Burj Khalifa and Tokyo Skytree), the height of the highest public level comes from published sources and is built in; elsewhere a deck is taken as 85% of its tower’s height. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
@@ -375,7 +375,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
-        <p class="hint">Finder version 2026-10-11.9</p>
+        <p class="hint">Finder version 2026-10-12.1</p>
       </div>
     </div>
   </details>
@@ -771,7 +771,61 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   // mapped heights run to the tip of a spire or antenna, so for these places the finder uses
   // the known deck instead: d is the height above the street of the highest public level, in
   // metres. A deck is a starting point like any other, and wins whenever it is the highest.
-  var DECKS = [/*DECKS*/];
+  var DECKS = [
+    {n: "One World Observatory", b: "One World Trade Center", c: "New York", lat: 40.7131, lon: -74.0133, d: 386.5},
+    {n: "Edge", b: "30 Hudson Yards", c: "New York", lat: 40.7541, lon: -74.0008, d: 344.7},
+    {n: "SUMMIT One Vanderbilt", b: "", c: "New York", lat: 40.753, lon: -73.9785, d: 324},
+    {n: "Empire State Building 102nd floor", b: "", c: "New York", lat: 40.7483, lon: -73.9856, d: 373.1},
+    {n: "Skydeck Chicago", b: "Willis Tower", c: "Chicago", lat: 41.8789, lon: -87.6358, d: 412.4},
+    {n: "360 Chicago", b: "875 North Michigan Avenue", c: "Chicago", lat: 41.8989, lon: -87.6231, d: 313.9},
+    {n: "the SkyPod", b: "the CN Tower", c: "Toronto", lat: 43.6426, lon: -79.3871, d: 447, s: "CN Tower SkyPod"},
+    {n: "Space Needle observation deck", b: "", c: "Seattle", lat: 47.6204, lon: -122.3491, d: 158.5},
+    {n: "Sky View Observatory", b: "Columbia Center", c: "Seattle", lat: 47.6044, lon: -122.3306, d: 274.9},
+    {n: "SkyPod", b: "The STRAT", c: "Las Vegas", lat: 36.1475, lon: -115.1553, d: 264.9},
+    {n: "Calgary Tower observation deck", b: "", c: "Calgary", lat: 51.0444, lon: -114.0636, d: 157.6},
+    {n: "GeO-Deck", b: "Reunion Tower", c: "Dallas", lat: 32.7753, lon: -96.8089, d: 143.3},
+    {n: "View Boston", b: "Prudential Tower", c: "Boston", lat: 42.3472, lon: -71.0825, d: 213},
+    {n: "Tembo Galleria", b: "Tokyo Skytree", c: "Tokyo", lat: 35.7101, lon: 139.8108, d: 451.2},
+    {n: "Tokyo Tower Top Deck", b: "", c: "Tokyo", lat: 35.6586, lon: 139.7456, d: 249.6},
+    {n: "Harukas 300", b: "Abeno Harukas", c: "Osaka", lat: 34.646, lon: 135.5134, d: 287.6},
+    {n: "Top of Shanghai", b: "Shanghai Tower", c: "Shanghai", lat: 31.2335, lon: 121.5058, d: 546},
+    {n: "SWFC Observatory", b: "Shanghai World Financial Center", c: "Shanghai", lat: 31.2346, lon: 121.5074, d: 474},
+    {n: "Jin Mao observatory", b: "Jin Mao Tower", c: "Shanghai", lat: 31.2372, lon: 121.5014, d: 340.1},
+    {n: "Free Sky", b: "Ping An Finance Centre", c: "Shenzhen", lat: 22.5367, lon: 114.0503, d: 562.2},
+    {n: "Canton Tower top deck", b: "", c: "Guangzhou", lat: 23.1056, lon: 113.322, d: 488},
+    {n: "CCTV Tower observation deck", b: "Central Radio and TV Tower", c: "Beijing", lat: 39.9181, lon: 116.3003, d: 238},
+    {n: "Sky100", b: "International Commerce Centre", c: "Hong Kong", lat: 22.303, lon: 114.16, d: 388},
+    {n: "Sky Terrace 428", b: "The Peak Tower", c: "Hong Kong", lat: 22.271, lon: 114.1499, d: 32},
+    {n: "Taipei 101 Observatory", b: "", c: "Taipei", lat: 25.0336, lon: 121.5647, d: 382},
+    {n: "Seoul Sky", b: "Lotte World Tower", c: "Seoul", lat: 37.5125, lon: 127.1028, d: 478},
+    {n: "Macau Tower observation deck", b: "", c: "Macau", lat: 22.1797, lon: 113.5367, d: 233},
+    {n: "At the Top SKY", b: "Burj Khalifa", c: "Dubai", lat: 25.1972, lon: 55.2741, d: 555.7},
+    {n: "Sky Bridge", b: "Kingdom Centre", c: "Riyadh", lat: 24.7113, lon: 46.6744, d: 290.4},
+    {n: "Observation Deck at 300", b: "Etihad Towers", c: "Abu Dhabi", lat: 24.4594, lon: 54.3214, d: 300},
+    {n: "Petronas Towers observation deck", b: "Petronas Twin Towers", c: "Kuala Lumpur", lat: 3.1578, lon: 101.7117, d: 370},
+    {n: "KL Tower Sky Deck", b: "", c: "Kuala Lumpur", lat: 3.1528, lon: 101.7033, d: 300},
+    {n: "Mahanakhon SkyWalk", b: "King Power Mahanakhon", c: "Bangkok", lat: 13.7236, lon: 100.5283, d: 314},
+    {n: "SkyPark Observation Deck", b: "Marina Bay Sands", c: "Singapore", lat: 1.284, lon: 103.8608, d: 200},
+    {n: "Lakhta Center observation deck", b: "", c: "Saint Petersburg", lat: 59.9871, lon: 30.1781, d: 357},
+    {n: "Ostankino Tower observation deck", b: "", c: "Moscow", lat: 55.8197, lon: 37.6117, d: 340},
+    {n: "Panorama360", b: "Federation Tower", c: "Moscow", lat: 55.7498, lon: 37.5371, d: 327},
+    {n: "The View from The Shard", b: "", c: "London", lat: 51.5045, lon: -0.0865, d: 244},
+    {n: "the top of the Eiffel Tower", b: "", c: "Paris", lat: 48.8584, lon: 2.2945, d: 276, s: "Top of the Eiffel Tower"},
+    {n: "Fernsehturm observation deck", b: "Berliner Fernsehturm", c: "Berlin", lat: 52.5208, lon: 13.4094, d: 203},
+    {n: "Main Tower platform", b: "", c: "Frankfurt", lat: 50.1122, lon: 8.6719, d: 198},
+    {n: "Donauturm terrace", b: "", c: "Vienna", lat: 48.2403, lon: 16.41, d: 155},
+    {n: "Varso Tower observation deck", b: "", c: "Warsaw", lat: 52.2286, lon: 20.9992, d: 230},
+    {n: "Mirador Torre Glòries", b: "", c: "Barcelona", lat: 41.4033, lon: 2.1894, d: 125},
+    {n: "Sapphire sky deck", b: "Istanbul Sapphire", c: "Istanbul", lat: 41.085, lon: 29.0058, d: 236},
+    {n: "Euromast platform", b: "", c: "Rotterdam", lat: 51.9061, lon: 4.4658, d: 112},
+    {n: "Sydney Tower Eye", b: "", c: "Sydney", lat: -33.8704, lon: 151.2089, d: 250},
+    {n: "Melbourne Skydeck", b: "Eureka Tower", c: "Melbourne", lat: -37.8217, lon: 144.9644, d: 285},
+    {n: "SkyPoint Observation Deck", b: "Q1", c: "Gold Coast", lat: -28.0061, lon: 153.4294, d: 230},
+    {n: "Sky Deck", b: "Sky Tower", c: "Auckland", lat: -36.8485, lon: 174.7623, d: 220},
+    {n: "Sky Costanera", b: "Gran Torre Santiago", c: "Santiago", lat: -33.4169, lon: -70.6067, d: 261},
+    {n: "Sampa Sky", b: "Mirante do Vale", c: "São Paulo", lat: -23.5422, lon: -46.6354, d: 150},
+    {n: "Cairo Tower observation deck", b: "", c: "Cairo", lat: 30.0458, lon: 31.2244, d: 143}
+  ];
   function decksNear(lat, lon, r) {
     return DECKS.filter(function (d) { return E.distBearing(lat, lon, d.lat, d.lon)[0] <= r; });
   }
@@ -1231,7 +1285,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (c.kind === 'you') return inp.source === 'geo' ? 'You' : (inp.placeName ? cap(inp.placeName) : 'This spot');
     if (c.kind === 'building') return c.name ? 'Roof of ' + c.name : 'Roof of a tall building';
     if (c.kind === 'tower') return c.name ? c.name + ' deck' : 'Observation deck';
-    if (c.kind === 'deck') return c.name;
+    if (c.kind === 'deck') return c.short || cap(c.name);
     return c.name || 'Highest ground';
   }
 
@@ -1290,7 +1344,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       return '<strong>' + esc(name) + '</strong>' + (building && building !== name ? ' in ' + esc(building) : '') + ', ' + nf(up) + ' m up';
     };
     if (best.kind === 'deck') {
-      start = deckLine(best.name, best.building, best.deck) + ', the highest place to stand within ' + within + ' of ' + esc(where);
+      start = deckLine(best.name, best.building, best.deck) + ', the highest place to stand ' + (best.inCity ? 'in ' : 'within ' + within + ' of ') + esc(where);
     } else if (inp.presetKind === 'deck' && PRESETS.s) {
       start = deckLine(PRESETS.s.deckName, PRESETS.s.building, PRESETS.s.deck);
     } else if (best.kind === 'building' || best.kind === 'tower') {
@@ -1765,11 +1819,17 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
                        kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
         }
         if (inp.radius > 0) {
-          var decks = decksNear(inp.lat, inp.lon, inp.radius);
+          // Decks in range, plus, for a search by city name, that city's decks up to 40 km away:
+          // geocoded centres can sit well away from the towers (Dubai's is 13 km from the Burj Khalifa).
+          var decks = decksNear(inp.lat, inp.lon, inp.radius), city = (inp.placeName || '').toLowerCase();
+          if (inp.source === 'place' && city) decksNear(inp.lat, inp.lon, 40000).forEach(function (d) {
+            if (d.c.toLowerCase() === city && decks.indexOf(d) < 0) decks.push(d);
+          });
           var atDeck = function (p) { return decks.some(function (d) { return E.distBearing(d.lat, d.lon, p.lat, p.lon)[0] < 150; }); };
           decks.forEach(function (d) {
             cands.push({ lat: d.lat, lon: d.lon, ground: E.elevAt(field, d.lat, d.lon, 0), kind: 'deck', name: d.n, building: d.b,
-                         deck: d.d, eye: d.d + 1.7 });
+                         short: d.s || cap(d.n), deck: d.d, eye: d.d + 1.7,
+                         inCity: E.distBearing(inp.lat, inp.lon, d.lat, d.lon)[0] > inp.radius });
           });
           tall.filter(inRadius).forEach(function (b) {
             if (atDeck(b)) return;
@@ -1998,7 +2058,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (topDeck) {
       items.push({ id: 's', kind: 'deck', lat: topDeck.lat, lon: topDeck.lon, radius: 0, eye: topDeck.d + 1.7,
                    deckName: topDeck.n, building: topDeck.b, deck: topDeck.d,
-                   title: topDeck.n, chip: topDeck.n + ' · ' + nf(topDeck.d) + ' m' });
+                   title: topDeck.n, chip: (topDeck.s || cap(topDeck.n)) + ' · ' + nf(topDeck.d) + ' m' });
     } else if (st) {
       var stName = st.name || (st.kind === 'tower' ? 'the tallest tower' : 'the tallest building');
       var deck = st.kind === 'tower';
@@ -2104,6 +2164,65 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   window.__sightline = { run: run, last: function () { return lastRun; } };
+
+  /* DECK_SOURCES. Each deck's height (the highest public level, above the street) and position,
+     from published sources, checked in October 2026. Left out: decks closed or not yet open
+     (Merdeka 118, Tour Montparnasse, Olympiaturm, Kaknästornet, Montreal Tower, Yokohama
+     Landmark Tower, One Liberty), harnessed climbs and walks, and decks whose height or position
+     sources disagree on (Vancouver Lookout, Torre Latinoamericana, N Seoul Tower, Carlton Centre).
+     New York, One World Trade Center (386.5 m): https://en.wikipedia.org/wiki/One_World_Trade_Center
+     New York, 30 Hudson Yards (344.7 m): https://www.related.com/press-releases/2021-10-26/edge-hudson-yards-unveils-city-climb-ultimate-skyscraping-adventure
+     New York, One Vanderbilt (324 m): https://www.dezeen.com/2021/06/17/summit-one-vanderbilt-kohn-pedersen-fox/
+     New York, Empire State Building (373.1 m): https://en.wikipedia.org/wiki/Empire_State_Building
+     Chicago, Willis Tower (412.4 m): https://theskydeck.com/the-ledge/
+     Chicago, 875 North Michigan Avenue (313.9 m): https://en.wikipedia.org/wiki/875_North_Michigan_Avenue
+     Toronto, the CN Tower (447 m): https://www.frommers.com/destinations/toronto/attractions/cn-tower
+     Seattle, Space Needle (158.5 m): https://spaceneedle.com/press-faq
+     Seattle, Columbia Center (274.9 m): https://skyviewobservatory.com/about
+     Las Vegas, The STRAT (264.9 m): https://en.wikipedia.org/wiki/The_Strat
+     Calgary, Calgary Tower (157.6 m): https://en.wikipedia.org/wiki/Calgary_Tower
+     Dallas, Reunion Tower (143.3 m): https://visitdallas.com/things-to-do/attractions/reunion-tower
+     Boston, Prudential Tower (213 m): https://www.skyscrapercenter.com/boston/prudential-tower/1127
+     Tokyo, Tokyo Skytree (451.2 m): https://www.japan-guide.com/e/e3064.html
+     Tokyo, Tokyo Tower (249.6 m): https://en.wikipedia.org/wiki/Tokyo_Tower
+     Osaka, Abeno Harukas (287.6 m): https://www.skyscrapercenter.com/building/wd/533
+     Shanghai, Shanghai Tower (546 m): https://en.wikipedia.org/wiki/Shanghai_Tower
+     Shanghai, Shanghai World Financial Center (474 m): https://en.wikipedia.org/wiki/Shanghai_World_Financial_Center
+     Shanghai, Jin Mao Tower (340.1 m): https://english.shanghai.gov.cn/en-ScenicSpots/20231205/0a220990815641668ef99a1490875a24.html
+     Shenzhen, Ping An Finance Centre (562.2 m): https://www.skyscrapercenter.com/building/ping-an-finance-centre/54
+     Guangzhou, Canton Tower (488 m): https://en.wikipedia.org/wiki/Canton_Tower
+     Beijing, Central Radio and TV Tower (238 m): https://english.beijing.gov.cn/specials/ticketing/attractions/202409/t20240930_3910087.html
+     Hong Kong, International Commerce Centre (388 m): https://hongkongcheapo.com/place/sky100
+     Hong Kong, The Peak Tower (32 m): https://www.thepeak.com.hk/en/node/84
+     Taipei, Taipei 101 (382 m): https://topics.amcham.com.tw/2021/07/taiwans-tallest-building-101-view/
+     Seoul, Lotte World Tower (478 m): https://en.wikipedia.org/wiki/Lotte_World_Tower
+     Macau, Macau Tower (233 m): https://www.macautower.com.mo/observation-deck/
+     Dubai, Burj Khalifa (555.7 m): https://guinnessworldrecords.com/world-records/482083-highest-open-air-observation-deck
+     Riyadh, Kingdom Centre (290.4 m): https://structurae.net/en/structures/kingdom-centre
+     Abu Dhabi, Etihad Towers (300 m): https://visitabudhabi.ae/en/what-to-see/iconic-landmarks/etihad-towers
+     Kuala Lumpur, Petronas Twin Towers (370 m): https://en.wikipedia.org/wiki/Petronas_Towers
+     Kuala Lumpur, KL Tower (300 m): https://malaysia.travel/explore/kuala-lumpur-tower
+     Bangkok, King Power Mahanakhon (314 m): https://kingpowermahanakhon.co.th/skywalk/
+     Singapore, Marina Bay Sands (200 m): https://www.timeout.com/singapore/things-to-do/skypark-observation-deck-level-56
+     Saint Petersburg, Lakhta Center (357 m): https://www.skyscrapercenter.com/building/id/12575
+     Moscow, Ostankino Tower (340 m): https://tvtower.ru/en/news/57/
+     Moscow, Federation Tower (327 m): https://pnr360.getanchor.io/en/index.html
+     London, The Shard (244 m): https://en.wikipedia.org/wiki/The_View_from_The_Shard
+     Paris, the Eiffel Tower (276 m): https://www.visitparisregion.com/en/eiffel-tower
+     Berlin, Berliner Fernsehturm (203 m): https://en.wikipedia.org/wiki/Fernsehturm_Berlin
+     Frankfurt, Main Tower (198 m): https://structurae.net/de/bauwerke/20000906
+     Vienna, Donauturm (155 m): https://donauturm.at/assets/Uploads/Elements/Presse/Presseinformationen/20240419-Presseinformation-60-Jahre-Donauturm-fin-PK.pdf
+     Warsaw, Varso Tower (230 m): https://en.wikipedia.org/wiki/Varso
+     Barcelona, Torre Glòries (125 m): https://www.miradortorreglories.com/en/the-experience/barcelona-observation-deck
+     Istanbul, Istanbul Sapphire (236 m): https://en.wikipedia.org/wiki/Istanbul_Sapphire
+     Rotterdam, Euromast (112 m): https://en.wikipedia.org/wiki/Euromast
+     Sydney, Sydney Tower (250 m): https://en.wikipedia.org/wiki/Sydney_Tower
+     Melbourne, Eureka Tower (285 m): https://en.wikipedia.org/wiki/Eureka_Tower
+     Gold Coast, Q1 (230 m): https://en.wikipedia.org/wiki/SkyPoint_Observation_Deck
+     Auckland, Sky Tower (220 m): https://en.wikipedia.org/wiki/Sky_Tower_(Auckland)
+     Santiago, Gran Torre Santiago (261 m): https://en.wikipedia.org/wiki/Gran_Torre_Costanera
+     São Paulo, Mirante do Vale (150 m): https://en.wikipedia.org/wiki/Mirante_do_Vale
+     Cairo, Cairo Tower (143 m): https://www.skyscrapercenter.com/building/wd/10271 */
 })();
 </script>
 </body>
