@@ -39,25 +39,29 @@ body {
   background: var(--bg);
   color: var(--ink);
   font: 400 16px/1.55 var(--font-ui);
-  padding-inline: 16px;
-  padding-block: 0 48px;
+  padding-inline: 1px;
+  padding-block: 1px;
 }
 a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--tape); }
 :focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
 strong { font-weight: 600; }
 
-.wrap { max-width: 1200px; margin-inline: auto; }
+.wrap {
+  max-width: 1200px; margin-inline: auto;
+  /* A light frame so the finder reads as its own piece when embedded in an article. */
+  border: 1px solid var(--rule); border-radius: 10px;
+  padding-inline: clamp(16px, 3vw, 32px); padding-block: clamp(18px, 3vw, 32px);
+}
 
 /* Masthead */
-.masthead { display: grid; gap: 8px; padding-block: 32px 24px; border-bottom: 1px solid var(--ink); margin-bottom: 24px; }
+.masthead { display: grid; gap: 8px; padding-block: 0 22px; border-bottom: 1px solid var(--ink); margin-bottom: 24px; }
 .eyebrow { margin: 0; font-size: 14px; color: var(--muted); }
 h1 {
   margin: 0; font: 800 clamp(2.1rem, 5vw, 3.2rem)/1 var(--font-ui);
   letter-spacing: -0.02em; text-wrap: balance;
 }
 .lede { margin: 4px 0 0; max-width: 64ch; color: var(--ink); font-size: 17px; }
-.lede a { white-space: nowrap; }
 
 /* App grid */
 .app {
@@ -208,6 +212,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
 /* How it works */
 .method { margin-top: 32px; }
+.method[open] { padding-bottom: 4px; }
 .method summary { cursor: pointer; font: 700 18px/1.3 var(--font-ui); }
 .method .cols { display: grid; gap: 4px 40px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); margin-top: 8px; }
 .method p { margin: 10px 0; max-width: 65ch; font-size: 15px; }
@@ -220,7 +225,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   <header class="masthead">
     <p class="eyebrow">Visual Systems Lab · Calgary Vision Centre</p>
     <h1>Longest Sightline Finder</h1>
-    <p class="lede">Standing on flat ground, you can see about 4.7 km before the curve of the Earth gets in the way. From the top of a 236 m skyscraper, like Calgary’s Bow Tower, it’s about 54 km. Stand on a mountain and look at another mountain, and it gets a whole lot further. Type a place, tap the map or use your location, and the finder heads for the highest spot nearby and works out how far you could see from there on a clear day. <a id="blogLink" href="https://calgaryvisioncentre.com/blog/2017/6/23/tdgft1bsbdlm8496ov7tn73kr0ci1q">Read: The Longest Sightline on Earth&nbsp;→</a></p>
+    <p class="lede">Standing on flat ground, you can see about 4.7 km before the curve of the Earth gets in the way. From the top of a 236 m skyscraper, like Calgary’s Bow Tower, it’s about 54 km. Stand on a mountain and look at another mountain, and it gets a whole lot further. Type a place, tap the map or use your location, and the finder heads for the highest spot nearby and works out how far you could see from there on a clear day.</p>
   </header>
 
   <main class="app">
@@ -1630,6 +1635,20 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
   if (CONFIG.autoRun) run();
   else { els.emptyResult.textContent = 'Pick a place and press “Find the longest view”.'; }
+
+  // When embedded, report the page height to the host page (see embed/sightline.html).
+  if (window.parent !== window) {
+    var lastH = 0;
+    var report = function () {
+      var h = Math.ceil(document.documentElement.scrollHeight);
+      if (Math.abs(h - lastH) < 2) return;
+      lastH = h;
+      try { window.parent.postMessage({ sightline: 'height', height: h }, '*'); } catch (e) { /* not allowed */ }
+    };
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(report).observe(document.body);
+    window.addEventListener('load', report);
+    report();
+  }
 
   window.__sightline = { run: run, last: function () { return lastRun; } };
 })();
