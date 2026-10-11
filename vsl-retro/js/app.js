@@ -70,6 +70,8 @@
   const icoHtml = t => t.app
     ? `<button type="button" class="ico" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></button>`
     : `<a class="ico" href="${t.href}" title="${esc(t.title)}" data-tool="${t.id}">${t.icon}<span>${t.label}</span></a>`;
+  // what a tool's iframe may use: fullscreen for all, plus the tool's own "allow" (e.g. geolocation)
+  const allowFor = t => 'fullscreen' + (t.allow ? '; ' + t.allow : '');
   // 1998 pages (Wayback captures and our local screenshots) come over the modem
   const overModem = t => !t.app && (/web\.archive\.org/.test(t.href) || t.href.startsWith('sites/'));
   let online = false;                  // dial-up happens once per visit, as it did
@@ -128,7 +130,7 @@
     out.hidden = !!t.app; f.hidden = !!t.app; app.hidden = !t.app;
     if (t.app) need('js/extras.js').then(() => { app.innerHTML = ''; palmDestroy = Retro[t.app](app); });
     else {
-      out.href = t.href; f.title = t.title; f.src = t.href;
+      out.href = t.href; f.title = t.title; f.allow = allowFor(t); f.src = t.href;
       if (!online && overModem(t)) {                         // the first 1998 page dials in, over the page loading behind
         online = true;
         const dial = $('.pv-dial', palmView); dial.hidden = false;
@@ -241,7 +243,7 @@
           <span>${t.icon.replace('<svg ', '<svg class="ti" ')} ${esc(t.title.toUpperCase())}</span>
           <span><a class="bev sysbtn" href="${t.href}" target="_blank" rel="noopener" title="Open in a new tab" aria-label="Open in a new tab">↗</a><button class="bev sysbtn" data-wm="min" aria-label="Minimize"></button><button class="bev sysbtn" data-wm="max" aria-label="Maximize"></button><button class="bev sysbtn" data-wm="close" aria-label="Close"></button></span>
         </div>
-        <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="fullscreen"></iframe></div>
+        <div class="body frame"><iframe src="${t.href}" title="${esc(t.title)}" allow="${allowFor(t)}"></iframe></div>
         <div class="grip" data-wm="resize" aria-hidden="true"></div>`;
       workspace.appendChild(win);
       home[win.dataset.win] = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };

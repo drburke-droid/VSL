@@ -125,6 +125,16 @@
       "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><linearGradient id=\"blm\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#e8e8e8\"/><stop offset=\"1\" stop-color=\"#a9a9a9\"/></linearGradient><radialGradient id=\"bls\" cx=\"0.5\" cy=\"0.5\" r=\".75\"><stop offset=\"0\" stop-color=\"#9fd8ff\"/><stop offset=\"1\" stop-color=\"#1352c9\"/></radialGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><rect x=\"4\" y=\"5\" width=\"24\" height=\"17\" rx=\"1.5\" fill=\"url(#blm)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><rect x=\"6\" y=\"7\" width=\"20\" height=\"13\" fill=\"url(#bls)\"/><path d=\"M13 26h6M10 28h12\" stroke=\"#555\" stroke-width=\"2\"/><path d=\"M16 2v3M8 3l1 2M24 3l-1 2\" stroke=\"#4ab0ff\" stroke-width=\"1.5\"/></svg>"
     },
     {
+      "id": "sightline",
+      "title": "Longest Sightline Finder",
+      "label": "Sightline\nFinder",
+      "href": "https://drburke-droid.github.io/VSL/sightline/",
+      "group": "perf",
+      "allow": "geolocation; clipboard-write",
+      "desc": "Pick a spot and find the farthest ground you could see from it, using global elevation data, Earth's curvature and atmospheric refraction.",
+      "icon": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\"><defs><linearGradient id=\"slk\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#8fd3ff\"/><stop offset=\"1\" stop-color=\"#e8f6ff\"/></linearGradient><linearGradient id=\"slm\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#7a8c6a\"/><stop offset=\"1\" stop-color=\"#3b4a33\"/></linearGradient><linearGradient id=\"slf\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9aa7a0\"/><stop offset=\"1\" stop-color=\"#55615b\"/></linearGradient></defs><ellipse cx=\"17\" cy=\"29\" rx=\"12\" ry=\"2.2\" fill=\"#000\" opacity=\".25\"/><rect x=\"3\" y=\"4\" width=\"26\" height=\"23\" rx=\"1.5\" fill=\"url(#slk)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><path d=\"M4 23q12-5 24-4v7H4z\" fill=\"#5c8a52\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><path d=\"M14 19l6-9 5 5 3-2v8H14z\" fill=\"url(#slf)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><path d=\"M20 10l1.6 2.4L23 11.2l2 2 1.2-.8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.2\"/><path d=\"M3 20l9-6 7 7H3z\" fill=\"url(#slm)\" stroke=\"#1a1a1a\" stroke-width=\"1\"/><circle cx=\"8\" cy=\"9\" r=\"1.6\" fill=\"#1a1a1a\"/><path d=\"M8 11v4M6 13h4M8 15l-2 3M8 15l2 3\" stroke=\"#1a1a1a\" stroke-width=\"1.2\" fill=\"none\"/><path d=\"M10 9l12 1\" stroke=\"#c00\" stroke-width=\"1.2\" stroke-dasharray=\"2 1.5\"/></svg>"
+    },
+    {
       "id": "myopia",
       "title": "Pediatric Myopia Risk Assessment",
       "label": "Myopia\nRisk",
