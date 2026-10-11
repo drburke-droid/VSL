@@ -67,13 +67,13 @@ h1 {
 .app {
   display: grid; gap: 28px;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "form" "result" "stage" "sectors";
+  grid-template-areas: "form" "result" "map" "more" "profile" "sectors";
 }
 @media (min-width: 960px) {
   .app {
     grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
-    grid-template-areas: "form stage" "result stage" "sectors stage";
-    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "form stage" "result stage" "more stage" "sectors stage";
+    grid-template-rows: auto auto auto 1fr;
     column-gap: 40px;
     align-items: start;
   }
@@ -83,8 +83,17 @@ h1 {
 .result, .sectors, .profile, .method { border-top: 1px solid var(--rule); padding-top: 16px; }
 .form { grid-area: form; display: grid; gap: 16px; background: var(--soft); border-radius: 8px; padding: 20px; }
 .result { grid-area: result; }
+.more { grid-area: more; }
+.more > .try:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .sectors { grid-area: sectors; }
 .stage { grid-area: stage; display: grid; gap: 20px; min-width: 0; }
+/* One column: the distance, then the map, then the details; the map and side view are placed
+   separately, so the stage that holds them on wide screens steps aside. */
+@media (max-width: 959px) {
+  .stage { display: contents; }
+  .mapcard { grid-area: map; }
+  .profile { grid-area: profile; }
+}
 
 
 /* Controls */
@@ -162,6 +171,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 .leaflet-tooltip.map-tag::before { display: none; }
 /* "Or try" suggestions: below the result, and as pins on the map */
 .try { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
+#resultFacts[hidden] + .try { margin-top: 0; padding-top: 0; border-top: 0; }
 .try-icon { background: none; border: 0; }
 /* The result layer draws above the pins; let clicks on its empty space reach them. */
 .leaflet-overlay-pane > svg { pointer-events: none; }
@@ -314,6 +324,11 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       <p class="empty" id="emptyResult">Loading…</p>
       <div class="loading" id="resultLoading" hidden><ol class="steps" id="steps"></ol></div>
       <div id="resultBody" hidden></div>
+    </section>
+
+    <!-- The details of the result. On one column the map sits between the distance above and this. -->
+    <section class="card more" id="resultMore" aria-label="About this view">
+      <div id="resultFacts" hidden></div>
       <!-- Below the result, where a visitor already is after a search; also marked on the map. -->
       <div class="field try" id="tryBox">
         <span class="label" id="presetLabel">Or try nearby</span>
@@ -352,7 +367,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     <div class="cols">
       <div>
         <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
-        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller (where a mapped height runs to the tip of a spire, as it does for One World Trade Center, the roof is used); or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
@@ -756,7 +771,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   var els = {
     form: $('form'), loc: $('loc'), geo: $('geo'), eye: $('eye'), radius: $('radius'), range: $('range'),
     refr: $('refr'), vis: $('vis'), go: $('go'), status: $('status'), bar: $('bar'),
-    emptyResult: $('emptyResult'), resultBody: $('resultBody'), sectorList: $('sectorList'),
+    emptyResult: $('emptyResult'), resultBody: $('resultBody'), resultFacts: $('resultFacts'), sectorList: $('sectorList'),
     prof: $('prof'), profTitle: $('profTitle'), profCap: $('profCap'), resultTitle: $('resultTitle')
   };
 
@@ -955,47 +970,78 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     return isFinite(lv) ? lv * 3.5 : NaN;
   }
 
-  // Buildings and towers 60 m or taller: possible viewpoints (their roofs) and obstacles.
-  async function findTowers(inp) {
-    var r = Math.round(Math.max(inp.radius, 5000)), at = ll5(inp.lat, inp.lon), H = CONFIG.tallBuilding;
-    var q = '[out:json][timeout:25];(' +
-      'nwr["building"](around:' + r + ',' + at + ')(if:number(t["height"])>=' + H + '||number(t["building:levels"])>=' + Math.round(H / 3.5) + ');' +
-      'nwr["man_made"="tower"](around:' + r + ',' + at + ')(if:number(t["height"])>=' + H + '););out center tags 3000;';
-    var json = await overpass(q, 25000), out = [];
+  // Tall-building lookups. A big city has hundreds of thousands of buildings, and asking the map
+  // server to compute each one's height and distance (number(...) and around:) can take longer
+  // than the finder waits: in New York the lookup didn't answer, so One World Trade Center was
+  // missed. So these ask for a box (cheap to search) and match the height text against simple
+  // patterns, then check the distance here. The tallest come back first, in their own output,
+  // so a cap on the number of results can never drop them.
+  var TALL_RE = {
+    h60: '^([6-9][0-9]|[1-9][0-9]{2,})([.][0-9]+)?( ?(m|ft))?$',
+    h100: '^[1-9][0-9]{2,}([.][0-9]+)?( ?(m|ft))?$',
+    h150: '^(1[5-9][0-9]|[2-9][0-9]{2}|[1-9][0-9]{3,})([.][0-9]+)?( ?(m|ft))?$',
+    h60to149: '^([6-9][0-9]|1[0-4][0-9])([.][0-9]+)?( ?(m|ft))?$',
+    l17: '^(1[7-9]|[2-9][0-9]|[1-9][0-9]{2,})$',
+    l29: '^(29|[3-9][0-9]|[1-9][0-9]{2,})$',
+    l43: '^(4[3-9]|[5-9][0-9]|[1-9][0-9]{2,})$',
+    l17to42: '^(1[7-9]|[23][0-9]|4[0-2])$'
+  };
+  function bboxAround(lat, lon, r) {
+    var dLat = r / 111320, dLon = r / (111320 * Math.max(0.05, Math.cos(lat * Math.PI / 180)));
+    return [lat - dLat, lon - dLon, lat + dLat, lon + dLon].map(function (v) { return v.toFixed(5); }).join(',');
+  }
+  function tallQuery(bb, hRe, lRe, towers, limit) {
+    return '(nwr["building"]["height"~"' + hRe + '"](' + bb + ');' +
+           'nwr["building"]["building:levels"~"' + lRe + '"](' + bb + ');' +
+           (towers ? towers.replace(/BB/g, function () { return bb; }).replace(/HRE/g, function () { return hRe; }) : '') +
+           ');out center tags' + (limit ? ' ' + limit : '') + ';';
+  }
+  // Mapped heights often run to the tip of a spire or mast. For a few well-known buildings
+  // the roof is used instead; other buildings use their mapped height.
+  var KNOWN_ROOFS = { 'one world trade center': 417, 'empire state building': 381, 'willis tower': 442 };
+  function roofHeight(t, h) {
+    var known = KNOWN_ROOFS[String(t.name || '').trim().toLowerCase()];
+    return known && known < h ? known : h;
+  }
+  function tallElements(json, lat, lon, r, H) {
+    var out = [], seen = new Set();
     (json.elements || []).forEach(function (el) {
+      var key = el.type + el.id; if (seen.has(key)) return; seen.add(key);
       var t = el.tags || {}, h = parseHeight(t);
-      var lat = el.lat != null ? el.lat : (el.center && el.center.lat), lon = el.lon != null ? el.lon : (el.center && el.center.lon);
-      if (!(h >= H) || lat == null || lon == null) return;
+      var la = el.lat != null ? el.lat : (el.center && el.center.lat), lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (!(h >= H) || la == null || lo == null) return;
+      if (E.distBearing(lat, lon, la, lo)[0] > r) return;
       var isTower = t.man_made === 'tower';
       // Masts don't block a view and can't be stood on; observation towers can.
       if (isTower && !isObservationTower(t)) return;
-      out.push({ lat: lat, lon: lon, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
+      if (!isTower) h = roofHeight(t, h);
+      out.push({ lat: la, lon: lo, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
                  deck: isTower ? deckHeight(t, h) : null });
     });
     return out;
+  }
+
+  // Buildings and towers 60 m or taller: possible viewpoints (their roofs) and obstacles.
+  async function findTowers(inp) {
+    var r = Math.round(Math.max(inp.radius, 5000)), bb = bboxAround(inp.lat, inp.lon, r), H = CONFIG.tallBuilding;
+    var towers = 'nwr["man_made"="tower"]["height"~"HRE"](BB);';
+    var q = '[out:json][timeout:25];' +
+      tallQuery(bb, TALL_RE.h150, TALL_RE.l43, towers.replace('HRE', function () { return TALL_RE.h60; })) +
+      tallQuery(bb, TALL_RE.h60to149, TALL_RE.l17to42, '', 3000);
+    return tallElements(await overpass(q, 25000), inp.lat, inp.lon, r, H);
   }
 
   // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
   // As in findTowers, only observation towers count: a mast can't be stood on. A tower's
   // view is from its deck (see deckHeight).
   async function findTallest(lat, lon) {
-    var at = ll5(lat, lon), bars = [100, CONFIG.tallBuilding];
+    var bb = bboxAround(lat, lon, 50000);
+    var bars = [[150, TALL_RE.h150, TALL_RE.l43], [100, TALL_RE.h100, TALL_RE.l29], [CONFIG.tallBuilding, TALL_RE.h60, TALL_RE.l17]];
+    var towers = 'nwr["man_made"="tower"]["tower:type"="observation"]["height"~"HRE"](BB);nwr["man_made"="tower"]["tourism"]["height"~"HRE"](BB);';
     for (var i = 0; i < bars.length; i++) {
-      var H = bars[i];
-      var q = '[out:json][timeout:25];(' +
-        'nwr["building"](around:50000,' + at + ')(if:number(t["height"])>=' + H + '||number(t["building:levels"])>=' + Math.round(H / 3.5) + ');' +
-        'nwr["man_made"="tower"]["tower:type"="observation"](around:50000,' + at + ')(if:number(t["height"])>=' + H + ');' +
-        'nwr["man_made"="tower"]["tourism"](around:50000,' + at + ')(if:number(t["height"])>=' + H + '););out center tags 800;';
-      var json = await overpass(q, 25000), best = null;
-      (json.elements || []).forEach(function (el) {
-        var t = el.tags || {}, h = parseHeight(t);
-        var la = el.lat != null ? el.lat : (el.center && el.center.lat), lo = el.lon != null ? el.lon : (el.center && el.center.lon);
-        if (!(h >= H) || la == null || lo == null) return;
-        var isTower = t.man_made === 'tower';
-        if (isTower && !isObservationTower(t)) return;
-        if (!best || h > best.height) best = { lat: la, lon: lo, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
-                                               deck: isTower ? deckHeight(t, h) : null };
-      });
+      var q = '[out:json][timeout:25];' + tallQuery(bb, bars[i][1], bars[i][2], towers, 2000);
+      var found = tallElements(await overpass(q, 25000), lat, lon, 50000, bars[i][0]), best = null;
+      found.forEach(function (b) { if (!best || b.height > best.height) best = b; });
       if (best) return best;
     }
     return null;
@@ -1205,14 +1251,18 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var chart = 'A 20/20 eye-chart letter would have to be ' + size + ' tall to read from here, ' + compare + '.';
     var counted = run.towersOK
       ? 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.'
-      : 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer), so check that nothing close by is in the way.';
+      : run.towersPending
+        ? 'Hills are counted. Tall buildings are still being looked up; if one is higher than this start, the result will update.'
+        : 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer), so check that nothing close by is in the way.';
 
-    var html = '' +
+    // The distance and where it starts from; the map follows on one column, then the details.
+    var head = '' +
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
       '<span class="alt">' + nf(t.d / 1609.344, 0) + ' miles</span></div>' +
       '<p class="headline">Looking <strong>' + dirWord(t.bearing) + '</strong> to <span id="targetName">a point ' + nf(t.h) + ' m high</span>.</p>' +
       '<p class="note yard">' + yardstick + '</p>' +
-      startHTML + goHTML + youHTML +
+      startHTML;
+    var html = goHTML + youHTML +
       '<dl class="facts">' +
         '<div><dt>You’d be standing at</dt><dd>' + nf(res.hEye) + ' m above sea level</dd></div>' +
         '<div><dt>Why not farther?</dt><dd>The Earth curves away. The far point sits ' + nf(t.drop) + ' m below a dead-level line from your eye.</dd></div>' +
@@ -1225,8 +1275,10 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       '<p class="note">' + counted + '</p>' +
       '<div class="links"><button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button></div>';
     els.emptyResult.hidden = true;
-    els.resultBody.innerHTML = html;
+    els.resultBody.innerHTML = head;
     els.resultBody.hidden = false;
+    els.resultFacts.innerHTML = html;
+    els.resultFacts.hidden = false;
     $('copyLink').addEventListener('click', copyLink);
   }
 
@@ -1425,6 +1477,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     }).join('');
     loadingTitle(inp);
     els.emptyResult.hidden = true; els.resultBody.hidden = true; els.resultBody.innerHTML = '';
+    els.resultFacts.hidden = true; els.resultFacts.innerHTML = '';
     $('resultLoading').hidden = false;
     $('result').setAttribute('aria-busy', 'true');
     els.sectorList.innerHTML = '<li class="empty">Appears when the search finishes.</li>';
@@ -1433,7 +1486,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     lastRun = null; activeRay = null;
     if (map) overlay.clearLayers();
     if (inp.lat != null) moveMapTo(inp);
-    if (inp.source !== 'preset') { suggestToken++; renderSuggestions(inp.query || whereName(inp), 'wait'); }
+    if (inp.source !== 'preset') { suggestToken++; suggestAll = null; renderSuggestions(inp.query || whereName(inp), 'wait'); }
   }
   function showLoadError(msg) {
     $('resultLoading').hidden = true;
@@ -1550,8 +1603,6 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var inRadius = function (p) { return E.distBearing(inp.lat, inp.lon, p.lat, p.lon)[0] <= inp.radius; };
       var named = osm ? osm.places.filter(inRadius) : [];
       named.forEach(function (p) { p.ground = E.elevAt(field, p.lat, p.lon, 0); });
-      var tall = towers || [];
-      tall.forEach(function (b) { b.ground = E.elevAt(field, b.lat, b.lon, 0); });
 
       // A hilltop covered in houses isn't somewhere to stand, so skip built-up tops.
       // If the count didn't answer, the highest top is used but the result says it wasn't checked.
@@ -1569,67 +1620,93 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var peak50 = inp.source === 'preset' ? null
         : E.highestPoint(field, inp.lat, inp.lon, 50000, Math.min(1, field.levels.length - 1));
 
-      var cands = [you];
-      if (openTop) {
-        // Name the top after a mapped peak or lookout beside it.
-        var tag = null, tagD = 400;
-        named.forEach(function (n) {
-          if (n.kind === 'tower' || !n.name) return;
-          var dn = E.distBearing(openTop.lat, openTop.lon, n.lat, n.lon)[0];
-          if (dn < tagD) { tagD = dn; tag = n; }
-        });
-        cands.push({ lat: openTop.lat, lon: openTop.lon, eye: 1.7, ground: openTop.h,
-                     kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
-      }
-      if (inp.radius > 0) {
-        tall.filter(inRadius).forEach(function (b) {
-          cands.push({ lat: b.lat, lon: b.lon, ground: b.ground, kind: b.kind, name: b.name, height: b.height,
-                       eye: b.kind === 'tower' ? b.deck : b.height + 1.7 });
-        });
-        named.forEach(function (n) {
-          if (n.kind !== 'tower' || !n.deck) return;
-          if (tall.some(function (b) { return E.distBearing(b.lat, b.lon, n.lat, n.lon)[0] < 60; })) return;
-          cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
-        });
-      }
-      cands.forEach(function (c) { c.top = c.ground + c.eye; });
-      var eligible = cands.filter(function (c) { return !(c === you && urbanYou && cands.length > 1); });
-      var bestC = eligible[0];
-      eligible.forEach(function (c) { if (c.top > bestC.top + 1) bestC = c; });
+      // Pick the start and work out the view. This runs again if the tall-building lookup
+      // answers after the result is shown (in a big city it can take a while), so a skyscraper
+      // that turns out to be higher still becomes the start. Returns false if a newer search took over.
+      var pick = async function (tall, answered, late) {
+        tall.forEach(function (b) { b.ground = E.elevAt(field, b.lat, b.lon, 0); });
+        var cands = [you];
+        if (openTop) {
+          // Name the top after a mapped peak or lookout beside it.
+          var tag = null, tagD = 400;
+          named.forEach(function (n) {
+            if (n.kind === 'tower' || !n.name) return;
+            var dn = E.distBearing(openTop.lat, openTop.lon, n.lat, n.lon)[0];
+            if (dn < tagD) { tagD = dn; tag = n; }
+          });
+          cands.push({ lat: openTop.lat, lon: openTop.lon, eye: 1.7, ground: openTop.h,
+                       kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
+        }
+        if (inp.radius > 0) {
+          tall.filter(inRadius).forEach(function (b) {
+            cands.push({ lat: b.lat, lon: b.lon, ground: b.ground, kind: b.kind, name: b.name, height: b.height,
+                         eye: b.kind === 'tower' ? b.deck : b.height + 1.7 });
+          });
+          named.forEach(function (n) {
+            if (n.kind !== 'tower' || !n.deck) return;
+            if (tall.some(function (b) { return E.distBearing(b.lat, b.lon, n.lat, n.lon)[0] < 60; })) return;
+            cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
+          });
+        }
+        cands.forEach(function (c) { c.top = c.ground + c.eye; });
+        var eligible = cands.filter(function (c) { return !(c === you && urbanYou && cands.length > 1); });
+        var bestC = eligible[0];
+        eligible.forEach(function (c) { if (c.top > bestC.top + 1) bestC = c; });
 
-      // Tall buildings become part of the terrain, except the one the view starts from.
-      var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
-        .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
-      if (obstacles.length) E.addObstacles(field, obstacles);
+        // Tall buildings become part of the terrain, except the one the view starts from.
+        // (The first pass only has buildings when the lookup answered, so nothing is added twice.)
+        var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
+          .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
+        if (obstacles.length) E.addObstacles(field, obstacles);
 
-      setStep('high', 'done'); setStep('view', 'active');
-      setStatus('Working out the view…'); setBar(0.8);
-      await tick();
-      if (stale()) return;
-      if (bestC !== you && inp.source === 'geo') {
-        var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k, ground: you.ground });
-        you.d = rq.farD[rq.best];
-      }
-      setBar(0.9);
-      await tick();
-      if (stale()) return;
-      var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
-      bestC.d = res.farD[res.best];
-      var fromTop = !!openTop && bestC === cands[1];
-      lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true, peak: peak50,
-                  urbanYou: urbanYou, osmOK: !!osm, towersOK: !!towers, openKnown: openKnown,
-                  openUnchecked: fromTop && !openKnown,
-                  skippedBuilt: fromTop && openKnown && openTop !== tops[0] };
-      activeRay = null;
-      $('resultLoading').hidden = true;
-      $('result').removeAttribute('aria-busy');
-      renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
-      nameTarget(lastRun);
+        if (!late) { setStep('high', 'done'); setStep('view', 'active'); setStatus('Working out the view…'); setBar(0.8); }
+        await tick();
+        if (stale()) return false;
+        if (bestC !== you && inp.source === 'geo') {
+          var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k, ground: you.ground });
+          you.d = rq.farD[rq.best];
+        }
+        if (!late) setBar(0.9);
+        await tick();
+        if (stale()) return false;
+        var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
+        bestC.d = res.farD[res.best];
+        var fromTop = !!openTop && bestC === cands[1];
+        lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50,
+                    urbanYou: urbanYou, osmOK: !!osm, towersOK: answered, towersPending: !answered && !late, openKnown: openKnown,
+                    openUnchecked: fromTop && !openKnown,
+                    skippedBuilt: fromTop && openKnown && openTop !== tops[0] };
+        activeRay = null;
+        return true;
+      };
+      var showRun = function () {
+        $('resultLoading').hidden = true;
+        $('result').removeAttribute('aria-busy');
+        renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
+        nameTarget(lastRun);
+      };
+
+      var answered = towers !== null;
+      if (!(await pick(towers || [], answered, false))) return;
+      showRun();
       if (inp.source !== 'preset') computeSuggestions(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
       setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
+      if (!answered) {
+        towersP.then(async function (late) {
+          if (stale()) return;
+          var before = lastRun.bestC;
+          if (!late) { lastRun.towersPending = false; renderResult(lastRun); nameTarget(lastRun); return; }
+          if (!(await pick(late, true, true))) return;
+          showRun();
+          refreshSuggestions();
+          var moved = lastRun.bestC.lat !== before.lat || lastRun.bestC.lon !== before.lon;
+          setStatus(moved ? 'Updated: the tall-building lookup answered, and ' + startLabel(lastRun.bestC, inp).replace(/^Roof of /, '') + ' is higher.'
+                          : 'Updated: tall buildings are now counted.');
+        }).catch(function (e) { console.warn('Late tall-building update failed', e); });
+      }
     } catch (e) {
       if (stale()) return;
       console.error(e);
@@ -1764,11 +1841,19 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     items.push({ id: 'p', kind: 'peak', lat: peak.lat, lon: peak.lon, radius: 1000, eye: 1.7,
                  title: peakName || 'the highest peak near ' + where, named: !!peakName,
                  chip: (peakName || 'Highest peak') + ' · ' + nf(peak.h) + ' m' });
-    // Don't suggest the spot the view already starts from (the CN Tower from Toronto, say).
-    items = items.filter(function (it) { return E.distBearing(it.lat, it.lon, run.res.lat, run.res.lon)[0] > 150; });
+    suggestAll = { items: items, where: where, input: inp };
+    refreshSuggestions();
+  }
+  // Show the suggestions, leaving out the spot the view already starts from (the CN Tower from
+  // Toronto, say). Called again when a late tall-building answer moves the start.
+  var suggestAll = null;
+  function refreshSuggestions() {
+    if (!suggestAll || !lastRun || lastRun.input !== suggestAll.input) return;
+    var start = lastRun.res;
+    var items = suggestAll.items.filter(function (it) { return E.distBearing(it.lat, it.lon, start.lat, start.lon)[0] > 150; });
     PRESETS = {};
     items.forEach(function (it) { PRESETS[it.id] = it; });
-    renderSuggestions(where, items);
+    renderSuggestions(suggestAll.where, items);
   }
   document.getElementById('presets').addEventListener('click', function (e) {
     var b = e.target.closest('[data-preset]'); if (!b) return;
