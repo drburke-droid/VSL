@@ -449,7 +449,9 @@
     hideSaver(); clearTimeout(idleTimer); closeMenus();
     desktop.hidden = true;
     $('#status').textContent = '';
-    setTimeout(() => { if (power === 'safe') safe.hidden = false; }, 900);
+    // black straight away (the tube behind is teal), then the message
+    safe.classList.add('dark'); safe.hidden = false;
+    setTimeout(() => { if (power === 'safe') safe.classList.remove('dark'); }, 900);
   }
   function setPower(on) {
     clearInterval(bootTimer);
