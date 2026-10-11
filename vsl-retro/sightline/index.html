@@ -126,6 +126,8 @@ input:focus, select:focus { border-color: var(--ink); outline: none; box-shadow:
 .check { display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 500; cursor: pointer; }
 .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
 .pill.idea { color: var(--ink); }
+.note.limit { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.btn-sm { font-size: 13px; padding: 6px 10px; }
 .go {
   font: 600 17px/1 var(--font-ui); color: #FFFFFF; background: var(--ink); border: 0; border-radius: 6px;
   padding: 15px 16px; cursor: pointer; width: 100%;
@@ -383,7 +385,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
-        <p class="hint">Finder version 2026-10-12.2</p>
+        <p class="hint">Finder version 2026-10-12.3</p>
       </div>
     </div>
   </details>
@@ -1030,7 +1032,18 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       return ((a.restUntil > now) - (b.restUntil > now)) || (a.busy - b.busy) || (a.fails - b.fails);
     });
   }
+  // Answers are kept for a few minutes, so searching the same place again (to look farther, or
+  // with rooftops switched) doesn't ask the map servers the same questions.
+  var opCache = new Map();
   async function overpass(query, ms) {
+    var hit = opCache.get(query);
+    if (hit && Date.now() - hit.t < 600000) return hit.json;
+    var json = await overpassFetch(query, ms);
+    opCache.set(query, { json: json, t: Date.now() });
+    while (opCache.size > 40) opCache.delete(opCache.keys().next().value);
+    return json;
+  }
+  async function overpassFetch(query, ms) {
     var tried = [], order = opOrder().slice(0, 3);   // at most three servers per request
     for (var i = 0; i < order.length; i++) {
       var sv = order[i];
@@ -1347,6 +1360,24 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Result panel ----
+  // A view that reaches the edge of the range: say so, and offer the next range up.
+  var RANGES = [100000, 150000, 250000, 350000, 500000, 600000];
+  function nextRange(r) { for (var i = 0; i < RANGES.length; i++) if (RANGES[i] > r) return RANGES[i]; return null; }
+  function limitNote(run) {
+    if (!run.capped) return '';
+    var r = run.input.range, next = nextRange(r);
+    if (run.extending) return '<p class="note limit"><span class="pill warn">At the limit</span>The view reaches the ' + nf(r / 1000) +
+      ' km the finder was set to look, so it’s looking again, out to ' + nf(run.extending / 1000) + ' km…</p>';
+    return '<p class="note limit"><span class="pill warn">At the limit</span>This view reaches the ' + nf(r / 1000) + ' km the finder is set to look' +
+      (next ? ', so it may go farther. <button type="button" class="btn-ghost btn-sm" id="lookFarther" data-range="' + next + '">Look as far as ' + nf(next / 1000) + ' km</button>'
+            : ', the farthest it looks, so the real view may go farther still.') + '</p>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#lookFarther');
+    if (!b) return;
+    els.range.value = b.getAttribute('data-range');
+    run({ refine: true });
+  });
   var VIS_WORD = { 40: 'hazy', 100: 'clear', 200: 'very clear', 300: 'crystal-clear' };
   function renderResult(run) {
     var res = run.res, t = E.target(res, res.best), inp = run.input, best = run.bestC, you = run.cands[0];
@@ -1455,7 +1486,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
       '<span class="alt">' + nf(t.d / 1609.344, 0) + ' miles</span></div>' +
       '<p class="headline">Looking <strong>' + dirWord(t.bearing) + '</strong> to <span id="targetName">a point ' + nf(t.h) + ' m high</span>.</p>' +
-      '<p class="note yard">' + yardstick + '</p>' +
+      '<p class="note yard">' + yardstick + '</p>' + limitNote(run) +
       startHTML;
     var html = goHTML + youHTML +
       '<dl class="facts">' +
@@ -1718,9 +1749,11 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (inp.source === 'place' && !inp.query && !matchState && queryLists.has(inp.typed)) {
       matchState = { list: queryLists.get(inp.typed), sel: 0 };
     }
+    var refine = !!(opts && opts.refine);   // looking farther from the same place: keep the result on screen
     document.body.dataset.running = '1';
     setBar(0);
-    startLoading(inp);
+    if (!refine) startLoading(inp);
+    else setStatus('Looking farther, out to ' + nf(inp.range / 1000) + ' km…');
     if (opts && opts.reveal) revealResult();
     var t0 = performance.now();
     try {
@@ -1759,7 +1792,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         .catch(function (e) { console.warn('Lookup for buildings 60-150 m failed', e); trouble.mid = lookupTrouble(e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
         if (stale()) return;
-        setStatus('Loading the landscape… ' + d + ' of ' + n); setBar(d / n * 0.65);
+        setStatus((refine ? 'Looking farther, out to ' + nf(inp.range / 1000) + ' km… ' : 'Loading the landscape… ') + d + ' of ' + n); setBar(d / n * 0.65);
         setStep('land', 'active', Math.round(d / n * 100) + '%');
       }, signal);
       if (stale()) return;
@@ -1908,7 +1941,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         if (stale()) return false;
         bestC.d = res.farD[res.best];
         var fromTop = !!openTop && bestC === cands[1];
-        lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50,
+        // The longest line of sight runs to the edge of the range: the real view may go farther.
+        var capped = res.farD[res.best] >= inp.range * 0.97;
+        lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50, capped: capped,
                     urbanYou: urbanYou, osmOK: !!osm, towersOK: bld.tall === 'ok', bld: bld, openKnown: openKnown,
                     openUnchecked: fromTop && !openKnown,
                     skippedBuilt: fromTop && openKnown && openTop !== tops[0] };
@@ -1931,11 +1966,19 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var known = function () { return (cur.tall || []).concat(cur.mid || []); };
       if (!(await pick(known(), state(), false))) return;
       showRun();
-      if (inp.source !== 'preset') computeSuggestions(lastRun);
+      if (inp.source !== 'preset' && !refine) computeSuggestions(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
-      setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
+      setStatus((refine ? 'Looked out to ' + nf(inp.range / 1000) + ' km in ' : 'Done in ') + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
+      // At the default 250 km, a view that reaches the edge is looked at again out to 500 km.
+      if (lastRun.capped && inp.range === 250000 && !refine) {
+        lastRun.extending = 500000;
+        renderResult(lastRun); nameTarget(lastRun);
+        els.range.value = '500000';
+        setTimeout(function () { if (!stale()) run({ refine: true }); }, 0);
+        return;
+      }
       // Late answers, one at a time. Adding the same buildings to the terrain twice changes nothing,
       // so each pass can simply use everything known so far.
       var queue = Promise.resolve();
@@ -1963,7 +2006,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       if (stale()) return;
       console.error(e);
       var msg = 'Couldn’t reach the elevation data. If this page is open inside an app’s file preview, open its web address in your browser instead. Otherwise check your connection and try again.';
-      setStatus(msg, true); showLoadError(msg);
+      if (refine && lastRun) { lastRun.extending = false; renderResult(lastRun); nameTarget(lastRun); setStatus('Couldn’t load the terrain farther out. ' + msg, true); }
+      else { setStatus(msg, true); showLoadError(msg); }
       setBar(0);
     } finally {
       if (!stale()) delete document.body.dataset.running;
@@ -2211,7 +2255,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     report();
   }
 
-  window.__sightline = { run: run, last: function () { return lastRun; } };
+  window.__sightline = { run: run, last: function () { return lastRun; }, forget: function () { opCache.clear(); } };
 
   /* ROOF_SOURCES. r is the roof (the top of the main structure, below any spire, mast or antenna),
      used only when rooftops are imagined: Wikipedia infobox "Roof" or the CTBUH Skyscraper Center,
