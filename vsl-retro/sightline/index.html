@@ -342,7 +342,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       <!-- Below the result, where a visitor already is after a search; also marked on the map. -->
       <div class="field try" id="tryBox">
         <span class="label" id="presetLabel">Or try nearby</span>
-        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
+        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The highest lookout and highest peak near your place will appear here.</span></div>
         <p class="hint" id="tryHint" hidden>Both are marked on the map too. Tap a marker to start the view there.</p>
       </div>
     </section>
@@ -841,6 +841,16 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   function deckBuilding(d) { return d.b; }
   // Whether a deck's name already says which building it is in ("Calgary Tower observation deck").
   function namesBuilding(name, building) { return !building || name.toLowerCase().indexOf(building.replace(/^the /i, '').toLowerCase()) >= 0; }
+  // The tallest roof in cities where it isn't a deck building (Brookfield Place in Calgary,
+  // Central Park Tower in New York...), used only with rooftops imagined. See ROOF_SOURCES.
+  var ROOFS = [/*ROOFS*/];
+  // Every built-in roof near a point: the deck buildings' and the list above.
+  function knownRoofs(lat, lon, r) {
+    var out = [];
+    DECKS.forEach(function (d) { if (d.r) out.push({ name: deckBuilding(d), c: d.c, lat: d.lat, lon: d.lon, r: d.r }); });
+    ROOFS.forEach(function (x) { out.push({ name: x.n, c: x.c, lat: x.lat, lon: x.lon, r: x.r }); });
+    return out.filter(function (k) { return E.distBearing(lat, lon, k.lat, k.lon)[0] <= r; });
+  }
   function decksNear(lat, lon, r) {
     return DECKS.filter(function (d) { return E.distBearing(lat, lon, d.lat, d.lon)[0] <= r; });
   }
@@ -1886,7 +1896,19 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
           if (inp.source === 'place' && city) decksNear(inp.lat, inp.lon, 40000).forEach(function (d) {
             if (d.c.toLowerCase() === city && decks.indexOf(d) < 0) decks.push(d);
           });
-          var atDeck = function (p) { return decks.some(function (d) { return E.distBearing(d.lat, d.lon, p.lat, p.lon)[0] < 150; }); };
+          // Imagined: the built-in tallest roofs in range (or in the named city, up to 40 km).
+          var roofs = !inp.roofs ? [] : ROOFS.filter(function (x) {
+            var dd = E.distBearing(inp.lat, inp.lon, x.lat, x.lon)[0];
+            return dd <= inp.radius || (inp.source === 'place' && city && x.c.toLowerCase() === city && dd <= 40000);
+          });
+          // Mapped buildings at a built-in spot give way to it (their heights often include a spire).
+          var atDeck = function (p) {
+            return decks.concat(roofs).some(function (d) { return E.distBearing(d.lat, d.lon, p.lat, p.lon)[0] < 150; });
+          };
+          roofs.forEach(function (x) {
+            cands.push({ lat: x.lat, lon: x.lon, ground: E.elevAt(field, x.lat, x.lon, 0), kind: 'roof', name: x.n, height: x.r, eye: x.r + 1.7,
+                         inCity: E.distBearing(inp.lat, inp.lon, x.lat, x.lon)[0] > inp.radius });
+          });
           decks.forEach(function (d) {
             var g = E.elevAt(field, d.lat, d.lon, 0), far = E.distBearing(inp.lat, inp.lon, d.lat, d.lon)[0] > inp.radius;
             cands.push({ lat: d.lat, lon: d.lon, ground: g, kind: 'deck', name: d.n, building: d.b,
@@ -2110,7 +2132,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     $('tryHint').hidden = !have || !map; $('tryLegend').hidden = !have || !map;
     drawTryPins(have ? items : null);
     if (items === 'wait') { box.innerHTML = '<span class="hint">Suggestions appear when the search finishes.</span>'; return; }
-    if (items === null) { box.innerHTML = '<span class="hint">Finding the tallest building and highest peak…</span>'; return; }
+    if (items === null) { box.innerHTML = '<span class="hint">Finding the ' + (els.roofs.checked ? 'tallest rooftop' : 'highest lookout') + ' and highest peak…</span>'; return; }
     if (!items.length) { box.innerHTML = '<span class="hint">Nothing to suggest nearby.</span>'; return; }
     box.innerHTML = items.map(function (it) {
       return '<button type="button" class="chip" data-preset="' + it.id + '" aria-pressed="false">' + esc(it.chip) + '</button>';
@@ -2122,40 +2144,44 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var items = [];
     // Highest ground within 50 km, found in run() before buildings were added to the terrain.
     var peak = run.peak;
-    // The highest built-in deck within 50 km, or, with rooftops imagined, the highest roof among them.
-    var nearDecks = decksNear(inp.lat, inp.lon, 50000), topDeck = null, topUp = 0;
-    nearDecks.forEach(function (d) {
-      var up = inp.roofs && d.r > d.d ? d.r : d.d;
-      var top = E.elevAt(run.field, d.lat, d.lon, Math.min(1, run.field.levels.length - 1)) + up;
-      if (!topDeck || top > topDeck.top) { topDeck = { d: d, top: top }; topUp = up; }
+    // Off: the highest public deck within 50 km (built-in, or an observation tower on the map).
+    // Imagined: the tallest roof within 50 km, from the built-in roofs and the map, whichever is taller.
+    var lvl = Math.min(1, run.field.levels.length - 1);
+    var groundAt = function (p) { return E.elevAt(run.field, p.lat, p.lon, lvl); };
+    var topDeck = null, topRoof = null;
+    decksNear(inp.lat, inp.lon, 50000).forEach(function (d) {
+      var top = groundAt(d) + d.d;
+      if (!topDeck || top > topDeck.top) topDeck = { d: d, top: top };
     });
+    if (inp.roofs) knownRoofs(inp.lat, inp.lon, 50000).forEach(function (k) {
+      var top = groundAt(k) + k.r;
+      if (!topRoof || top > topRoof.top) topRoof = { name: k.name, lat: k.lat, lon: k.lon, r: k.r, top: top };
+    });
+    var askMap = inp.roofs || !topDeck;
     var results = await Promise.all([
-      topDeck ? Promise.resolve(null)
-              : findTallest(inp.lat, inp.lon, inp.roofs).catch(function (e) { console.warn('Tallest-structure lookup failed', e); return null; }),
+      askMap ? findTallest(inp.lat, inp.lon, inp.roofs).catch(function (e) { console.warn('Tallest-structure lookup failed', e); return null; })
+             : Promise.resolve(null),
       nameFor(peak.lat, peak.lon).catch(function () { return null; })
     ]);
     if (token !== suggestToken) return;
     var st = results[0], nm = results[1];
-    if (topDeck && topUp !== topDeck.d.d) {           // an imagined roof
-      var rd = topDeck.d, rn = deckBuilding(rd);
-      items.push({ id: 's', kind: 'roof', lat: rd.lat, lon: rd.lon, radius: 0, eye: rd.r + 1.7, roofName: rn, roofUp: rd.r,
-                   title: 'the roof of ' + rn, chip: 'Roof of ' + rn + ' · ' + nf(rd.r) + ' m' });
+    if (inp.roofs && st && st.kind === 'building') {
+      // A mapped building counts unless it is one of the built-in ones (whose roofs are known).
+      var known = knownRoofs(st.lat, st.lon, 150).length > 0, stTop = groundAt(st) + st.height;
+      if (!known && (!topRoof || stTop > topRoof.top + 1)) topRoof = { name: st.name || 'the tallest building', lat: st.lat, lon: st.lon, r: st.height, top: stTop };
+    }
+    if (inp.roofs && topRoof) {
+      items.push({ id: 's', kind: 'roof', lat: topRoof.lat, lon: topRoof.lon, radius: 0, eye: topRoof.r + 1.7, roofName: topRoof.name, roofUp: topRoof.r,
+                   title: 'the roof of ' + topRoof.name, chip: 'Roof of ' + topRoof.name + ' · ' + nf(topRoof.r) + ' m' });
     } else if (topDeck) {
       var td = topDeck.d;
       items.push({ id: 's', kind: 'deck', lat: td.lat, lon: td.lon, radius: 0, eye: td.d + 1.7,
                    deckName: td.n, building: td.b, deck: td.d,
                    title: td.n, chip: (td.s || cap(td.n)) + ' · ' + nf(td.d) + ' m' });
-    } else if (st && st.kind === 'building' && inp.roofs) {   // a roof: only with rooftops imagined
-      var bn = st.name || 'the tallest building';
-      items.push({ id: 's', kind: 'roof', lat: st.lat, lon: st.lon, radius: 0, eye: st.height + 1.7, roofName: bn, roofUp: st.height,
-                   title: 'the roof of ' + bn, chip: 'Roof of ' + bn + ' · ' + nf(st.height) + ' m' });
     } else if (st && st.kind !== 'building') {
-      var stName = st.name || (st.kind === 'tower' ? 'the tallest tower' : 'the tallest building');
-      var deck = st.kind === 'tower';
-      items.push({ id: 's', kind: st.kind, lat: st.lat, lon: st.lon, radius: 0,
-                   eye: deck ? st.deck : st.height + 1.7,
-                   title: (deck ? 'the observation deck of ' : 'the top of ') + stName,
-                   chip: (deck ? 'Deck of ' : 'Top of ') + stName + ' · ' + nf(deck ? st.deck : st.height) + ' m' });
+      var stName = st.name || 'the tallest tower';
+      items.push({ id: 's', kind: st.kind, lat: st.lat, lon: st.lon, radius: 0, eye: st.deck,
+                   title: 'the observation deck of ' + stName, chip: 'Deck of ' + stName + ' · ' + nf(st.deck) + ' m' });
     }
     var peakName = nm && nm.kind === 'peak' && nm.d < 2000 ? nm.name : null;
     items.push({ id: 'p', kind: 'peak', lat: peak.lat, lon: peak.lon, radius: 1000, eye: 1.7,
