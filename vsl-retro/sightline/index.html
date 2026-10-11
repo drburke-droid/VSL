@@ -123,6 +123,11 @@ input:focus, select:focus { border-color: var(--ink); outline: none; box-shadow:
   border: 1px solid var(--ink); border-radius: 6px; padding: 10px 13px; cursor: pointer; white-space: nowrap; display: inline-block;
 }
 .btn-ghost:hover { background: var(--ink); color: var(--bg); }
+.check { display: flex; gap: 8px; align-items: center; font-size: 15px; font-weight: 500; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); }
+.pill.idea { color: var(--ink); }
+.note.limit { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.btn-sm { font-size: 13px; padding: 6px 10px; }
 .go {
   font: 600 17px/1 var(--font-ui); color: #FFFFFF; background: var(--ink); border: 0; border-radius: 6px;
   padding: 15px 16px; cursor: pointer; width: 100%;
@@ -264,6 +269,11 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p class="hint">Or tap anywhere on the map. Coordinates and Google Maps links work too.</p>
       </div>
 
+      <div class="field roofs">
+        <label class="check"><input type="checkbox" id="roofs"> Imagine I could stand on any rooftop</label>
+        <p class="hint" id="roofsHint">Off: only places open to the public are starting points, such as the ground, lookouts and observation decks. On: building roofs count too, for a view most people can’t actually get.</p>
+      </div>
+
       <button type="submit" class="go" id="go">Find the longest view</button>
       <div class="progress" aria-hidden="true"><i id="bar"></i></div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -367,7 +377,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     <div class="cols">
       <div>
         <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
-        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller (where a mapped height runs to the tip of a spire, as it does for One World Trade Center, the roof is used); or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot open to the public: the top of the ground, checked point by point, or a public observation deck. Tall buildings still block the view. With “Imagine I could stand on any rooftop” on, the roof of any building 60 m or taller counts too (where a mapped height runs to the tip of a spire, as it does for One World Trade Center, the roof is used). For 53 decks in 42 big cities (from One World Observatory and the CN Tower’s SkyPod to the Burj Khalifa and Tokyo Skytree), the height of the highest public level comes from published sources and is built in; elsewhere a deck is taken as 85% of its tower’s height. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
@@ -375,7 +385,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
-        <p class="hint">Finder version 2026-10-11.9</p>
+        <p class="hint">Finder version 2026-10-12.3</p>
       </div>
     </div>
   </details>
@@ -766,6 +776,75 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     lookupGrace: 4000       // ms to keep waiting for map lookups once the terrain has loaded
   };
 
+  // Public observation decks in big cities, checked against published sources (see DECK_SOURCES
+  // at the end of this script). The map lookups are often slow or refused in big cities, and
+  // mapped heights run to the tip of a spire or antenna, so for these places the finder uses
+  // the known deck instead: d is the height above the street of the highest public level, in
+  // metres. A deck is a starting point like any other, and wins whenever it is the highest.
+  // r is the building's roof, used only with rooftops imagined (see ROOF_SOURCES).
+  var DECKS = [
+    {n: "One World Observatory", b: "One World Trade Center", c: "New York", lat: 40.7131, lon: -74.0133, d: 386.5, r: 417},
+    {n: "Edge", b: "30 Hudson Yards", c: "New York", lat: 40.7541, lon: -74.0008, d: 344.7, r: 387.1},
+    {n: "SUMMIT One Vanderbilt", b: "One Vanderbilt", c: "New York", lat: 40.753, lon: -73.9785, d: 324, r: 396.5},
+    {n: "Empire State Building 102nd floor", b: "Empire State Building", c: "New York", lat: 40.7483, lon: -73.9856, d: 373.1, r: 381},
+    {n: "Skydeck Chicago", b: "Willis Tower", c: "Chicago", lat: 41.8789, lon: -87.6358, d: 412.4, r: 442.3},
+    {n: "360 Chicago", b: "875 North Michigan Avenue", c: "Chicago", lat: 41.8989, lon: -87.6231, d: 313.9, r: 343.8},
+    {n: "the SkyPod", b: "the CN Tower", c: "Toronto", lat: 43.6426, lon: -79.3871, d: 447, s: "CN Tower SkyPod", r: 457.2},
+    {n: "Space Needle observation deck", b: "Space Needle", c: "Seattle", lat: 47.6204, lon: -122.3491, d: 158.5},
+    {n: "Sky View Observatory", b: "Columbia Center", c: "Seattle", lat: 47.6044, lon: -122.3306, d: 274.9, r: 285.6},
+    {n: "SkyPod", b: "The STRAT", c: "Las Vegas", lat: 36.1475, lon: -115.1553, d: 264.9, r: 280.7},
+    {n: "Calgary Tower observation deck", b: "Calgary Tower", c: "Calgary", lat: 51.0444, lon: -114.0636, d: 157.6, r: 171},
+    {n: "GeO-Deck", b: "Reunion Tower", c: "Dallas", lat: 32.7753, lon: -96.8089, d: 143.3, r: 171},
+    {n: "View Boston", b: "Prudential Tower", c: "Boston", lat: 42.3472, lon: -71.0825, d: 213, r: 228.3},
+    {n: "Tembo Galleria", b: "Tokyo Skytree", c: "Tokyo", lat: 35.7101, lon: 139.8108, d: 451.2, r: 495.2},
+    {n: "Tokyo Tower Top Deck", b: "Tokyo Tower", c: "Tokyo", lat: 35.6586, lon: 139.7456, d: 249.6},
+    {n: "Harukas 300", b: "Abeno Harukas", c: "Osaka", lat: 34.646, lon: 135.5134, d: 287.6, r: 300},
+    {n: "Top of Shanghai", b: "Shanghai Tower", c: "Shanghai", lat: 31.2335, lon: 121.5058, d: 546, r: 587.4},
+    {n: "SWFC Observatory", b: "Shanghai World Financial Center", c: "Shanghai", lat: 31.2346, lon: 121.5074, d: 474, r: 492},
+    {n: "Jin Mao observatory", b: "Jin Mao Tower", c: "Shanghai", lat: 31.2372, lon: 121.5014, d: 340.1, r: 385.5},
+    {n: "Free Sky", b: "Ping An Finance Centre", c: "Shenzhen", lat: 22.5367, lon: 114.0503, d: 562.2, r: 599.1},
+    {n: "Canton Tower top deck", b: "Canton Tower", c: "Guangzhou", lat: 23.1056, lon: 113.322, d: 488},
+    {n: "CCTV Tower observation deck", b: "Central Radio and TV Tower", c: "Beijing", lat: 39.9181, lon: 116.3003, d: 238, r: 270},
+    {n: "Sky100", b: "International Commerce Centre", c: "Hong Kong", lat: 22.303, lon: 114.16, d: 388, r: 484},
+    {n: "Sky Terrace 428", b: "The Peak Tower", c: "Hong Kong", lat: 22.271, lon: 114.1499, d: 32},
+    {n: "Taipei 101 Observatory", b: "Taipei 101", c: "Taipei", lat: 25.0336, lon: 121.5647, d: 382, r: 449.2},
+    {n: "Seoul Sky", b: "Lotte World Tower", c: "Seoul", lat: 37.5125, lon: 127.1028, d: 478, r: 554.5},
+    {n: "Macau Tower observation deck", b: "Macau Tower", c: "Macau", lat: 22.1797, lon: 113.5367, d: 233, r: 248},
+    {n: "At the Top SKY", b: "Burj Khalifa", c: "Dubai", lat: 25.1972, lon: 55.2741, d: 555.7, r: 585.4},
+    {n: "Sky Bridge", b: "Kingdom Centre", c: "Riyadh", lat: 24.7113, lon: 46.6744, d: 290.4},
+    {n: "Observation Deck at 300", b: "Etihad Towers", c: "Abu Dhabi", lat: 24.4594, lon: 54.3214, d: 300},
+    {n: "Petronas Towers observation deck", b: "Petronas Twin Towers", c: "Kuala Lumpur", lat: 3.1578, lon: 101.7117, d: 370, r: 378.6},
+    {n: "KL Tower Sky Deck", b: "KL Tower", c: "Kuala Lumpur", lat: 3.1528, lon: 101.7033, d: 300, r: 335},
+    {n: "Mahanakhon SkyWalk", b: "King Power Mahanakhon", c: "Bangkok", lat: 13.7236, lon: 100.5283, d: 314},
+    {n: "SkyPark Observation Deck", b: "Marina Bay Sands", c: "Singapore", lat: 1.284, lon: 103.8608, d: 200},
+    {n: "Lakhta Center observation deck", b: "Lakhta Center", c: "Saint Petersburg", lat: 59.9871, lon: 30.1781, d: 357},
+    {n: "Ostankino Tower observation deck", b: "Ostankino Tower", c: "Moscow", lat: 55.8197, lon: 37.6117, d: 340, r: 385.4},
+    {n: "Panorama360", b: "Federation Tower", c: "Moscow", lat: 55.7498, lon: 37.5371, d: 327, r: 373.7},
+    {n: "The View from The Shard", b: "The Shard", c: "London", lat: 51.5045, lon: -0.0865, d: 244},
+    {n: "the top of the Eiffel Tower", b: "the Eiffel Tower", c: "Paris", lat: 48.8584, lon: 2.2945, d: 276, s: "Top of the Eiffel Tower", r: 300},
+    {n: "Fernsehturm observation deck", b: "Berliner Fernsehturm", c: "Berlin", lat: 52.5208, lon: 13.4094, d: 203},
+    {n: "Main Tower platform", b: "Main Tower", c: "Frankfurt", lat: 50.1122, lon: 8.6719, d: 198, r: 200},
+    {n: "Donauturm terrace", b: "Donauturm", c: "Vienna", lat: 48.2403, lon: 16.41, d: 155},
+    {n: "Varso Tower observation deck", b: "Varso Tower", c: "Warsaw", lat: 52.2286, lon: 20.9992, d: 230},
+    {n: "Mirador Torre Glòries", b: "Torre Glòries", c: "Barcelona", lat: 41.4033, lon: 2.1894, d: 125, r: 144.4},
+    {n: "Sapphire sky deck", b: "Istanbul Sapphire", c: "Istanbul", lat: 41.085, lon: 29.0058, d: 236, r: 238},
+    {n: "Euromast platform", b: "Euromast", c: "Rotterdam", lat: 51.9061, lon: 4.4658, d: 112},
+    {n: "Sydney Tower Eye", b: "Sydney Tower", c: "Sydney", lat: -33.8704, lon: 151.2089, d: 250, r: 277},
+    {n: "Melbourne Skydeck", b: "Eureka Tower", c: "Melbourne", lat: -37.8217, lon: 144.9644, d: 285, r: 297.3},
+    {n: "SkyPoint Observation Deck", b: "Q1", c: "Gold Coast", lat: -28.0061, lon: 153.4294, d: 230, r: 245},
+    {n: "Sky Deck", b: "Sky Tower", c: "Auckland", lat: -36.8485, lon: 174.7623, d: 220, r: 237},
+    {n: "Sky Costanera", b: "Gran Torre Santiago", c: "Santiago", lat: -33.4169, lon: -70.6067, d: 261},
+    {n: "Sampa Sky", b: "Mirante do Vale", c: "São Paulo", lat: -23.5422, lon: -46.6354, d: 150},
+    {n: "Cairo Tower observation deck", b: "Cairo Tower", c: "Cairo", lat: 30.0458, lon: 31.2244, d: 143, r: 160}
+  ];
+  // The building a deck is in, by name ("the CN Tower", "the Eiffel Tower", "Willis Tower").
+  function deckBuilding(d) { return d.b; }
+  // Whether a deck's name already says which building it is in ("Calgary Tower observation deck").
+  function namesBuilding(name, building) { return !building || name.toLowerCase().indexOf(building.replace(/^the /i, '').toLowerCase()) >= 0; }
+  function decksNear(lat, lon, r) {
+    return DECKS.filter(function (d) { return E.distBearing(lat, lon, d.lat, d.lon)[0] <= r; });
+  }
+
   // "Or try nearby": the tallest structure and the highest peak within 50 km of the place
   // the visitor chose. Filled in after each search; keyed by id ('s' structure, 'p' peak).
   var PRESETS = {}, suggestToken = 0;
@@ -773,7 +852,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
-    form: $('form'), loc: $('loc'), geo: $('geo'), eye: $('eye'), radius: $('radius'), range: $('range'),
+    form: $('form'), loc: $('loc'), geo: $('geo'), eye: $('eye'), radius: $('radius'), range: $('range'), roofs: $('roofs'),
     refr: $('refr'), vis: $('vis'), go: $('go'), status: $('status'), bar: $('bar'),
     emptyResult: $('emptyResult'), resultBody: $('resultBody'), resultFacts: $('resultFacts'), sectorList: $('sectorList'),
     prof: $('prof'), profTitle: $('profTitle'), profCap: $('profCap'), resultTitle: $('resultTitle')
@@ -953,7 +1032,18 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       return ((a.restUntil > now) - (b.restUntil > now)) || (a.busy - b.busy) || (a.fails - b.fails);
     });
   }
+  // Answers are kept for a few minutes, so searching the same place again (to look farther, or
+  // with rooftops switched) doesn't ask the map servers the same questions.
+  var opCache = new Map();
   async function overpass(query, ms) {
+    var hit = opCache.get(query);
+    if (hit && Date.now() - hit.t < 600000) return hit.json;
+    var json = await overpassFetch(query, ms);
+    opCache.set(query, { json: json, t: Date.now() });
+    while (opCache.size > 40) opCache.delete(opCache.keys().next().value);
+    return json;
+  }
+  async function overpassFetch(query, ms) {
     var tried = [], order = opOrder().slice(0, 3);   // at most three servers per request
     for (var i = 0; i < order.length; i++) {
       var sv = order[i];
@@ -1129,12 +1219,16 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
   // As in findTowers, only observation towers count: a mast can't be stood on. A tower's
   // view is from its deck (see deckHeight).
-  async function findTallest(lat, lon) {
+  // roofs: include building roofs (imagined); otherwise only observation towers, which are public.
+  async function findTallest(lat, lon, roofs) {
     var bb = bboxAround(lat, lon, 50000);
     var bars = [[150, TALL_RE.h150, TALL_RE.l43], [100, TALL_RE.h100, TALL_RE.l29], [CONFIG.tallBuilding, TALL_RE.h60, TALL_RE.l17]];
     var towers = 'nwr["man_made"="tower"]["tower:type"="observation"]["height"~"HRE"](BB);nwr["man_made"="tower"]["tourism"]["height"~"HRE"](BB);';
     for (var i = 0; i < bars.length; i++) {
-      var q = '[out:json][timeout:25];' + tallQuery(bb, bars[i][1], bars[i][2], towers, 2000, bars[i][0] >= 150);
+      var hRe = bars[i][1];
+      var q = '[out:json][timeout:25];' + (roofs
+        ? tallQuery(bb, hRe, bars[i][2], towers, 2000, bars[i][0] >= 150)
+        : '(' + towers.replace(/BB/g, function () { return bb; }).replace(/HRE/g, function () { return hRe; }) + ');out center tags 2000;');
       var found = tallElements(await overpass(q, 25000), lat, lon, 50000, bars[i][0]), best = null;
       found.forEach(function (b) { if (!best || b.height > best.height) best = b; });
       if (best) return best;
@@ -1221,6 +1315,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (c.kind === 'you') return inp.source === 'geo' ? 'You' : (inp.placeName ? cap(inp.placeName) : 'This spot');
     if (c.kind === 'building') return c.name ? 'Roof of ' + c.name : 'Roof of a tall building';
     if (c.kind === 'tower') return c.name ? c.name + ' deck' : 'Observation deck';
+    if (c.kind === 'deck') return c.short || cap(c.name);
+    if (c.kind === 'roof') return 'Roof of ' + c.name;
     return c.name || 'Highest ground';
   }
 
@@ -1264,6 +1360,24 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Result panel ----
+  // A view that reaches the edge of the range: say so, and offer the next range up.
+  var RANGES = [100000, 150000, 250000, 350000, 500000, 600000];
+  function nextRange(r) { for (var i = 0; i < RANGES.length; i++) if (RANGES[i] > r) return RANGES[i]; return null; }
+  function limitNote(run) {
+    if (!run.capped) return '';
+    var r = run.input.range, next = nextRange(r);
+    if (run.extending) return '<p class="note limit"><span class="pill warn">At the limit</span>The view reaches the ' + nf(r / 1000) +
+      ' km the finder was set to look, so it’s looking again, out to ' + nf(run.extending / 1000) + ' km…</p>';
+    return '<p class="note limit"><span class="pill warn">At the limit</span>This view reaches the ' + nf(r / 1000) + ' km the finder is set to look' +
+      (next ? ', so it may go farther. <button type="button" class="btn-ghost btn-sm" id="lookFarther" data-range="' + next + '">Look as far as ' + nf(next / 1000) + ' km</button>'
+            : ', the farthest it looks, so the real view may go farther still.') + '</p>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#lookFarther');
+    if (!b) return;
+    els.range.value = b.getAttribute('data-range');
+    run({ refine: true });
+  });
   var VIS_WORD = { 40: 'hazy', 100: 'clear', 200: 'very clear', 300: 'crystal-clear' };
   function renderResult(run) {
     var res = run.res, t = E.target(res, res.best), inp = run.input, best = run.bestC, you = run.cands[0];
@@ -1275,7 +1389,22 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     // Where the view starts, in words.
     var region = (run.skippedBuilt ? 'the highest open ground' : 'the highest ground') + ' within ' + within + ' of ' + esc(where);
     var start;
-    if (best.kind === 'building' || best.kind === 'tower') {
+    var deckLine = function (name, building, up) {
+      return '<strong>' + esc(name) + '</strong>' + (namesBuilding(name, building) ? '' : ' in ' + esc(building)) + ', ' + nf(up) + ' m up';
+    };
+    var imagined = '', idea = false;
+    if (best.kind === 'roof' || (best.kind === 'building' && inp.roofs)) {
+      start = 'the roof of <strong>' + esc(best.name || 'a tall building') + '</strong> (' + nf(best.height) + ' m up), the highest rooftop ' +
+        (best.inCity ? 'in ' : 'within ' + within + ' of ') + esc(where) + '. It isn’t open to the public: this is the view you’d get if it were';
+      idea = true;
+    } else if (best.kind === 'deck') {
+      start = deckLine(best.name, best.building, best.deck) + ', the highest place to stand ' + (best.inCity ? 'in ' : 'within ' + within + ' of ') + esc(where);
+    } else if (inp.presetKind === 'roof' && PRESETS.s) {
+      start = 'the roof of <strong>' + esc(PRESETS.s.roofName) + '</strong> (' + nf(PRESETS.s.roofUp) + ' m up). It isn’t open to the public: this is the view you’d get if it were';
+      idea = true;
+    } else if (inp.presetKind === 'deck' && PRESETS.s) {
+      start = deckLine(PRESETS.s.deckName, PRESETS.s.building, PRESETS.s.deck);
+    } else if (best.kind === 'building' || best.kind === 'tower') {
       start = (best.kind === 'building'
         ? 'the roof of <strong>' + esc(best.name || 'a tall building') + '</strong> (' + nf(best.height) + ' m tall)'
         : 'the observation deck of <strong>' + esc(best.name || 'the tower') + '</strong> (about ' + nf(best.eye) + ' m up)') +
@@ -1290,7 +1419,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     } else {
       start = region + ', ' + nf(best.ground) + ' m above sea level';
     }
-    var startHTML = '<p class="startline">From ' + start + '.</p>' +
+    var startHTML = '<p class="startline">' + (idea ? '<span class="pill idea">Imagined</span> ' : '') + 'From ' + start + '.</p>' +
       (run.openUnchecked ? '<p class="note"><span class="pill warn">Not checked</span>The check for houses on this high ground didn’t answer, so it may be built up. Look at the map before you go.</p>' : '');
 
     // Extra lines for someone using their own location: how to get there, and what they see from where they stand.
@@ -1298,7 +1427,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (geo && moved) {
       var off = E.distBearing(you.lat, you.lon, res.lat, res.lon), climbM = best.ground - you.ground;
       var dirURL = 'https://www.google.com/maps/dir/?api=1&destination=' + res.lat.toFixed(5) + '%2C' + res.lon.toFixed(5);
-      var roof = best.kind === 'building';
+      var roof = best.kind === 'building' || best.kind === 'roof';
       goHTML = '<div class="goto"><p>It’s ' + nf(off[0] / 1000, 1) + ' km ' + dirWord(off[1]) + ' of you' +
         (!roof && climbM > 50 ? ' and ' + nf(climbM) + ' m higher' : '') + '.' +
         (roof ? ' Most rooftops aren’t open to the public.' : '') +
@@ -1357,7 +1486,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       '<div class="big"><span class="num">' + nf(t.d / 1000, 1) + '</span><span class="unit">km</span>' +
       '<span class="alt">' + nf(t.d / 1609.344, 0) + ' miles</span></div>' +
       '<p class="headline">Looking <strong>' + dirWord(t.bearing) + '</strong> to <span id="targetName">a point ' + nf(t.h) + ' m high</span>.</p>' +
-      '<p class="note yard">' + yardstick + '</p>' +
+      '<p class="note yard">' + yardstick + '</p>' + limitNote(run) +
       startHTML;
     var html = goHTML + youHTML +
       '<dl class="facts">' +
@@ -1369,7 +1498,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         '<div><dt>The far point</dt><dd><a href="' + gm(t.lat, t.lon) + '" target="_blank" rel="noopener">Show it in Google Maps</a>' +
           '<small>' + fmtLL(t.lat, t.lon) + ' · ' + nf(t.bearing, 1) + '° from north</small></dd></div>' +
       '</dl>' +
-      '<p class="note">' + counted + '</p>' +
+      '<p class="note">' + counted + ' ' + (inp.roofs
+        ? 'Rooftops count as starting points, as if you could stand on any of them.'
+        : 'Only places open to the public count as starting points: the ground, lookouts and observation decks. Turn on “Imagine I could stand on any rooftop” to include building roofs.') + '</p>' +
       '<div class="links"><button type="button" class="btn-ghost" id="copyLink">Copy link to this result</button></div>';
     els.emptyResult.hidden = true;
     els.resultBody.innerHTML = head;
@@ -1463,7 +1594,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   function readInputs() {
     var eye = parseFloat(els.eye.value);
     if (!(eye >= 0) || eye > 2000) return { error: 'Eye height must be between 0 and 2,000 m.' };
-    var inp = { eye: eye, radius: +els.radius.value, range: +els.range.value, k: +els.refr.value, vis: +els.vis.value };
+    var inp = { eye: eye, radius: +els.radius.value, range: +els.range.value, k: +els.refr.value, vis: +els.vis.value, roofs: els.roofs.checked };
     var text = els.loc.value.trim();
     if (!text) return { error: 'Enter a city or place, coordinates like “51.117, -114.117”, or tap the map.' };
     var ll = parseLocation(text);
@@ -1618,9 +1749,11 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (inp.source === 'place' && !inp.query && !matchState && queryLists.has(inp.typed)) {
       matchState = { list: queryLists.get(inp.typed), sel: 0 };
     }
+    var refine = !!(opts && opts.refine);   // looking farther from the same place: keep the result on screen
     document.body.dataset.running = '1';
     setBar(0);
-    startLoading(inp);
+    if (!refine) startLoading(inp);
+    else setStatus('Looking farther, out to ' + nf(inp.range / 1000) + ' km…');
     if (opts && opts.reveal) revealResult();
     var t0 = performance.now();
     try {
@@ -1659,7 +1792,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         .catch(function (e) { console.warn('Lookup for buildings 60-150 m failed', e); trouble.mid = lookupTrouble(e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
         if (stale()) return;
-        setStatus('Loading the landscape… ' + d + ' of ' + n); setBar(d / n * 0.65);
+        setStatus((refine ? 'Looking farther, out to ' + nf(inp.range / 1000) + ' km… ' : 'Loading the landscape… ') + d + ' of ' + n); setBar(d / n * 0.65);
         setStep('land', 'active', Math.round(d / n * 100) + '%');
       }, signal);
       if (stale()) return;
@@ -1747,12 +1880,30 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
                        kind: tag ? tag.kind : 'high', name: tag ? tag.name : null });
         }
         if (inp.radius > 0) {
+          // Decks in range, plus, for a search by city name, that city's decks up to 40 km away:
+          // geocoded centres can sit well away from the towers (Dubai's is 13 km from the Burj Khalifa).
+          var decks = decksNear(inp.lat, inp.lon, inp.radius), city = (inp.placeName || '').toLowerCase();
+          if (inp.source === 'place' && city) decksNear(inp.lat, inp.lon, 40000).forEach(function (d) {
+            if (d.c.toLowerCase() === city && decks.indexOf(d) < 0) decks.push(d);
+          });
+          var atDeck = function (p) { return decks.some(function (d) { return E.distBearing(d.lat, d.lon, p.lat, p.lon)[0] < 150; }); };
+          decks.forEach(function (d) {
+            var g = E.elevAt(field, d.lat, d.lon, 0), far = E.distBearing(inp.lat, inp.lon, d.lat, d.lon)[0] > inp.radius;
+            cands.push({ lat: d.lat, lon: d.lon, ground: g, kind: 'deck', name: d.n, building: d.b,
+                         short: d.s || cap(d.n), deck: d.d, eye: d.d + 1.7, inCity: far });
+            // Imagined: the roof of the deck's building, from the same sources.
+            if (inp.roofs && d.r > d.d) cands.push({ lat: d.lat, lon: d.lon, ground: g, kind: 'roof', name: deckBuilding(d),
+                                                      height: d.r, eye: d.r + 1.7, inCity: far });
+          });
           tall.filter(inRadius).forEach(function (b) {
+            if (atDeck(b)) return;
+            // A building's roof is a starting point only when rooftops are imagined; observation towers always are.
+            if (b.kind === 'building' && !inp.roofs) return;
             cands.push({ lat: b.lat, lon: b.lon, ground: b.ground, kind: b.kind, name: b.name, height: b.height,
                          eye: b.kind === 'tower' ? b.deck : b.height + 1.7 });
           });
           named.forEach(function (n) {
-            if (n.kind !== 'tower' || !n.deck) return;
+            if (n.kind !== 'tower' || !n.deck || atDeck(n)) return;
             if (tall.some(function (b) { return E.distBearing(b.lat, b.lon, n.lat, n.lon)[0] < 60; })) return;
             cands.push({ lat: n.lat, lon: n.lon, eye: n.deck, ground: n.ground, kind: 'tower', name: n.name });
           });
@@ -1764,7 +1915,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
         // Tall buildings become part of the terrain, except the one the view starts from.
         // (Later passes add the same buildings again, which changes nothing: each raise is to a fixed top.)
-        var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
+        var own = bestC.kind === 'deck' || bestC.kind === 'roof' ? 150 : 45;
+        var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > own; })
           .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
         if (obstacles.length) { E.addObstacles(field, obstacles); field.obstacles = (field.obstacles || []).concat(obstacles); }
 
@@ -1789,7 +1941,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         if (stale()) return false;
         bestC.d = res.farD[res.best];
         var fromTop = !!openTop && bestC === cands[1];
-        lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50,
+        // The longest line of sight runs to the edge of the range: the real view may go farther.
+        var capped = res.farD[res.best] >= inp.range * 0.97;
+        lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50, capped: capped,
                     urbanYou: urbanYou, osmOK: !!osm, towersOK: bld.tall === 'ok', bld: bld, openKnown: openKnown,
                     openUnchecked: fromTop && !openKnown,
                     skippedBuilt: fromTop && openKnown && openTop !== tops[0] };
@@ -1812,11 +1966,19 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var known = function () { return (cur.tall || []).concat(cur.mid || []); };
       if (!(await pick(known(), state(), false))) return;
       showRun();
-      if (inp.source !== 'preset') computeSuggestions(lastRun);
+      if (inp.source !== 'preset' && !refine) computeSuggestions(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
-      setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
+      setStatus((refine ? 'Looked out to ' + nf(inp.range / 1000) + ' km in ' : 'Done in ') + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
+      // At the default 250 km, a view that reaches the edge is looked at again out to 500 km.
+      if (lastRun.capped && inp.range === 250000 && !refine) {
+        lastRun.extending = 500000;
+        renderResult(lastRun); nameTarget(lastRun);
+        els.range.value = '500000';
+        setTimeout(function () { if (!stale()) run({ refine: true }); }, 0);
+        return;
+      }
       // Late answers, one at a time. Adding the same buildings to the terrain twice changes nothing,
       // so each pass can simply use everything known so far.
       var queue = Promise.resolve();
@@ -1844,7 +2006,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       if (stale()) return;
       console.error(e);
       var msg = 'Couldn’t reach the elevation data. If this page is open inside an app’s file preview, open its web address in your browser instead. Otherwise check your connection and try again.';
-      setStatus(msg, true); showLoadError(msg);
+      if (refine && lastRun) { lastRun.extending = false; renderResult(lastRun); nameTarget(lastRun); setStatus('Couldn’t load the terrain farther out. ' + msg, true); }
+      else { setStatus(msg, true); showLoadError(msg); }
       setBar(0);
     } finally {
       if (!stale()) delete document.body.dataset.running;
@@ -1864,7 +2027,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
   // ---- Shareable link: #51.11700,-114.11700,h1.7,r2000,d250000,k0.13,v100 ----
   function writeHash(inp) {
-    var h = '#' + inp.lat.toFixed(5) + ',' + inp.lon.toFixed(5) + ',h' + inp.eye + ',r' + inp.radius + ',d' + inp.range + ',k' + inp.k + ',v' + inp.vis;
+    var h = '#' + inp.lat.toFixed(5) + ',' + inp.lon.toFixed(5) + ',h' + inp.eye + ',r' + inp.radius + ',d' + inp.range + ',k' + inp.k + ',v' + inp.vis + (inp.roofs ? ',a1' : '');
     try { history.replaceState(null, '', h); } catch (e) { /* file:// or sandboxed */ }
   }
   function readHash() {
@@ -1878,6 +2041,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var setSel = function (el, v) { if (v != null && Array.prototype.some.call(el.options, function (o) { return o.value === String(+v); })) el.value = String(+v); };
     if (get('h') != null) els.eye.value = get('h');
     setSel(els.radius, get('r')); setSel(els.range, get('d')); setSel(els.refr, get('k')); setSel(els.vis, get('v'));
+    els.roofs.checked = get('a') === '1';
     return true;
   }
   function copyLink() {
@@ -1906,7 +2070,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
 
   // Small pins on the map for the suggestions, so they can be found without scrolling back.
   var TRY_SVG = {
+    deck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v4M8.5 8h7M9.5 8l-1.5 14h8L14.5 8M9 5.5h6v2.5H9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     tower: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v4M8.5 8h7M9.5 8l-1.5 14h8L14.5 8M9 5.5h6v2.5H9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    roof: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 22V4h10v18M4 22h16M10 7h1.5M12.5 7H14M10 10.5h1.5M12.5 10.5H14M10 14h1.5M12.5 14H14M10.5 22v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     building: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 22V4h10v18M4 22h16M10 7h1.5M12.5 7H14M10 10.5h1.5M12.5 10.5H14M10 14h1.5M12.5 14H14M10.5 22v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     peak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5 9.5 6l4 7.5 2.5-4 6 11z M7.6 9.6 9.5 11l1.9-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
   };
@@ -1956,13 +2122,34 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var items = [];
     // Highest ground within 50 km, found in run() before buildings were added to the terrain.
     var peak = run.peak;
+    // The highest built-in deck within 50 km, or, with rooftops imagined, the highest roof among them.
+    var nearDecks = decksNear(inp.lat, inp.lon, 50000), topDeck = null, topUp = 0;
+    nearDecks.forEach(function (d) {
+      var up = inp.roofs && d.r > d.d ? d.r : d.d;
+      var top = E.elevAt(run.field, d.lat, d.lon, Math.min(1, run.field.levels.length - 1)) + up;
+      if (!topDeck || top > topDeck.top) { topDeck = { d: d, top: top }; topUp = up; }
+    });
     var results = await Promise.all([
-      findTallest(inp.lat, inp.lon).catch(function (e) { console.warn('Tallest-structure lookup failed', e); return null; }),
+      topDeck ? Promise.resolve(null)
+              : findTallest(inp.lat, inp.lon, inp.roofs).catch(function (e) { console.warn('Tallest-structure lookup failed', e); return null; }),
       nameFor(peak.lat, peak.lon).catch(function () { return null; })
     ]);
     if (token !== suggestToken) return;
     var st = results[0], nm = results[1];
-    if (st) {
+    if (topDeck && topUp !== topDeck.d.d) {           // an imagined roof
+      var rd = topDeck.d, rn = deckBuilding(rd);
+      items.push({ id: 's', kind: 'roof', lat: rd.lat, lon: rd.lon, radius: 0, eye: rd.r + 1.7, roofName: rn, roofUp: rd.r,
+                   title: 'the roof of ' + rn, chip: 'Roof of ' + rn + ' · ' + nf(rd.r) + ' m' });
+    } else if (topDeck) {
+      var td = topDeck.d;
+      items.push({ id: 's', kind: 'deck', lat: td.lat, lon: td.lon, radius: 0, eye: td.d + 1.7,
+                   deckName: td.n, building: td.b, deck: td.d,
+                   title: td.n, chip: (td.s || cap(td.n)) + ' · ' + nf(td.d) + ' m' });
+    } else if (st && st.kind === 'building' && inp.roofs) {   // a roof: only with rooftops imagined
+      var bn = st.name || 'the tallest building';
+      items.push({ id: 's', kind: 'roof', lat: st.lat, lon: st.lon, radius: 0, eye: st.height + 1.7, roofName: bn, roofUp: st.height,
+                   title: 'the roof of ' + bn, chip: 'Roof of ' + bn + ' · ' + nf(st.height) + ' m' });
+    } else if (st && st.kind !== 'building') {
       var stName = st.name || (st.kind === 'tower' ? 'the tallest tower' : 'the tallest building');
       var deck = st.kind === 'tower';
       items.push({ id: 's', kind: st.kind, lat: st.lat, lon: st.lon, radius: 0,
@@ -2014,6 +2201,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     run({ reveal: true });
   });
   els.form.addEventListener('submit', function (e) { e.preventDefault(); run({ reveal: true }); });
+  // Turning rooftops on or off shows the answer for the same place straight away.
+  els.roofs.addEventListener('change', function () { if (lastRun) run(); });
   els.geo.addEventListener('click', function () {
     if (!navigator.geolocation) { setStatus('This browser can’t share its location. Type coordinates or tap the map.', true); return; }
     setStatus('Finding your location…');
@@ -2066,7 +2255,74 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     report();
   }
 
-  window.__sightline = { run: run, last: function () { return lastRun; } };
+  window.__sightline = { run: run, last: function () { return lastRun; }, forget: function () { opCache.clear(); } };
+
+  /* ROOF_SOURCES. r is the roof (the top of the main structure, below any spire, mast or antenna),
+     used only when rooftops are imagined: Wikipedia infobox "Roof" or the CTBUH Skyscraper Center,
+     checked in October 2026; for the Burj Khalifa, its highest occupied floor (585.4 m, CTBUH).
+     Left out where there is no standable roof above the deck, or sources disagree: The Shard,
+     Space Needle, Tokyo Tower, Kingdom Centre, Etihad Towers, Canton Tower, Berliner Fernsehturm,
+     Donauturm, Varso, Lakhta Center, Euromast, Mahanakhon, Marina Bay Sands, Gran Torre Santiago,
+     Mirante do Vale, The Peak Tower. */
+
+  /* DECK_SOURCES. Each deck's height (the highest public level, above the street) and position,
+     from published sources, checked in October 2026. Left out: decks closed or not yet open
+     (Merdeka 118, Tour Montparnasse, Olympiaturm, Kaknästornet, Montreal Tower, Yokohama
+     Landmark Tower, One Liberty), harnessed climbs and walks, and decks whose height or position
+     sources disagree on (Vancouver Lookout, Torre Latinoamericana, N Seoul Tower, Carlton Centre).
+     New York, One World Trade Center (386.5 m): https://en.wikipedia.org/wiki/One_World_Trade_Center
+     New York, 30 Hudson Yards (344.7 m): https://www.related.com/press-releases/2021-10-26/edge-hudson-yards-unveils-city-climb-ultimate-skyscraping-adventure
+     New York, One Vanderbilt (324 m): https://www.dezeen.com/2021/06/17/summit-one-vanderbilt-kohn-pedersen-fox/
+     New York, Empire State Building (373.1 m): https://en.wikipedia.org/wiki/Empire_State_Building
+     Chicago, Willis Tower (412.4 m): https://theskydeck.com/the-ledge/
+     Chicago, 875 North Michigan Avenue (313.9 m): https://en.wikipedia.org/wiki/875_North_Michigan_Avenue
+     Toronto, the CN Tower (447 m): https://www.frommers.com/destinations/toronto/attractions/cn-tower
+     Seattle, Space Needle (158.5 m): https://spaceneedle.com/press-faq
+     Seattle, Columbia Center (274.9 m): https://skyviewobservatory.com/about
+     Las Vegas, The STRAT (264.9 m): https://en.wikipedia.org/wiki/The_Strat
+     Calgary, Calgary Tower (157.6 m): https://en.wikipedia.org/wiki/Calgary_Tower
+     Dallas, Reunion Tower (143.3 m): https://visitdallas.com/things-to-do/attractions/reunion-tower
+     Boston, Prudential Tower (213 m): https://www.skyscrapercenter.com/boston/prudential-tower/1127
+     Tokyo, Tokyo Skytree (451.2 m): https://www.japan-guide.com/e/e3064.html
+     Tokyo, Tokyo Tower (249.6 m): https://en.wikipedia.org/wiki/Tokyo_Tower
+     Osaka, Abeno Harukas (287.6 m): https://www.skyscrapercenter.com/building/wd/533
+     Shanghai, Shanghai Tower (546 m): https://en.wikipedia.org/wiki/Shanghai_Tower
+     Shanghai, Shanghai World Financial Center (474 m): https://en.wikipedia.org/wiki/Shanghai_World_Financial_Center
+     Shanghai, Jin Mao Tower (340.1 m): https://english.shanghai.gov.cn/en-ScenicSpots/20231205/0a220990815641668ef99a1490875a24.html
+     Shenzhen, Ping An Finance Centre (562.2 m): https://www.skyscrapercenter.com/building/ping-an-finance-centre/54
+     Guangzhou, Canton Tower (488 m): https://en.wikipedia.org/wiki/Canton_Tower
+     Beijing, Central Radio and TV Tower (238 m): https://english.beijing.gov.cn/specials/ticketing/attractions/202409/t20240930_3910087.html
+     Hong Kong, International Commerce Centre (388 m): https://hongkongcheapo.com/place/sky100
+     Hong Kong, The Peak Tower (32 m): https://www.thepeak.com.hk/en/node/84
+     Taipei, Taipei 101 (382 m): https://topics.amcham.com.tw/2021/07/taiwans-tallest-building-101-view/
+     Seoul, Lotte World Tower (478 m): https://en.wikipedia.org/wiki/Lotte_World_Tower
+     Macau, Macau Tower (233 m): https://www.macautower.com.mo/observation-deck/
+     Dubai, Burj Khalifa (555.7 m): https://guinnessworldrecords.com/world-records/482083-highest-open-air-observation-deck
+     Riyadh, Kingdom Centre (290.4 m): https://structurae.net/en/structures/kingdom-centre
+     Abu Dhabi, Etihad Towers (300 m): https://visitabudhabi.ae/en/what-to-see/iconic-landmarks/etihad-towers
+     Kuala Lumpur, Petronas Twin Towers (370 m): https://en.wikipedia.org/wiki/Petronas_Towers
+     Kuala Lumpur, KL Tower (300 m): https://malaysia.travel/explore/kuala-lumpur-tower
+     Bangkok, King Power Mahanakhon (314 m): https://kingpowermahanakhon.co.th/skywalk/
+     Singapore, Marina Bay Sands (200 m): https://www.timeout.com/singapore/things-to-do/skypark-observation-deck-level-56
+     Saint Petersburg, Lakhta Center (357 m): https://www.skyscrapercenter.com/building/id/12575
+     Moscow, Ostankino Tower (340 m): https://tvtower.ru/en/news/57/
+     Moscow, Federation Tower (327 m): https://pnr360.getanchor.io/en/index.html
+     London, The Shard (244 m): https://en.wikipedia.org/wiki/The_View_from_The_Shard
+     Paris, the Eiffel Tower (276 m): https://www.visitparisregion.com/en/eiffel-tower
+     Berlin, Berliner Fernsehturm (203 m): https://en.wikipedia.org/wiki/Fernsehturm_Berlin
+     Frankfurt, Main Tower (198 m): https://structurae.net/de/bauwerke/20000906
+     Vienna, Donauturm (155 m): https://donauturm.at/assets/Uploads/Elements/Presse/Presseinformationen/20240419-Presseinformation-60-Jahre-Donauturm-fin-PK.pdf
+     Warsaw, Varso Tower (230 m): https://en.wikipedia.org/wiki/Varso
+     Barcelona, Torre Glòries (125 m): https://www.miradortorreglories.com/en/the-experience/barcelona-observation-deck
+     Istanbul, Istanbul Sapphire (236 m): https://en.wikipedia.org/wiki/Istanbul_Sapphire
+     Rotterdam, Euromast (112 m): https://en.wikipedia.org/wiki/Euromast
+     Sydney, Sydney Tower (250 m): https://en.wikipedia.org/wiki/Sydney_Tower
+     Melbourne, Eureka Tower (285 m): https://en.wikipedia.org/wiki/Eureka_Tower
+     Gold Coast, Q1 (230 m): https://en.wikipedia.org/wiki/SkyPoint_Observation_Deck
+     Auckland, Sky Tower (220 m): https://en.wikipedia.org/wiki/Sky_Tower_(Auckland)
+     Santiago, Gran Torre Santiago (261 m): https://en.wikipedia.org/wiki/Gran_Torre_Costanera
+     São Paulo, Mirante do Vale (150 m): https://en.wikipedia.org/wiki/Mirante_do_Vale
+     Cairo, Cairo Tower (143 m): https://www.skyscrapercenter.com/building/wd/10271 */
 })();
 </script>
 </body>
