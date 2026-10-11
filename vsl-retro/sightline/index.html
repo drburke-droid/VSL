@@ -160,6 +160,20 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   border: 1px solid var(--ink); border-radius: 3px; box-shadow: none; padding: 3px 6px;
 }
 .leaflet-tooltip.map-tag::before { display: none; }
+/* "Or try" suggestions: below the result, and as pins on the map */
+.try { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--rule); }
+.try-icon { background: none; border: 0; }
+/* The result layer draws above the pins; let clicks on its empty space reach them. */
+.leaflet-overlay-pane > svg { pointer-events: none; }
+.try-pin {
+  display: grid; place-items: center; width: 30px; height: 30px; box-sizing: border-box;
+  color: var(--ink); background: var(--panel); border: 2px solid var(--ink); border-radius: 50%; cursor: pointer;
+}
+.try-pin svg { width: 18px; height: 18px; }
+.try-icon:hover .try-pin, .try-icon:focus-visible .try-pin, .try-icon.on .try-pin { color: var(--panel); background: var(--ink); }
+.leaflet-tooltip.map-tag.try-tag { font-weight: 500; }
+.try-pin.mini { width: 18px; height: 18px; border-width: 1.5px; flex: none; cursor: default; }
+.try-pin.mini svg { width: 11px; height: 11px; }
 .empty { color: var(--muted); margin: 0; }
 .steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
 .steps li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 15px; color: var(--muted); }
@@ -240,11 +254,6 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p class="hint">Or tap anywhere on the map. Coordinates and Google Maps links work too.</p>
       </div>
 
-      <div class="field">
-        <span class="label" id="presetLabel">Or try nearby</span>
-        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
-      </div>
-
       <button type="submit" class="go" id="go">Find the longest view</button>
       <div class="progress" aria-hidden="true"><i id="bar"></i></div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -305,6 +314,12 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       <p class="empty" id="emptyResult">Loading…</p>
       <div class="loading" id="resultLoading" hidden><ol class="steps" id="steps"></ol></div>
       <div id="resultBody" hidden></div>
+      <!-- Below the result, where a visitor already is after a search; also marked on the map. -->
+      <div class="field try" id="tryBox">
+        <span class="label" id="presetLabel">Or try nearby</span>
+        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
+        <p class="hint" id="tryHint" hidden>Both are marked on the map too. Tap a marker to start the view there.</p>
+      </div>
     </section>
 
     <div class="stage">
@@ -314,6 +329,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
           <span><i class="sw dot"></i>Where the view starts</span>
           <span><i class="sw"></i>Line of sight</span>
           <span><i class="sw area"></i>Farthest ground visible in each direction</span>
+          <span id="tryLegend" hidden><i class="try-pin mini" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 20.5 9.5 6l4 7.5 2.5-4 6 11z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></i>Nearby tower or peak: tap to start there</span>
         </div>
       </div>
       <section class="card profile">
@@ -336,14 +352,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     <div class="cols">
       <div>
         <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
-        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
       <div>
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
-        <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level.</p>
+        <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
       </div>
     </div>
   </details>
@@ -656,6 +672,37 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     ];
   }
 
+  // Remove single-pixel faults from a decoded 256x256 tile, in place. The tiles have a few
+  // isolated pixels hundreds of metres off (one beside the Niagara gorge reads 1,149 m where
+  // the ground is about 130 m), and a far point landing on one invents a peak. A pixel is a
+  // fault when it sits more than limit metres above every neighbour, where limit is the larger
+  // of 150 m and one pixel's width: real ground, averaged over a pixel, never rises that steeply
+  // on all sides at once. Faults take their neighbours' median. Pits are left alone: they can't
+  // invent a far point, and a real gorge should stay open.
+  function despike(data, pixM) {
+    var lim = Math.max(150, pixM), fix = [];
+    for (var y = 0; y < 256; y++) {
+      var y0 = y > 0 ? y - 1 : 0, y1 = y < 255 ? y + 1 : 255;
+      for (var x = 0; x < 256; x++) {
+        var x0 = x > 0 ? x - 1 : 0, x1 = x < 255 ? x + 1 : 255;
+        var v = data[y * 256 + x] - lim, fault = true;
+        // Almost every pixel has a neighbour within the limit; stop at the first one.
+        for (var yy = y0; yy <= y1 && fault; yy++) {
+          for (var xx = x0; xx <= x1; xx++) {
+            if ((xx !== x || yy !== y) && data[yy * 256 + xx] >= v) { fault = false; break; }
+          }
+        }
+        if (!fault) continue;
+        var nb = [];
+        for (yy = y0; yy <= y1; yy++) for (xx = x0; xx <= x1; xx++) if (xx !== x || yy !== y) nb.push(data[yy * 256 + xx]);
+        nb.sort(function (a, b) { return a - b; });
+        fix.push(y * 256 + x, (nb[(nb.length - 1) >> 1] + nb[nb.length >> 1]) / 2);
+      }
+    }
+    for (var i = 0; i < fix.length; i += 2) data[fix[i]] = fix[i + 1];
+    return fix.length / 2;
+  }
+
   function compass16(b) {
     var names = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     return names[Math.round(((b % 360) + 360) % 360 / 22.5) % 16];
@@ -664,7 +711,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   root.SightEngine = {
     R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
     candidates: candidates, climb: climb, highestPoint: highestPoint, addObstacles: addObstacles, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
-    tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
+    tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16, despike: despike,
     mercY: mercY, wrapLon: wrapLon
   };
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -787,6 +834,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var px = ctx.getImageData(0, 0, 256, 256).data;
     var out = new Float32Array(65536);
     for (var i = 0, j = 0; i < 65536; i++, j += 4) out[i] = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
+    var midLat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 0.5) / n))) * 180 / Math.PI;
+    E.despike(out, 2 * Math.PI * E.R * Math.cos(midLat * Math.PI / 180) / (256 * n));
     cachePut(key, out);
     return out;
   }
@@ -857,8 +906,12 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (r > 0) {
       q += '(node["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
            'way["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
-           'node["natural"~"^(peak|hill)$"](around:' + r + ',' + at + ');' +
-           'nwr["man_made"="tower"]["tower:type"="observation"](around:' + r + ',' + at + '););out center 80;';
+           'node["natural"~"^(peak|hill)$"](around:' + r + ',' + at + '););out center 80;';
+      // Observation towers come here too, in their own output so lookouts can't crowd them out.
+      // This lookup is quick, so a tower like the CN Tower is found even in a big city, where
+      // the slow tall-building lookup (findTowers) may not answer in time.
+      q += '(nwr["man_made"="tower"]["tower:type"="observation"](around:' + r + ',' + at + ');' +
+           'nwr["man_made"="tower"]["tourism"](around:' + r + ',' + at + '););out center 40;';
     }
     q += 'way["building"](around:' + CONFIG.builtUpRadius + ',' + at + ');out count;';
     var json = await overpass(q, 15000), places = [], count = null;
@@ -868,10 +921,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var lat = el.lat != null ? el.lat : (el.center && el.center.lat);
       var lon = el.lon != null ? el.lon : (el.center && el.center.lon);
       if (lat == null || lon == null) return;
-      var kind = t['tower:type'] === 'observation' ? 'tower' : t.tourism === 'viewpoint' ? 'viewpoint' : 'peak';
-      var height = parseFloat(t.height);
-      // Observation decks usually sit a little below a tower's full height.
-      var deck = kind === 'tower' && height > 3 ? Math.round(height * 0.85) : null;
+      var kind = isObservationTower(t) ? 'tower' : t.tourism === 'viewpoint' ? 'viewpoint' : 'peak';
+      var deck = kind === 'tower' ? deckHeight(t, parseHeight(t)) : null;
       places.push({ lat: lat, lon: lon, kind: kind, name: t.name || null, deck: deck });
     });
     return { places: places, buildingsNearYou: count };
@@ -885,6 +936,17 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     return (json.elements || []).filter(function (el) { return el.type === 'count'; })
       .map(function (el) { return parseInt((el.tags || {}).ways || '0', 10); });
   }
+
+  // A tower's view is from its highest public deck. Where we know it, use it; otherwise assume
+  // the deck sits about 85% of the way up.
+  var KNOWN_DECKS = { 'cn tower': 447 };   // SkyPod, 447 m (the tower is 553 m)
+  function deckHeight(t, h) {
+    var known = KNOWN_DECKS[String(t.name || '').trim().toLowerCase()];
+    if (known && !(h > 0 && known >= h)) return known;
+    return h > 3 ? Math.round(h * 0.85) : null;
+  }
+  // Observation towers can be stood on; masts (communication, lighting, cooling) can't.
+  function isObservationTower(t) { return t.man_made === 'tower' && (t['tower:type'] === 'observation' || !!t.tourism); }
 
   function parseHeight(t) {
     var h = String(t.height || '').trim(), v = parseFloat(h);
@@ -906,17 +968,16 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       if (!(h >= H) || lat == null || lon == null) return;
       var isTower = t.man_made === 'tower';
       // Masts don't block a view and can't be stood on; observation towers can.
-      var observation = isTower && (t['tower:type'] === 'observation' || !!t.tourism);
-      if (isTower && !observation) return;
+      if (isTower && !isObservationTower(t)) return;
       out.push({ lat: lat, lon: lon, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
-                 deck: isTower ? Math.round(h * 0.85) : null });
+                 deck: isTower ? deckHeight(t, h) : null });
     });
     return out;
   }
 
   // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
   // As in findTowers, only observation towers count: a mast can't be stood on. A tower's
-  // view is from its deck, about 85% of the way up.
+  // view is from its deck (see deckHeight).
   async function findTallest(lat, lon) {
     var at = ll5(lat, lon), bars = [100, CONFIG.tallBuilding];
     for (var i = 0; i < bars.length; i++) {
@@ -931,9 +992,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         var la = el.lat != null ? el.lat : (el.center && el.center.lat), lo = el.lon != null ? el.lon : (el.center && el.center.lon);
         if (!(h >= H) || la == null || lo == null) return;
         var isTower = t.man_made === 'tower';
-        if (isTower && !(t['tower:type'] === 'observation' || !!t.tourism)) return;
+        if (isTower && !isObservationTower(t)) return;
         if (!best || h > best.height) best = { lat: la, lon: lo, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
-                                               deck: isTower ? Math.round(h * 0.85) : null };
+                                               deck: isTower ? deckHeight(t, h) : null };
       });
       if (best) return best;
     }
@@ -971,7 +1032,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Map ----
-  var map = null, overlay = null, pickMarker = null;
+  var map = null, overlay = null, tryLayer = null, tryPins = {}, pickMarker = null;
+  var lastFit = null, userMoved = false;   // the view a result was fitted to; whether the visitor moved the map since
   function initMap() {
     if (!window.L) {
       $('map').innerHTML = '<div class="map-fallback">The map library did not load. Results still work below.</div>';
@@ -980,6 +1042,13 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     map = L.map('map', { zoomControl: true, worldCopyJump: true }).setView([51.05, -114.07], 8);
     L.tileLayer(CONFIG.basemap, { maxZoom: 17, attribution: CONFIG.basemapAttribution }).addTo(map);
     overlay = L.layerGroup().addTo(map);
+    // "Or try" pins: their own layer, kept when the view is redrawn, drawn under the start dot
+    // and the line of sight so they never hide the result.
+    map.createPane('tryPane').style.zIndex = 390;
+    tryLayer = L.layerGroup().addTo(map);
+    ['mousedown', 'touchstart', 'wheel', 'keydown'].forEach(function (ev) {
+      map.getContainer().addEventListener(ev, function () { userMoved = true; }, { passive: true });
+    });
     map.on('click', function (e) {
       var ll = e.latlng.wrap();
       els.loc.value = fmtLL(ll.lat, ll.lng);
@@ -1043,7 +1112,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       .bindTooltip('Start: ' + esc(startLabel(run.bestC, inp)), { permanent: true, direction: 'right', className: 'map-tag' }).addTo(overlay);
     L.circleMarker([t.lat, tLon], { radius: 7, color: panel, weight: 2, fillColor: tape, fillOpacity: 1 })
       .bindTooltip(nf(t.d / 1000, 1) + ' km', { permanent: true, direction: 'top', className: 'map-tag' }).addTo(overlay);
-    if (run.fit) { map.fitBounds(poly.getBounds().extend([t.lat, tLon]), { padding: [28, 28] }); run.fit = false; }
+    if (run.fit) {
+      var fb = poly.getBounds().extend([t.lat, tLon]);
+      lastFit = L.latLngBounds(fb.getSouthWest(), fb.getNorthEast()); userMoved = false;
+      Object.keys(tryPins).forEach(function (k) { fb.extend(tryPins[k].getLatLng()); });   // keep "Or try" pins in view
+      // No animation: Leaflet ignores a fit asked for while an earlier zoom is still animating,
+      // which happens when a search finishes quickly after the map moved to the place.
+      map.fitBounds(fb, { padding: [28, 28], animate: false }); run.fit = false;
+    }
   }
 
   // ---- Result panel ----
@@ -1331,7 +1407,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   function moveMapTo(inp) {
     if (!map) return;
     showPick(inp.lat, inp.lon);
-    map.setView([inp.lat, inp.lon], Math.max(map.getZoom(), 9), { animate: true });
+    // Instant, like the result's fit: an animated zoom still running when the result arrives
+    // would finish afterwards and undo the result's view.
+    map.setView([inp.lat, inp.lon], Math.max(map.getZoom(), 9), { animate: false });
   }
   function setStep(key, state, detail) {
     var li = document.querySelector('#steps [data-step="' + key + '"]');
@@ -1601,7 +1679,10 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // ---- Controls ----
-  function clearPresetPress() { document.querySelectorAll('#presets .chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); }); }
+  function clearPresetPress() {
+    document.querySelectorAll('#presets .chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+    Object.keys(tryPins).forEach(function (k) { var el = tryPins[k].getElement(); if (el) el.classList.remove('on'); });
+  }
   function applyPreset(name) {
     var p = PRESETS[name]; if (!p) return;
     els.loc.value = fmtLL(p.lat, p.lon);
@@ -1609,12 +1690,49 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     clearPresetPress();
     var chip = document.querySelector('#presets [data-preset="' + name + '"]');
     if (chip) chip.setAttribute('aria-pressed', 'true');
+    var pin = tryPins[name] && tryPins[name].getElement();
+    if (pin) pin.classList.add('on');
+  }
+
+  // Small pins on the map for the suggestions, so they can be found without scrolling back.
+  var TRY_SVG = {
+    tower: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5v4M8.5 8h7M9.5 8l-1.5 14h8L14.5 8M9 5.5h6v2.5H9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    building: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 22V4h10v18M4 22h16M10 7h1.5M12.5 7H14M10 10.5h1.5M12.5 10.5H14M10 14h1.5M12.5 14H14M10.5 22v-4h3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    peak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20.5 9.5 6l4 7.5 2.5-4 6 11z M7.6 9.6 9.5 11l1.9-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+  };
+  function drawTryPins(items) {
+    tryPins = {};
+    if (!tryLayer) return;
+    tryLayer.clearLayers();
+    (items || []).forEach(function (it) {
+      var icon = L.divIcon({ className: 'try-icon', iconSize: [30, 30], iconAnchor: [15, 15],
+                             html: '<span class="try-pin">' + (TRY_SVG[it.kind] || TRY_SVG.peak) + '</span>' });
+      var m = L.marker([it.lat, it.lon], { icon: icon, pane: 'tryPane', keyboard: true, title: 'Start the view from ' + it.chip, alt: it.chip })
+        // Names show on hover or keyboard focus; always-on labels crowd the map when zoomed out.
+        .bindTooltip('Start here: ' + esc(it.chip), { direction: 'top', offset: [0, -14], className: 'map-tag try-tag' })
+        .addTo(tryLayer);
+      var go = function () { applyPreset(it.id); run({ reveal: true }); };
+      m.on('click', go);
+      m.on('keypress', function (e) { if (e.originalEvent && (e.originalEvent.key === 'Enter' || e.originalEvent.key === ' ')) go(); });
+      tryPins[it.id] = m;
+    });
+    // A pin off the edge of the map can't be seen, so widen the result's view to take them in.
+    // This works from the view the result was fitted to (the map may still be zooming to it),
+    // and leaves the map alone once the visitor has moved it themselves.
+    var keys = Object.keys(tryPins);
+    if (!lastFit || userMoved || !keys.length) return;
+    var want = L.latLngBounds(lastFit.getSouthWest(), lastFit.getNorthEast());
+    keys.forEach(function (k) { want.extend(tryPins[k].getLatLng()); });
+    if (!want.equals(lastFit)) map.fitBounds(want, { padding: [28, 28], animate: false });
   }
 
   // Suggestions are anchored to the place the visitor chose, so trying one doesn't move them.
   function renderSuggestions(where, items) {
     var box = $('presets'), label = $('presetLabel');
     label.textContent = 'Or try, within 50 km of ' + where;
+    var have = Array.isArray(items) && items.length > 0;
+    $('tryHint').hidden = !have || !map; $('tryLegend').hidden = !have || !map;
+    drawTryPins(have ? items : null);
     if (items === 'wait') { box.innerHTML = '<span class="hint">Suggestions appear when the search finishes.</span>'; return; }
     if (items === null) { box.innerHTML = '<span class="hint">Finding the tallest building and highest peak…</span>'; return; }
     if (!items.length) { box.innerHTML = '<span class="hint">Nothing to suggest nearby.</span>'; return; }
@@ -1646,6 +1764,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     items.push({ id: 'p', kind: 'peak', lat: peak.lat, lon: peak.lon, radius: 1000, eye: 1.7,
                  title: peakName || 'the highest peak near ' + where, named: !!peakName,
                  chip: (peakName || 'Highest peak') + ' · ' + nf(peak.h) + ' m' });
+    // Don't suggest the spot the view already starts from (the CN Tower from Toronto, say).
+    items = items.filter(function (it) { return E.distBearing(it.lat, it.lon, run.res.lat, run.res.lon)[0] > 150; });
     PRESETS = {};
     items.forEach(function (it) { PRESETS[it.id] = it; });
     renderSuggestions(where, items);
