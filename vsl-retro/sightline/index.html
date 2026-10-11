@@ -375,6 +375,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
+        <p class="hint">Finder version 2026-10-11.6</p>
       </div>
     </div>
   </details>
@@ -909,10 +910,22 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl ? ctl.signal : undefined
         });
         if (!resp.ok) throw new Error('Overpass returned ' + resp.status);
-        return await resp.json();
+        var json = await resp.json();
+        // When a query runs out of time or memory the server still answers 200, with the error
+        // in "remark" and few or no elements. That is a failure, not "nothing here".
+        if (json && json.remark && /error|timed out|out of memory/i.test(json.remark)) throw new Error('Overpass: ' + json.remark);
+        return json;
       } catch (e) { last = e; } finally { if (timer) clearTimeout(timer); }
     }
     throw last || new Error('Overpass unavailable');
+  }
+  // Why a lookup didn't answer, in words for the result.
+  function lookupTrouble(e) {
+    var m = String(e && (e.message || e.name) || '');
+    if (/429|too many|rate/i.test(m)) return 'the map server was busy';
+    if ((e && e.name === 'AbortError') || /timed out|abort/i.test(m)) return 'it took too long';
+    if (/out of memory/i.test(m)) return 'it was too big for the map server';
+    return 'the map server couldn’t be reached';
   }
   function ll5(lat, lon) { return lat.toFixed(5) + ',' + lon.toFixed(5); }
 
@@ -1022,13 +1035,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   }
 
   // Buildings and towers 60 m or taller: possible viewpoints (their roofs) and obstacles.
-  async function findTowers(inp) {
+  // Two requests: the tallest (150 m or 43 levels and up, and towers), which is small and decides
+  // the start; then the rest from 60 m, which can be large in a big city and only adds obstacles.
+  function findTowers(inp, which) {
     var r = Math.round(Math.max(inp.radius, 5000)), bb = bboxAround(inp.lat, inp.lon, r), H = CONFIG.tallBuilding;
-    var towers = 'nwr["man_made"="tower"]["height"~"HRE"](BB);';
-    var q = '[out:json][timeout:25];' +
-      tallQuery(bb, TALL_RE.h150, TALL_RE.l43, towers.replace('HRE', function () { return TALL_RE.h60; })) +
-      tallQuery(bb, TALL_RE.h60to149, TALL_RE.l17to42, '', 3000);
-    return tallElements(await overpass(q, 25000), inp.lat, inp.lon, r, H);
+    var q = which === 'mid'
+      ? tallQuery(bb, TALL_RE.h60to149, TALL_RE.l17to42, '', 3000)
+      : tallQuery(bb, TALL_RE.h150, TALL_RE.l43, 'nwr["man_made"="tower"]["height"~"' + TALL_RE.h60 + '"](' + bb + ');');
+    return overpass('[out:json][timeout:25];' + q, 25000).then(function (json) { return tallElements(json, inp.lat, inp.lon, r, H); });
   }
 
   // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
@@ -1249,11 +1263,12 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     else compare = 'small enough to fit on a sheet of paper';
     var size = letter >= 1 ? nf(letter, letter < 10 ? 1 : 0) + ' m' : nf(Math.max(1, Math.round(letter * 100))) + ' cm';
     var chart = 'A 20/20 eye-chart letter would have to be ' + size + ' tall to read from here, ' + compare + '.';
-    var counted = run.towersOK
-      ? 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.'
-      : run.towersPending
-        ? 'Hills are counted. Tall buildings are still being looked up; if one is higher than this start, the result will update.'
-        : 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer), so check that nothing close by is in the way.';
+    var b = run.bld || { tall: run.towersOK ? 'ok' : 'failed', mid: run.towersOK ? 'ok' : 'failed', why: {} }, counted;
+    if (b.tall === 'pending') counted = 'Hills are counted. Tall buildings are still being looked up; if one is higher than this start, the result will update.';
+    else if (b.tall === 'failed') counted = 'Hills are counted. Buildings and trees are not (the building lookup didn’t answer: ' + (b.why.tall || 'the map server couldn’t be reached') + '), so check that nothing close by is in the way.';
+    else if (b.mid === 'ok') counted = 'Hills and buildings 60 m or taller are counted. Trees and smaller buildings are not, so check that nothing close by is in the way.';
+    else if (b.mid === 'pending') counted = 'Hills and buildings 150 m or taller are counted. Buildings from 60 m are still being looked up and will be added.';
+    else counted = 'Hills and buildings 150 m or taller are counted. Smaller buildings and trees are not (that lookup didn’t answer: ' + (b.why.mid || 'the map server couldn’t be reached') + '), so check that nothing close by is in the way.';
 
     // The distance and where it starts from; the map follows on one column, then the details.
     var head = '' +
@@ -1555,7 +1570,11 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       setStep('land', 'active');
       setStatus('Loading the landscape…');
       var placesP = findPlaces(inp).catch(function (e) { console.warn('OSM lookup failed', e); return null; });
-      var towersP = findTowers(inp).catch(function (e) { console.warn('Tall-building lookup failed', e); return null; });
+      var trouble = { tall: null, mid: null };
+      var towersP = findTowers(inp, 'tall').catch(function (e) { console.warn('Tall-building lookup failed', e); trouble.tall = lookupTrouble(e); return null; });
+      // The rest wait for the tallest, so no more than two requests reach the map server at once.
+      var midP = towersP.then(function () { return stale() ? null : findTowers(inp, 'mid'); })
+        .catch(function (e) { console.warn('Lookup for buildings 60-150 m failed', e); trouble.mid = lookupTrouble(e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
         if (stale()) return;
         setStatus('Loading the landscape… ' + d + ' of ' + n); setBar(d / n * 0.65);
@@ -1592,9 +1611,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var countsP = !tops.length ? Promise.resolve(null) : placesP.then(function () {
         return stale() ? null : buildingCounts(tops);
       }).catch(function (e) { console.warn('Building count failed', e); return null; });
-      var looked = await Promise.all([inGrace(placesP), inGrace(towersP), inGrace(countsP)]);
+      var looked = await Promise.all([inGrace(placesP), inGrace(towersP), inGrace(countsP), inGrace(midP)]);
       if (stale()) return;
-      var osm = looked[0], towers = looked[1], counts = looked[2];
+      var osm = looked[0], towers = looked[1], counts = looked[2], mids = looked[3];
       var nearYou = osm ? osm.buildingsNearYou : null;
       var urbanYou = nearYou != null && nearYou >= CONFIG.builtUpThreshold && inp.eye < 30;
       await tick();
@@ -1623,7 +1642,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       // Pick the start and work out the view. This runs again if the tall-building lookup
       // answers after the result is shown (in a big city it can take a while), so a skyscraper
       // that turns out to be higher still becomes the start. Returns false if a newer search took over.
-      var pick = async function (tall, answered, late) {
+      // bld says how each building lookup stands: 'ok', 'pending' or 'failed'.
+      var pick = async function (tall, bld, late) {
         tall.forEach(function (b) { b.ground = E.elevAt(field, b.lat, b.lon, 0); });
         var cands = [you];
         if (openTop) {
@@ -1654,7 +1674,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         eligible.forEach(function (c) { if (c.top > bestC.top + 1) bestC = c; });
 
         // Tall buildings become part of the terrain, except the one the view starts from.
-        // (The first pass only has buildings when the lookup answered, so nothing is added twice.)
+        // (Later passes add the same buildings again, which changes nothing: each raise is to a fixed top.)
         var obstacles = tall.filter(function (b) { return E.distBearing(b.lat, b.lon, bestC.lat, bestC.lon)[0] > 45; })
           .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
         if (obstacles.length) E.addObstacles(field, obstacles);
@@ -1673,7 +1693,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         bestC.d = res.farD[res.best];
         var fromTop = !!openTop && bestC === cands[1];
         lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: !late || !userMoved, peak: peak50,
-                    urbanYou: urbanYou, osmOK: !!osm, towersOK: answered, towersPending: !answered && !late, openKnown: openKnown,
+                    urbanYou: urbanYou, osmOK: !!osm, towersOK: bld.tall === 'ok', bld: bld, openKnown: openKnown,
                     openUnchecked: fromTop && !openKnown,
                     skippedBuilt: fromTop && openKnown && openTop !== tops[0] };
         activeRay = null;
@@ -1686,27 +1706,43 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         nameTarget(lastRun);
       };
 
-      var answered = towers !== null;
-      if (!(await pick(towers || [], answered, false))) return;
+      // Buildings known so far, and how each lookup stands; a late answer picks the start again.
+      var cur = { tall: towers, mid: mids };
+      var state = function () {
+        return { tall: cur.tall ? 'ok' : (trouble.tall ? 'failed' : 'pending'),
+                 mid: cur.mid ? 'ok' : (trouble.mid ? 'failed' : 'pending'), why: trouble };
+      };
+      var known = function () { return (cur.tall || []).concat(cur.mid || []); };
+      if (!(await pick(known(), state(), false))) return;
       showRun();
       if (inp.source !== 'preset') computeSuggestions(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
       setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
-      if (!answered) {
-        towersP.then(async function (late) {
+      // Late answers, one at a time. Adding the same buildings to the terrain twice changes nothing,
+      // so each pass can simply use everything known so far.
+      var queue = Promise.resolve();
+      var lateAnswer = function (what, value) {
+        queue = queue.then(async function () {
           if (stale()) return;
+          cur[what] = value;
           var before = lastRun.bestC;
-          if (!late) { lastRun.towersPending = false; renderResult(lastRun); nameTarget(lastRun); return; }
-          if (!(await pick(late, true, true))) return;
+          if (!value || !value.length) {        // failed, or nothing that tall: just update the note
+            lastRun.bld = state(); lastRun.towersOK = lastRun.bld.tall === 'ok';
+            renderResult(lastRun); nameTarget(lastRun);
+            return;
+          }
+          if (!(await pick(known(), state(), true))) return;
           showRun();
           refreshSuggestions();
           var moved = lastRun.bestC.lat !== before.lat || lastRun.bestC.lon !== before.lon;
           setStatus(moved ? 'Updated: the tall-building lookup answered, and ' + startLabel(lastRun.bestC, inp).replace(/^Roof of /, '') + ' is higher.'
-                          : 'Updated: tall buildings are now counted.');
+                          : 'Updated: ' + (what === 'tall' ? 'the tallest buildings' : 'buildings from 60 m') + ' are now counted.');
         }).catch(function (e) { console.warn('Late tall-building update failed', e); });
-      }
+      };
+      if (towers === null) towersP.then(function (v) { lateAnswer('tall', v); });
+      if (mids === null) midP.then(function (v) { lateAnswer('mid', v); });
     } catch (e) {
       if (stale()) return;
       console.error(e);
