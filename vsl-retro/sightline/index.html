@@ -336,14 +336,14 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     <div class="cols">
       <div>
         <p><strong>The four ingredients.</strong> As the article explains, the longest views need a tall place to stand, a tall target, the right air and a clear line of sight. The finder climbs to the highest spot nearby and checks every peak in range for the first two. “Air bending light” covers the third: cold air near the ground bends light around the curve, which is why the 443 km Pyrenees-to-Alps photo needed better than normal conditions. The haze check covers the fourth.</p>
-        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck. All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
+        <p><strong>Finding the starting point.</strong> Around the place you choose (10 km unless you change it), the finder looks for the highest spot to stand: the top of the ground, checked point by point; the roof of any building 60 m or taller; or a public observation deck, such as the CN Tower’s SkyPod at 447 m (where a deck’s height isn’t known, it’s taken as 85% of the tower’s). All of these come from OpenStreetMap and free elevation data. Hilltops covered in houses are skipped, and so is a starting point in the middle of town, because nearby buildings would block it at street level.</p>
         <p><strong>Working out the view.</strong> From that spot it looks out along 1,440 compass directions. Along each one it checks whether each piece of ground rises above everything in front of it. The farthest piece that does is how far you can see that way, and the longest of all 1,440 is the answer.</p>
         <p><strong>The curve of the Earth.</strong> Distant ground sinks below a level line from your eye by about d²/2R, where d is the distance and R is the Earth’s radius. That is why far mountains disappear from the bottom up. Air bends light slightly downward, which lets you see a little farther, more so over cold ground.</p>
       </div>
       <div>
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
-        <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level.</p>
+        <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
       </div>
     </div>
   </details>
@@ -656,6 +656,37 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     ];
   }
 
+  // Remove single-pixel faults from a decoded 256x256 tile, in place. The tiles have a few
+  // isolated pixels hundreds of metres off (one beside the Niagara gorge reads 1,149 m where
+  // the ground is about 130 m), and a far point landing on one invents a peak. A pixel is a
+  // fault when it sits more than limit metres above every neighbour, where limit is the larger
+  // of 150 m and one pixel's width: real ground, averaged over a pixel, never rises that steeply
+  // on all sides at once. Faults take their neighbours' median. Pits are left alone: they can't
+  // invent a far point, and a real gorge should stay open.
+  function despike(data, pixM) {
+    var lim = Math.max(150, pixM), fix = [];
+    for (var y = 0; y < 256; y++) {
+      var y0 = y > 0 ? y - 1 : 0, y1 = y < 255 ? y + 1 : 255;
+      for (var x = 0; x < 256; x++) {
+        var x0 = x > 0 ? x - 1 : 0, x1 = x < 255 ? x + 1 : 255;
+        var v = data[y * 256 + x] - lim, fault = true;
+        // Almost every pixel has a neighbour within the limit; stop at the first one.
+        for (var yy = y0; yy <= y1 && fault; yy++) {
+          for (var xx = x0; xx <= x1; xx++) {
+            if ((xx !== x || yy !== y) && data[yy * 256 + xx] >= v) { fault = false; break; }
+          }
+        }
+        if (!fault) continue;
+        var nb = [];
+        for (yy = y0; yy <= y1; yy++) for (xx = x0; xx <= x1; xx++) if (xx !== x || yy !== y) nb.push(data[yy * 256 + xx]);
+        nb.sort(function (a, b) { return a - b; });
+        fix.push(y * 256 + x, (nb[(nb.length - 1) >> 1] + nb[nb.length >> 1]) / 2);
+      }
+    }
+    for (var i = 0; i < fix.length; i += 2) data[fix[i]] = fix[i + 1];
+    return fix.length / 2;
+  }
+
   function compass16(b) {
     var names = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     return names[Math.round(((b % 360) + 360) % 360 / 22.5) % 16];
@@ -664,7 +695,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   root.SightEngine = {
     R: R, steps: steps, sweep: sweep, target: target, profile: profile, sectors: sectors,
     candidates: candidates, climb: climb, highestPoint: highestPoint, addObstacles: addObstacles, dest: dest, distBearing: distBearing, elevAt: elevAt, makeLevel: makeLevel,
-    tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16,
+    tileRange: tileRange, chooseRange: chooseRange, levelSpecs: levelSpecs, compass16: compass16, despike: despike,
     mercY: mercY, wrapLon: wrapLon
   };
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -787,6 +818,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     var px = ctx.getImageData(0, 0, 256, 256).data;
     var out = new Float32Array(65536);
     for (var i = 0, j = 0; i < 65536; i++, j += 4) out[i] = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
+    var midLat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (y + 0.5) / n))) * 180 / Math.PI;
+    E.despike(out, 2 * Math.PI * E.R * Math.cos(midLat * Math.PI / 180) / (256 * n));
     cachePut(key, out);
     return out;
   }
@@ -857,8 +890,12 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     if (r > 0) {
       q += '(node["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
            'way["tourism"="viewpoint"](around:' + r + ',' + at + ');' +
-           'node["natural"~"^(peak|hill)$"](around:' + r + ',' + at + ');' +
-           'nwr["man_made"="tower"]["tower:type"="observation"](around:' + r + ',' + at + '););out center 80;';
+           'node["natural"~"^(peak|hill)$"](around:' + r + ',' + at + '););out center 80;';
+      // Observation towers come here too, in their own output so lookouts can't crowd them out.
+      // This lookup is quick, so a tower like the CN Tower is found even in a big city, where
+      // the slow tall-building lookup (findTowers) may not answer in time.
+      q += '(nwr["man_made"="tower"]["tower:type"="observation"](around:' + r + ',' + at + ');' +
+           'nwr["man_made"="tower"]["tourism"](around:' + r + ',' + at + '););out center 40;';
     }
     q += 'way["building"](around:' + CONFIG.builtUpRadius + ',' + at + ');out count;';
     var json = await overpass(q, 15000), places = [], count = null;
@@ -868,10 +905,8 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       var lat = el.lat != null ? el.lat : (el.center && el.center.lat);
       var lon = el.lon != null ? el.lon : (el.center && el.center.lon);
       if (lat == null || lon == null) return;
-      var kind = t['tower:type'] === 'observation' ? 'tower' : t.tourism === 'viewpoint' ? 'viewpoint' : 'peak';
-      var height = parseFloat(t.height);
-      // Observation decks usually sit a little below a tower's full height.
-      var deck = kind === 'tower' && height > 3 ? Math.round(height * 0.85) : null;
+      var kind = isObservationTower(t) ? 'tower' : t.tourism === 'viewpoint' ? 'viewpoint' : 'peak';
+      var deck = kind === 'tower' ? deckHeight(t, parseHeight(t)) : null;
       places.push({ lat: lat, lon: lon, kind: kind, name: t.name || null, deck: deck });
     });
     return { places: places, buildingsNearYou: count };
@@ -885,6 +920,17 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     return (json.elements || []).filter(function (el) { return el.type === 'count'; })
       .map(function (el) { return parseInt((el.tags || {}).ways || '0', 10); });
   }
+
+  // A tower's view is from its highest public deck. Where we know it, use it; otherwise assume
+  // the deck sits about 85% of the way up.
+  var KNOWN_DECKS = { 'cn tower': 447 };   // SkyPod, 447 m (the tower is 553 m)
+  function deckHeight(t, h) {
+    var known = KNOWN_DECKS[String(t.name || '').trim().toLowerCase()];
+    if (known && !(h > 0 && known >= h)) return known;
+    return h > 3 ? Math.round(h * 0.85) : null;
+  }
+  // Observation towers can be stood on; masts (communication, lighting, cooling) can't.
+  function isObservationTower(t) { return t.man_made === 'tower' && (t['tower:type'] === 'observation' || !!t.tourism); }
 
   function parseHeight(t) {
     var h = String(t.height || '').trim(), v = parseFloat(h);
@@ -906,17 +952,16 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
       if (!(h >= H) || lat == null || lon == null) return;
       var isTower = t.man_made === 'tower';
       // Masts don't block a view and can't be stood on; observation towers can.
-      var observation = isTower && (t['tower:type'] === 'observation' || !!t.tourism);
-      if (isTower && !observation) return;
+      if (isTower && !isObservationTower(t)) return;
       out.push({ lat: lat, lon: lon, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
-                 deck: isTower ? Math.round(h * 0.85) : null });
+                 deck: isTower ? deckHeight(t, h) : null });
     });
     return out;
   }
 
   // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
   // As in findTowers, only observation towers count: a mast can't be stood on. A tower's
-  // view is from its deck, about 85% of the way up.
+  // view is from its deck (see deckHeight).
   async function findTallest(lat, lon) {
     var at = ll5(lat, lon), bars = [100, CONFIG.tallBuilding];
     for (var i = 0; i < bars.length; i++) {
@@ -931,9 +976,9 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         var la = el.lat != null ? el.lat : (el.center && el.center.lat), lo = el.lon != null ? el.lon : (el.center && el.center.lon);
         if (!(h >= H) || la == null || lo == null) return;
         var isTower = t.man_made === 'tower';
-        if (isTower && !(t['tower:type'] === 'observation' || !!t.tourism)) return;
+        if (isTower && !isObservationTower(t)) return;
         if (!best || h > best.height) best = { lat: la, lon: lo, height: h, name: t.name || null, kind: isTower ? 'tower' : 'building',
-                                               deck: isTower ? Math.round(h * 0.85) : null };
+                                               deck: isTower ? deckHeight(t, h) : null };
       });
       if (best) return best;
     }
