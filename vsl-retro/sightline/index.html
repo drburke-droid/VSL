@@ -385,7 +385,7 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
         <p><strong>What’s counted.</strong> Hills, mountains and buildings 60 m or taller are counted. Trees and ordinary buildings are not, so check that nothing close by is in the way.</p>
         <p><strong>Seeing it with your eyes.</strong> The answer assumes clear air. Haze fades distant things: contrast drops as e<sup>−3.912·d/V</sup> (Koschmieder), where V is how far you can see that day, and the eye needs about 2% contrast. “How much shows” compares the visible part of the far point with the 1 minute of arc that 20/20 vision resolves.</p>
         <p><strong>Data.</strong> Elevation: Terrain Tiles on AWS Open Data (SRTM, Canada’s CDEM, the US NED and others), about 20–50 m detail nearby and a few hundred metres far away. Places, peaks and buildings: OpenStreetMap. Town names: Open-Meteo’s geocoder (GeoNames) and OpenStreetMap Nominatim. Sea-floor depths count as sea level. The elevation data has a few single-pixel faults, spikes hundreds of metres above everything around them; each one is replaced by the height of the ground beside it.</p>
-        <p class="hint">Finder version 2026-10-12.3</p>
+        <p class="hint">Finder version 2026-10-12.4</p>
       </div>
     </div>
   </details>
@@ -843,7 +843,25 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
   function namesBuilding(name, building) { return !building || name.toLowerCase().indexOf(building.replace(/^the /i, '').toLowerCase()) >= 0; }
   // The tallest roof in cities where it isn't a deck building (Brookfield Place in Calgary,
   // Central Park Tower in New York...), used only with rooftops imagined. See ROOF_SOURCES.
-  var ROOFS = [/*ROOFS*/];
+  var ROOFS = [
+    {n: "Brookfield Place", c: "Calgary", lat: 51.0469, lon: -114.0661, r: 247},
+    {n: "Central Park Tower", c: "New York", lat: 40.7664, lon: -73.9808, r: 472.4},
+    {n: "Bank of America Plaza", c: "Dallas", lat: 32.7799, lon: -96.8038, r: 279},
+    {n: "200 Clarendon Street", c: "Boston", lat: 42.3493, lon: -71.0748, r: 240.8},
+    {n: "22 Bishopsgate", c: "London", lat: 51.5145, lon: -0.0829, r: 278},
+    {n: "Commerzbank Tower", c: "Frankfurt", lat: 50.1112, lon: 8.6744, r: 258.7},
+    {n: "DC Tower 1", c: "Vienna", lat: 48.2319, lon: 16.4128, r: 220},
+    {n: "Torre Mapfre", c: "Barcelona", lat: 41.3878, lon: 2.1975, r: 154},
+    {n: "CBRT Tower", c: "Istanbul", lat: 41.0019, lon: 29.1106, r: 330},
+    {n: "De Zalmhaven I", c: "Rotterdam", lat: 51.9103, lon: 4.4806, r: 203},
+    {n: "Guangzhou CTF Finance Centre", c: "Guangzhou", lat: 23.1205, lon: 113.3208, r: 518},
+    {n: "CITIC Tower", c: "Beijing", lat: 39.9114, lon: 116.4603, r: 527.7},
+    {n: "Merdeka 118", c: "Kuala Lumpur", lat: 3.1417, lon: 101.7008, r: 518.2},
+    {n: "Guoco Tower", c: "Singapore", lat: 1.2771, lon: 103.8461, r: 283.7},
+    {n: "PIF Tower", c: "Riyadh", lat: 24.7628, lon: 46.6403, r: 352.5},
+    {n: "Burj Mohammed bin Rashid", c: "Abu Dhabi", lat: 24.488, lon: 54.3573, r: 381.2},
+    {n: "Australia 108", c: "Melbourne", lat: -37.8233, lon: 144.9639, r: 316.7}
+  ];
   // Every built-in roof near a point: the deck buildings' and the list above.
   function knownRoofs(lat, lon, r) {
     var out = [];
@@ -2147,7 +2165,16 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
     // Off: the highest public deck within 50 km (built-in, or an observation tower on the map).
     // Imagined: the tallest roof within 50 km, from the built-in roofs and the map, whichever is taller.
     var lvl = Math.min(1, run.field.levels.length - 1);
-    var groundAt = function (p) { return E.elevAt(run.field, p.lat, p.lon, lvl); };
+    // The coarser level can keep a tower's own spike (436 m "ground" under One World Trade Center),
+    // so take the lowest ground within 200 m, wider than any tower.
+    var groundAt = function (p) {
+      var g = E.elevAt(run.field, p.lat, p.lon, lvl);
+      for (var b = 0; b < 360; b += 45) {
+        var q = E.dest(p.lat, p.lon, b, 200);
+        g = Math.min(g, E.elevAt(run.field, q[0], q[1], lvl));
+      }
+      return g;
+    };
     var topDeck = null, topRoof = null;
     decksNear(inp.lat, inp.lon, 50000).forEach(function (d) {
       var top = groundAt(d) + d.d;
@@ -2289,7 +2316,26 @@ dl.facts dd small { display: block; font-size: 13px; color: var(--muted); margin
      Left out where there is no standable roof above the deck, or sources disagree: The Shard,
      Space Needle, Tokyo Tower, Kingdom Centre, Etihad Towers, Canton Tower, Berliner Fernsehturm,
      Donauturm, Varso, Lakhta Center, Euromast, Mahanakhon, Marina Bay Sands, Gran Torre Santiago,
-     Mirante do Vale, The Peak Tower. */
+     Mirante do Vale, The Peak Tower.
+     Tallest roofs (ROOFS), for cities whose tallest roof is not a deck building; PIF Tower is its
+     highest occupied floor, since the 385 m crown is not standable:
+     Brookfield Place, Calgary: 247 m, https://en.wikipedia.org/wiki/Brookfield_Place_(Calgary)
+     Central Park Tower, New York: 472.4 m, https://en.wikipedia.org/wiki/Central_Park_Tower
+     Bank of America Plaza, Dallas: 279 m, https://en.wikipedia.org/wiki/Bank_of_America_Plaza_(Dallas)
+     200 Clarendon Street, Boston: 240.8 m, https://en.wikipedia.org/wiki/John_Hancock_Tower
+     22 Bishopsgate, London: 278 m, https://en.wikipedia.org/wiki/The_Shard
+     Commerzbank Tower, Frankfurt: 258.7 m, https://en.wikipedia.org/wiki/Commerzbank_Tower
+     DC Tower 1, Vienna: 220 m, https://en.wikipedia.org/wiki/DC_Towers
+     Torre Mapfre, Barcelona: 154 m, https://en.wikipedia.org/wiki/Torre_Mapfre
+     CBRT Tower, Istanbul: 330 m, https://en.wikipedia.org/wiki/CBRT_Tower
+     De Zalmhaven I, Rotterdam: 203 m, https://en.wikipedia.org/wiki/De_Zalmhaven
+     Guangzhou CTF Finance Centre, Guangzhou: 518 m, https://en.wikipedia.org/wiki/Guangzhou_CTF_Finance_Centre
+     CITIC Tower, Beijing: 527.7 m, https://www.skyscrapercenter.com/building/citic-tower/11116
+     Merdeka 118, Kuala Lumpur: 518.2 m, https://en.wikipedia.org/wiki/Merdeka_118
+     Guoco Tower, Singapore: 283.7 m, https://www.skyscrapercenter.com/building/guoco-tower/15186
+     PIF Tower, Riyadh: 352.5 m, https://www.skyscrapercenter.com/building/pif-tower/8774
+     Burj Mohammed bin Rashid, Abu Dhabi: 381.2 m, https://www.skyscrapercenter.com/building/burj-mohammed-bin-rashid/259
+     Australia 108, Melbourne: 316.7 m, https://en.wikipedia.org/wiki/Australia_108 */
 
   /* DECK_SOURCES. Each deck's height (the highest public level, above the street) and position,
      from published sources, checked in October 2026. Left out: decks closed or not yet open
