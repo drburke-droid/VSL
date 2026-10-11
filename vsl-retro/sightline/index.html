@@ -261,12 +261,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       </div>
 
       <div class="field">
-        <span class="label" id="presetLabel">Or try</span>
-        <div class="row" role="group" aria-labelledby="presetLabel" id="presets">
-          <button type="button" class="chip" data-preset="nose">Nose Hill, Calgary</button>
-          <button type="button" class="chip" data-preset="bow">Top of Bow Tower</button>
-          <button type="button" class="chip" data-preset="whitney">Mt. Whitney</button>
-        </div>
+        <span class="label" id="presetLabel">Or try nearby</span>
+        <div class="row" role="group" aria-labelledby="presetLabel" id="presets"><span class="hint">The tallest building and highest peak near your place will appear here.</span></div>
       </div>
 
       <button type="submit" class="go" id="go">Find the longest view</button>
@@ -580,8 +576,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   }
 
   // The single highest pixel of the finest grid inside a disc: the true top of the terrain there.
-  function highestPoint(field, lat, lon, radius) {
-    var L = field.levels[0], d = L.data, w = L.w;
+  function highestPoint(field, lat, lon, radius, li) {
+    li = li || 0;
+    var L = field.levels[li], d = L.data, w = L.w;
     var px0 = lamN(field, lon) * L.scale - L.offX;
     var py0 = (0.5 - mercY(lat) / TAU) * L.scale - L.offY;
     var rp = radius / (TAU * R * Math.cos(lat * D2R) / L.scale), rp2 = rp * rp;
@@ -599,7 +596,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var my = (0.5 - (by + L.offY) / L.scale) * TAU;
     var la = Math.atan(Math.sinh(my)) * R2D;
     var lo = wrapLon(((bx + L.offX) / L.scale - 0.5) * 360);
-    return { lat: la, lon: lo, h: elevAt(field, la, lo, 0) };
+    return { lat: la, lon: lo, h: elevAt(field, la, lo, li) };
   }
 
   // Raise the two finest grids where tall buildings stand, so they block lines of sight.
@@ -713,11 +710,10 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     fetchConcurrency: 6
   };
 
-  var PRESETS = {
-    nose:    { name: 'Nose Hill', lat: 51.117,  lon: -114.117,  eye: 1.7, radius: 2000, range: 250000 },
-    bow:     { name: 'the top of Bow Tower', lat: 51.04778, lon: -114.06222, eye: 230, radius: 0, range: 250000 },
-    whitney: { name: 'Mt. Whitney', lat: 36.5786, lon: -118.2920, eye: 1.7, radius: 1000, range: 350000 }
-  };
+  // "Or try nearby": the tallest structure and the highest peak within 50 km of the place
+  // the visitor chose. Filled in after each search; keyed by id ('s' structure, 'p' peak).
+  var PRESETS = {}, suggestToken = 0;
+  var DEFAULT_PLACE = { lat: 51.0447, lon: -114.0719, label: 'Calgary, Alberta, Canada', typed: 'Calgary' };
 
   var $ = function (id) { return document.getElementById(id); };
   var els = {
@@ -914,6 +910,26 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     return out;
   }
 
+  // The tallest building or tower within 50 km, trying a high bar first so big cities stay quick.
+  async function findTallest(lat, lon) {
+    var at = ll5(lat, lon), bars = [100, CONFIG.tallBuilding];
+    for (var i = 0; i < bars.length; i++) {
+      var H = bars[i];
+      var q = '[out:json][timeout:25];(' +
+        'nwr["building"](around:50000,' + at + ')(if:number(t["height"])>=' + H + '||number(t["building:levels"])>=' + Math.round(H / 3.5) + ');' +
+        'nwr["man_made"="tower"](around:50000,' + at + ')(if:number(t["height"])>=' + H + '););out center tags 800;';
+      var json = await overpass(q, 25000), best = null;
+      (json.elements || []).forEach(function (el) {
+        var t = el.tags || {}, h = parseHeight(t);
+        var la = el.lat != null ? el.lat : (el.center && el.center.lat), lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+        if (!(h >= H) || la == null || lo == null) return;
+        if (!best || h > best.height) best = { lat: la, lon: lo, height: h, name: t.name || null, kind: t.man_made === 'tower' ? 'tower' : 'building' };
+      });
+      if (best) return best;
+    }
+    return null;
+  }
+
   // A friendly name for the far point: a named peak near it, or the area it lies in.
   var nameCache = new Map();
   async function nameFor(lat, lon) {
@@ -1031,6 +1047,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         ? 'the roof of <strong>' + esc(best.name || 'a tall building') + '</strong> (' + nf(best.height) + ' m tall)'
         : 'the observation deck of <strong>' + esc(best.name || 'the tower') + '</strong> (about ' + nf(best.eye) + ' m up)') +
         ', the highest point within ' + within + ' of ' + esc(where);
+    } else if (inp.presetKind === 'peak') {
+      var pk = PRESETS.p && PRESETS.p.named ? '<strong>' + esc(where) + '</strong>' : esc(where);
+      start = (PRESETS.p && PRESETS.p.named ? 'the top of ' : '') + pk + ' (' + nf(best.ground) + ' m)';
     } else if (best.kind === 'you') {
       start = (geo ? 'right where you are' : esc(where)) + (best.eye >= 3 ? ', ' + nf(best.eye) + ' m above the ground' : '');
     } else if (best.name) {
@@ -1191,7 +1210,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var ll = parseLocation(text);
     if (!ll) {
       inp.source = 'place';
-      var known = placeCache.get(text.toLowerCase());
+      // The page opens on Calgary without a lookup; typing a name later always looks it up.
+      var known = locSource.kind === 'default' && text === DEFAULT_PLACE.typed ? DEFAULT_PLACE : placeCache.get(text.toLowerCase());
       if (!known) { inp.query = text; return inp; }   // a name: look it up in run()
       ll = [known.lat, known.lon]; inp.place = known.label; inp.placeName = shortName(known.label);
     } else {
@@ -1200,7 +1220,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       // An example carries its own settings for that run only; everything else uses the form,
       // so the same place always gets the same treatment.
       var pre = inp.source === 'preset' && PRESETS[locSource.id];
-      if (pre) { inp.eye = pre.eye; inp.radius = pre.radius; inp.range = pre.range; }
+      if (pre) { inp.eye = pre.eye; inp.radius = pre.radius; inp.presetKind = pre.kind; }
     }
     if (Math.abs(ll[0]) > 80 || Math.abs(ll[1]) > 180) return { error: OUT_OF_RANGE };
     inp.lat = ll[0]; inp.lon = E.wrapLon(ll[1]);
@@ -1385,6 +1405,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       activeRay = null;
       renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
       nameTarget(lastRun);
+      if (inp.source !== 'preset') computeSuggestions(lastRun);
       setBar(1);
       var secs = (performance.now() - t0) / 1000;
       setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
@@ -1440,10 +1461,48 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   function applyPreset(name) {
     var p = PRESETS[name]; if (!p) return;
     els.loc.value = fmtLL(p.lat, p.lon);
-    locSource = { kind: 'preset', name: p.name, id: name };
+    locSource = { kind: 'preset', name: p.title, id: name };
     clearPresetPress();
     var chip = document.querySelector('#presets [data-preset="' + name + '"]');
     if (chip) chip.setAttribute('aria-pressed', 'true');
+  }
+
+  // Suggestions are anchored to the place the visitor chose, so trying one doesn't move them.
+  function renderSuggestions(where, items) {
+    var box = $('presets'), label = $('presetLabel');
+    label.textContent = 'Or try, within 50 km of ' + where;
+    if (items === null) { box.innerHTML = '<span class="hint">Finding the tallest building and highest peak…</span>'; return; }
+    if (!items.length) { box.innerHTML = '<span class="hint">Nothing to suggest nearby.</span>'; return; }
+    box.innerHTML = items.map(function (it) {
+      return '<button type="button" class="chip" data-preset="' + it.id + '" aria-pressed="false">' + esc(it.chip) + '</button>';
+    }).join('');
+  }
+  async function computeSuggestions(run) {
+    var inp = run.input, token = ++suggestToken, where = whereName(inp);
+    renderSuggestions(where, null);
+    var items = [];
+    // Highest ground within 50 km, from the coarser grid that covers that far; a 1 km climb
+    // on the next run lands on the exact top.
+    var peak = E.highestPoint(run.field, inp.lat, inp.lon, 50000, Math.min(1, run.field.levels.length - 1));
+    var results = await Promise.all([
+      findTallest(inp.lat, inp.lon).catch(function (e) { console.warn('Tallest-structure lookup failed', e); return null; }),
+      nameFor(peak.lat, peak.lon).catch(function () { return null; })
+    ]);
+    if (token !== suggestToken) return;
+    var st = results[0], nm = results[1];
+    if (st) {
+      var stName = st.name || (st.kind === 'tower' ? 'the tallest tower' : 'the tallest building');
+      items.push({ id: 's', kind: st.kind, lat: st.lat, lon: st.lon, radius: 0,
+                   eye: st.kind === 'building' ? st.height + 1.7 : st.height,
+                   title: 'the top of ' + stName, chip: 'Top of ' + stName + ' · ' + nf(st.height) + ' m' });
+    }
+    var peakName = nm && nm.kind === 'peak' && nm.d < 2000 ? nm.name : null;
+    items.push({ id: 'p', kind: 'peak', lat: peak.lat, lon: peak.lon, radius: 1000, eye: 1.7,
+                 title: peakName || 'the highest peak near ' + where, named: !!peakName,
+                 chip: (peakName || 'Highest peak') + ' · ' + nf(peak.h) + ' m' });
+    PRESETS = {};
+    items.forEach(function (it) { PRESETS[it.id] = it; });
+    renderSuggestions(where, items);
   }
   document.getElementById('presets').addEventListener('click', function (e) {
     var b = e.target.closest('[data-preset]'); if (!b) return;
@@ -1491,7 +1550,10 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   // ---- Start ----
   initMap();
   var fromHash = readHash();
-  if (!fromHash) applyPreset('nose');
+  if (!fromHash) {
+    els.loc.value = DEFAULT_PLACE.typed;
+    locSource = { kind: 'default' };
+  }
   if (CONFIG.autoRun) run();
   else { els.emptyResult.textContent = 'Pick a place and press “Find the longest view”.'; }
 
