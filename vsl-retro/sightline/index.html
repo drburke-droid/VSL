@@ -187,6 +187,14 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 }
 .leaflet-tooltip.map-tag::before { display: none; }
 .empty { color: var(--muted); margin: 0; }
+.steps { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 10px; }
+.steps li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 15px; color: var(--muted); }
+.steps li.active, .steps li.done { color: var(--ink); }
+.steps .tick { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--rule); box-sizing: border-box; }
+.steps li.active .tick { border-color: var(--tape); border-right-color: transparent; animation: spin 0.9s linear infinite; }
+.steps li.done .tick { border-color: var(--ok); background: var(--ok); box-shadow: inset 0 0 0 2px var(--panel); }
+.steps .detail { font: 400 13px/1 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Sectors */
 .sector-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
@@ -237,7 +245,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 .method p { margin: 8px 0; max-width: 65ch; color: var(--muted); font-size: 15px; }
 .method strong { color: var(--ink); font-weight: 600; }
 
-@media (prefers-reduced-motion: reduce) { .progress > i { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .progress > i { transition: none; } .steps li.active .tick { animation: none; border-right-color: var(--tape); } }
 </style>
 </head>
 <body>
@@ -321,7 +329,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
     <section class="card result" id="result" aria-live="polite">
       <h2 id="resultTitle">The longest view</h2>
-      <p class="empty" id="emptyResult">Loading the first example…</p>
+      <p class="empty" id="emptyResult">Loading…</p>
+      <div class="loading" id="resultLoading" hidden><ol class="steps" id="steps"></ol></div>
       <div id="resultBody" hidden></div>
     </section>
 
@@ -707,7 +716,8 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     builtUpRadius: 150,     // metres around a spot to count buildings
     builtUpThreshold: 10,   // this many buildings or more = built-up
     autoRun: true,
-    fetchConcurrency: 6
+    fetchConcurrency: 12,   // spread over the two tile hosts
+    lookupGrace: 4000       // ms to keep waiting for map lookups once the terrain has loaded
   };
 
   // "Or try nearby": the tallest structure and the highest peak within 50 km of the place
@@ -755,7 +765,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
 
   // ---- Elevation tiles ----
   var tileCache = new Map();
-  var sourceIdx = 0;
+  var badHost = new Set();
   var decodeCanvas = null;
   function getCtx() {
     if (decodeCanvas) return decodeCanvas;
@@ -768,13 +778,14 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var key = z + '/' + xw + '/' + y;
     if (tileCache.has(key)) return tileCache.get(key);
     var resp = null, lastErr = null;
-    for (var a = sourceIdx; a < CONFIG.elevationTiles.length; a++) {
+    var order = (((xw + y) & 1) ? [1, 0] : [0, 1]).filter(function (i) { return i < CONFIG.elevationTiles.length; });
+    order.sort(function (a, b) { return (badHost.has(a) ? 1 : 0) - (badHost.has(b) ? 1 : 0); });
+    for (var oi = 0; oi < order.length; oi++) {
       try {
-        resp = await fetch(CONFIG.elevationTiles[a](z, xw, y), { mode: 'cors' });
+        resp = await fetch(CONFIG.elevationTiles[order[oi]](z, xw, y), { mode: 'cors' });
         if (!resp.ok) throw new Error('Tile ' + key + ' returned ' + resp.status);
-        sourceIdx = a;
         break;
-      } catch (e) { lastErr = e; resp = null; }
+      } catch (e) { lastErr = e; resp = null; badHost.add(order[oi]); }
     }
     if (!resp) throw lastErr;
     var blob = await resp.blob();
@@ -1199,7 +1210,6 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   }
 
   // ---- Run ----
-  var busy = false;
   var OUT_OF_RANGE = 'That location is outside the elevation data (it covers latitudes up to 80°).';
   function readInputs() {
     var eye = parseFloat(els.eye.value);
@@ -1286,18 +1296,80 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   }
   function hideMatches() { matchState = null; showMatches(); }
 
-  async function run() {
-    if (busy) return;
+  // ---- Loading state: the old result is cleared the moment a new search starts ----
+  var STEP_TEXT = { land: 'Loading the landscape', high: 'Looking for the highest spot', view: 'Working out the view' };
+  function loadingTitle(inp) {
+    var w = inp.source === 'geo' ? null : (inp.placeName || inp.query || 'this spot');
+    els.resultTitle.textContent = w ? 'Finding the longest view from ' + w + '…' : 'Finding the longest view near you…';
+  }
+  function moveMapTo(inp) {
+    if (!map) return;
+    showPick(inp.lat, inp.lon);
+    map.setView([inp.lat, inp.lon], Math.max(map.getZoom(), 9), { animate: true });
+  }
+  function setStep(key, state, detail) {
+    var li = document.querySelector('#steps [data-step="' + key + '"]');
+    if (!li) return;
+    li.className = state;
+    if (detail != null) li.querySelector('.detail').textContent = detail;
+  }
+  function startLoading(inp) {
+    var keys = (inp.query ? ['place'] : []).concat(['land', 'high', 'view']);
+    $('steps').innerHTML = keys.map(function (k) {
+      var txt = k === 'place' ? 'Finding “' + esc(inp.query) + '”' : STEP_TEXT[k];
+      return '<li data-step="' + k + '" class="pending"><span class="tick" aria-hidden="true"></span><span class="txt">' + txt + '</span><span class="detail"></span></li>';
+    }).join('');
+    loadingTitle(inp);
+    els.emptyResult.hidden = true; els.resultBody.hidden = true; els.resultBody.innerHTML = '';
+    $('resultLoading').hidden = false;
+    $('result').setAttribute('aria-busy', 'true');
+    els.sectorList.innerHTML = '<li class="empty">Appears when the search finishes.</li>';
+    els.prof.innerHTML = ''; els.profTitle.textContent = 'Side view';
+    els.profCap.textContent = 'Appears when the search finishes.';
+    lastRun = null; activeRay = null;
+    if (map) overlay.clearLayers();
+    if (inp.lat != null) moveMapTo(inp);
+    if (inp.source !== 'preset') { suggestToken++; renderSuggestions(inp.query || whereName(inp), 'wait'); }
+  }
+  function showLoadError(msg) {
+    $('resultLoading').hidden = true;
+    $('result').removeAttribute('aria-busy');
+    els.resultTitle.textContent = 'The longest view';
+    els.emptyResult.textContent = msg; els.emptyResult.hidden = false;
+  }
+  // On a phone the result sits below the form, so bring it into view when a search starts.
+  function revealResult() {
+    if (window.innerWidth >= 960) return;
+    var r = $('result').getBoundingClientRect();
+    if (r.top > window.innerHeight * 0.6 || r.bottom < 0) {
+      var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      $('result').scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+  function withDeadline(promise, ms) {
+    return Promise.race([promise, new Promise(function (r) { setTimeout(function () { r(null); }, ms); })]);
+  }
+
+  // A new search replaces any search still running; the older one stops at its next step.
+  var runId = 0;
+  async function run(opts) {
     var inp = readInputs();
     if (inp.error) { setStatus(inp.error, true); return; }
-    busy = true; els.go.disabled = true; setBar(0);
+    var id = ++runId, stale = function () { return id !== runId; };
+    document.body.dataset.running = '1';
+    setBar(0);
+    startLoading(inp);
+    if (opts && opts.reveal) revealResult();
     var t0 = performance.now();
     try {
       if (inp.query) {
+        setStep('place', 'active');
         setStatus('Looking up “' + inp.query + '”…');
         var found = await geocode(inp.query);
+        if (stale()) return;
         if (!found.length) {
-          setStatus('Couldn’t find “' + inp.query + '”. Add the province, state or country, paste coordinates, or tap the map.', true);
+          var nf1 = 'Couldn’t find “' + inp.query + '”. Add the province, state or country, paste coordinates, or tap the map.';
+          setStatus(nf1, true); showLoadError(nf1);
           hideMatches();
           return;
         }
@@ -1305,20 +1377,31 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         placeCache.set(inp.query.toLowerCase(), found[0]);
         matchState = { list: found, sel: 0 };
         showMatches();
-        if (Math.abs(found[0].lat) > 80) { setStatus(OUT_OF_RANGE, true); return; }
+        if (Math.abs(found[0].lat) > 80) { setStatus(OUT_OF_RANGE, true); showLoadError(OUT_OF_RANGE); return; }
         inp.lat = found[0].lat; inp.lon = E.wrapLon(found[0].lon); inp.place = found[0].label; inp.placeName = shortName(found[0].label);
+        setStep('place', 'done', found[0].label.split(',').slice(1).join(',').trim());
+        loadingTitle(inp);
+        moveMapTo(inp);
       } else if (matchState) {
         var idx = matchState.list.findIndex(function (p) { return inp.place && p.label === inp.place; });
         if (idx >= 0) { matchState.sel = idx; showMatches(); } else hideMatches();
       }
+      setStep('land', 'active');
       setStatus('Loading the landscape…');
       var placesP = findPlaces(inp).catch(function (e) { console.warn('OSM lookup failed', e); return null; });
       var towersP = findTowers(inp).catch(function (e) { console.warn('Tall-building lookup failed', e); return null; });
       var field = await loadField(inp.lat, inp.lon, inp.range, inp.radius, function (d, n) {
+        if (stale()) return;
         setStatus('Loading the landscape… ' + d + ' of ' + n); setBar(d / n * 0.65);
+        setStep('land', 'active', Math.round(d / n * 100) + '%');
       });
+      if (stale()) return;
+      setStep('land', 'done', ''); setStep('high', 'active');
       setStatus('Looking for the highest spot…'); setBar(0.68);
-      var osm = await placesP, towers = await towersP;
+      // The map lookups ran alongside the terrain download; give them only a little longer.
+      var looked = await Promise.all([withDeadline(placesP, CONFIG.lookupGrace), withDeadline(towersP, CONFIG.lookupGrace)]);
+      if (stale()) return;
+      var osm = looked[0], towers = looked[1];
 
       // The starting point is simply the highest place to stand within the radius:
       // the top of the ground, the roof of a tall building, an observation deck, or the point itself.
@@ -1328,6 +1411,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       var nearYou = osm ? osm.buildingsNearYou : null;
       var urbanYou = nearYou != null && nearYou >= CONFIG.builtUpThreshold && inp.eye < 30;
       await tick();
+      if (stale()) return;
 
       var tops = [];
       if (inp.radius > 0) {
@@ -1347,8 +1431,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       if (tops.length && osm) {
         var checked = tops.slice(0, 8);
         try {
-          var counts = await buildingCounts(checked);
-          if (counts.length === checked.length) { checked.forEach(function (t, i) { t.built = counts[i]; }); openKnown = true; }
+          var counts = await withDeadline(buildingCounts(checked), CONFIG.lookupGrace);
+          if (stale()) return;
+          if (counts && counts.length === checked.length) { checked.forEach(function (t, i) { t.built = counts[i]; }); openKnown = true; }
         } catch (e) { console.warn('Building count failed', e); }
       }
       var openTop = null;
@@ -1389,20 +1474,25 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
         .map(function (b) { return { lat: b.lat, lon: b.lon, ground: b.ground, height: b.height, size: 40 }; });
       if (obstacles.length) E.addObstacles(field, obstacles);
 
+      setStep('high', 'done'); setStep('view', 'active');
       setStatus('Working out the view…'); setBar(0.8);
       await tick();
+      if (stale()) return;
       if (bestC !== you && inp.source === 'geo') {
         var rq = E.sweep(field, you.lat, you.lon, you.eye, { rays: 360, maxRange: inp.range, k: inp.k, ground: you.ground });
         you.d = rq.farD[rq.best];
       }
       setBar(0.9);
       await tick();
+      if (stale()) return;
       var res = E.sweep(field, bestC.lat, bestC.lon, bestC.eye, { rays: 1440, maxRange: inp.range, k: inp.k, ground: bestC.ground });
       bestC.d = res.farD[res.best];
       lastRun = { field: field, res: res, cands: cands, bestC: bestC, input: inp, fit: true,
                   urbanYou: urbanYou, osmOK: !!osm, towersOK: !!towers, openKnown: openKnown,
                   skippedBuilt: !!(openTop && tops[0] && openTop !== tops[0] && bestC === cands[1]) };
       activeRay = null;
+      $('resultLoading').hidden = true;
+      $('result').removeAttribute('aria-busy');
       renderResult(lastRun); renderSectors(lastRun); renderProfile(lastRun); drawMap(lastRun);
       nameTarget(lastRun);
       if (inp.source !== 'preset') computeSuggestions(lastRun);
@@ -1411,11 +1501,13 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       setStatus('Done in ' + nf(secs, 1) + ' s.' + (field.failed ? ' Some terrain didn’t load and counts as sea level.' : ''));
       writeHash(inp);
     } catch (e) {
+      if (stale()) return;
       console.error(e);
-      setStatus('Couldn’t reach the elevation data. If this page is open inside an app’s file preview, open its web address in your browser instead. Otherwise check your connection and try again.', true);
+      var msg = 'Couldn’t reach the elevation data. If this page is open inside an app’s file preview, open its web address in your browser instead. Otherwise check your connection and try again.';
+      setStatus(msg, true); showLoadError(msg);
       setBar(0);
     } finally {
-      busy = false; els.go.disabled = false;
+      if (!stale()) delete document.body.dataset.running;
     }
   }
 
@@ -1471,6 +1563,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   function renderSuggestions(where, items) {
     var box = $('presets'), label = $('presetLabel');
     label.textContent = 'Or try, within 50 km of ' + where;
+    if (items === 'wait') { box.innerHTML = '<span class="hint">Suggestions appear when the search finishes.</span>'; return; }
     if (items === null) { box.innerHTML = '<span class="hint">Finding the tallest building and highest peak…</span>'; return; }
     if (!items.length) { box.innerHTML = '<span class="hint">Nothing to suggest nearby.</span>'; return; }
     box.innerHTML = items.map(function (it) {
@@ -1507,7 +1600,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
   document.getElementById('presets').addEventListener('click', function (e) {
     var b = e.target.closest('[data-preset]'); if (!b) return;
     applyPreset(b.getAttribute('data-preset'));
-    run();
+    run({ reveal: true });
   });
   ['loc', 'eye'].forEach(function (id) { els[id].addEventListener('input', clearPresetPress); });
   els.loc.addEventListener('input', function () { locSource = { kind: 'typed' }; if (matchState) hideMatches(); });
@@ -1517,9 +1610,9 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
     var p = matchState.list[+b.getAttribute('data-match')];
     els.loc.value = p.label;
     locSource = { kind: 'typed' };
-    run();
+    run({ reveal: true });
   });
-  els.form.addEventListener('submit', function (e) { e.preventDefault(); run(); });
+  els.form.addEventListener('submit', function (e) { e.preventDefault(); run({ reveal: true }); });
   els.geo.addEventListener('click', function () {
     if (!navigator.geolocation) { setStatus('This browser can’t share its location. Type coordinates or tap the map.', true); return; }
     setStatus('Finding your location…');
@@ -1528,7 +1621,7 @@ dl.facts dd small { display: block; font: 400 13px/1.4 var(--font-body); color: 
       locSource = { kind: 'geo' };
       clearPresetPress();
       showPick(pos.coords.latitude, pos.coords.longitude);
-      run();
+      run({ reveal: true });
     }, function () {
       setStatus('Location access was blocked. Type coordinates or tap the map instead.', true);
     }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
