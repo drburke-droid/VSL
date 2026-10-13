@@ -1,7 +1,7 @@
 # Visual Systems Lab — retro CRT front page
 
 A replacement for https://calgaryvisioncentre.com/lab: a photographed 1993 CRT whose
-tube shows a working Windows-95-style desktop. Each of the 14 lab tools is an icon on the
+tube shows a working Windows-95-style desktop. Each of the 15 lab tools is an icon on the
 teal desktop; windows drag, resize, minimize, maximize and close; the power
 button, screensaver and degauss are easter eggs.
 
@@ -9,7 +9,7 @@ Plain HTML/CSS/JS — no build step, no dependencies.
 
 ## Two pages, one codebase
 
-- `index.html` + `js/tools.json`: the Visual Systems Lab (14 tools) for /lab.
+- `index.html` + `js/tools.json`: the Visual Systems Lab (15 tools) for /lab.
 - `home.html` + `js/home.json`: the homepage version, framed as "we opened in 1998, so here
   is the web as it was that year". Every page is from 1998 (any other year ruins the joke). Twelve
   are Wayback captures, each checked by hand for a clean render: Google, AltaVista, Netscape, Winamp,
@@ -62,9 +62,12 @@ js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card 
 js/extras.js                homepage 1998 extras, loaded on first use: Inbox (1998 e-mail, ends with a
                             note from the clinic), Recycle Bin (1998 junk + an old prescription), and the
                             once-per-visit dial-up dialog before the first 1998 page (modem sound on a button)
-js/tools.json               the 14 tools (title, URL, group, pixel icon) + 4 group windows + site links
+js/tools.json               the 15 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 16 programs for home.html
+progressive-lens/           Building a Progressive Lens: a self-contained explainer page (one HTML file, three.js from cdnjs);
+                            its source and the lens-design solver live outside this repo, so edit the HTML directly
+embed/progressive-lens.html Squarespace Code Block snippet for it (iframe sized by postMessage, like embed/sightline.html)
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)

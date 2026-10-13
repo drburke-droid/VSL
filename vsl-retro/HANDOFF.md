@@ -10,7 +10,8 @@ GitHub Pages publishes `vsl-retro/` from `main` via `.github/workflows/pages.yml
 
 | URL | What it is |
 |---|---|
-| https://drburke-droid.github.io/VSL/ | Visual Systems Lab (14 tools) on the CRT. Target: calgaryvisioncentre.com/lab |
+| https://drburke-droid.github.io/VSL/ | Visual Systems Lab (15 tools) on the CRT. Target: calgaryvisioncentre.com/lab |
+| https://drburke-droid.github.io/VSL/progressive-lens/ | Building a Progressive Lens (8-step explainer), opened from the lab desktop |
 | https://drburke-droid.github.io/VSL/home.html | Homepage "then": 1998 web on the CRT (landscape) or a PDA (portrait) |
 | https://drburke-droid.github.io/VSL/today.html | Homepage "now": Momento360 clinic tour on an angled tablet (landscape) or a straight-on phone (portrait) |
 | https://drburke-droid.github.io/VSL/sites/cvc1998/ | Our 1998 site, re-created |
