@@ -68,6 +68,11 @@ js/home.json                the 16 programs for home.html
 progressive-lens/           Building a Progressive Lens: a self-contained explainer page (one HTML file, three.js from cdnjs);
                             its source and the lens-design solver live outside this repo, so edit the HTML directly
 embed/progressive-lens.html Squarespace Code Block snippet for it (iframe sized by postMessage, like embed/sightline.html)
+staircase/                  The Staircase in Your Glasses: blog article on why progressives blur at the sides (one HTML file,
+                            three.js from cdnjs). #embed hides its title for the blog; #fig=N shows only figure N, so a page
+                            can put figures between its own text. Built from the same lens and staircase models as progressive-lens/
+embed/staircase-post.html   Squarespace snippet: the whole article, for the blog post
+embed/staircase-fig2..5.html Squarespace snippets: one figure each, for calgaryvisioncentre.com/lenses
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)
