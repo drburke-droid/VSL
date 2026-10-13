@@ -1,0 +1,44 @@
+<!-- Building a Progressive Lens, for a Squarespace Code Block.
+     Paste this whole file into the block. The page tells this
+     one how tall it is, and the script below sizes the frame
+     to fit, so there is no scrollbar inside it. If the block
+     cannot run scripts, the heights in the style rules below
+     are used instead. -->
+<div class="lensbuilder-embed">
+  <iframe
+    id="lensbuilder-frame"
+    src="https://drburke-droid.github.io/VSL/progressive-lens/?v=1"
+    title="Building a Progressive Lens"
+    loading="lazy"
+    allow="fullscreen"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<style>
+.lensbuilder-embed {
+  margin: 32px 0;
+}
+.lensbuilder-embed iframe {
+  display: block;
+  width: 100%;
+  height: 14000px;
+  border: 0;
+  background: #fff;
+}
+@media (max-width: 760px) {
+  .lensbuilder-embed iframe {
+    height: 24000px;
+  }
+}
+</style>
+<script>
+(function () {
+  var f = document.getElementById('lensbuilder-frame');
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.lensbuilder !== 'height') return;
+    if (e.source !== f.contentWindow) return;
+    f.style.height = d.height + 'px';
+  });
+})();
+</script>
