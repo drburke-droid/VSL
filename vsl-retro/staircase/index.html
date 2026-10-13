@@ -118,6 +118,18 @@ input[type=range]:focus-visible{outline:2px solid var(--walk);outline-offset:2px
 .figmode .post > :not(figure.solo){display:none!important}
 .figmode figure{margin:0}
 .figmode figcaption .fn{display:none}
+.nocap figcaption{display:none!important}
+/* look=site: match the clinic page that embeds the figure (Arial, burgundy controls, warm greys) */
+.look-site{--f-text:Arial,Helvetica,sans-serif;--f-ui:Arial,Helvetica,sans-serif;--f-data:Arial,Helvetica,sans-serif;--ink:#222222;--muted:#666666;--accent:#8B1E2D;--soft:#F7F4F4;--sunk:#ECE7E7;--rule:#E0DCDC}
+.look-site .fig{border:1px solid #E5E0E0}
+.look-site .say{font-size:15px}
+.look-site .btn{border-color:#8B1E2D;color:#8B1E2D}
+.look-site .btn:hover{background:#8B1E2D;color:#fff}
+.look-site input[type=range]::-webkit-slider-thumb{background:#8B1E2D;box-shadow:0 0 0 1px #8B1E2D}
+.look-site input[type=range]::-moz-range-thumb{background:#8B1E2D;box-shadow:0 0 0 1px #8B1E2D}
+.look-site .seg button[aria-pressed="true"]{background:#8B1E2D}
+.look-site.figmode .post{max-width:none;padding-inline:0}
+.look-site canvas.map,.look-site canvas.plan{max-width:420px}
 @media (max-width:420px){ body{font-size:1.125rem} .fig{padding:12px} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
@@ -767,6 +779,8 @@ function solveLin(A, b) {
 const MODE = new URLSearchParams(location.search.slice(1) + '&' + location.hash.slice(1));
 const FIG = +(MODE.get('fig') || 0);
 if (MODE.has('embed') || FIG) document.documentElement.classList.add('embed');
+if (MODE.get('look') === 'site') document.documentElement.classList.add('look-site');
+if (MODE.get('cap') === '0') document.documentElement.classList.add('nocap');
 if (FIG) { document.documentElement.classList.add('figmode'); $$('figure').forEach((f, i) => { if (i + 1 === FIG) f.classList.add('solo'); }); }
 readRamps();
 const SVGNS = 'http://www.w3.org/2000/svg';
