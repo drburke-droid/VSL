@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Staircase in Your Glasses</title>
+<meta name="description" content="Why every progressive lens has soft, blurry sides, and why no lens can get rid of them: a staircase explanation with interactive figures, by Dr Robert Burke, Calgary Vision Centre.">
+<meta name="author" content="Dr Robert Burke, Calgary Vision Centre">
+<meta property="og:title" content="The Staircase in Your Glasses">
+<meta property="og:description" content="Why every progressive lens has soft, blurry sides, and why no lens can get rid of them: a staircase explanation with interactive figures, by Dr Robert Burke, Calgary Vision Centre.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for a blog post. Figures sit in soft grey panels the width of the column;
+   two-up inside a figure on wide screens, stacked on phones.
+   Single light theme on purpose: it sits on the clinic's white pages. Data colours match the
+   "Building a Progressive Lens" explainer: amber to maroon for blur, blues for power, orange ledges,
+   violet for the walking line. */
+:root{
+  --paper:#FFFFFF; --ink:#141414; --muted:#5E5E5E; --rule:#DEDEDE; --soft:#F4F4F1; --sunk:#E9E9E4;
+  --accent:#141414; --on-accent:#FFFFFF; --walk:#6B4FA0; --ledge:#E07A2F; --bar:#7E8B8F; --panel:#FFFFFF;
+  --f-text:"Newsreader","Iowan Old Style",Georgia,"Times New Roman",serif;
+  --f-ui:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-text);font-size:1.1875rem;line-height:1.6;font-optical-sizing:auto;-webkit-font-smoothing:antialiased}
+.post{max-width:720px;margin:0 auto;padding-inline:18px;padding-block:36px 72px;display:grid;gap:22px}
+h1,h2{font-family:var(--f-text);font-weight:600;letter-spacing:-.012em;line-height:1.12;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.4rem);font-weight:640}
+h2{font-size:1.7rem;margin-top:22px}
+p{margin:0;max-width:65ch}
+.dek{font-size:1.32rem;line-height:1.45;color:var(--muted);font-style:italic}
+.kicker{font-family:var(--f-ui);font-size:.78rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.head{display:grid;gap:12px;padding-bottom:6px}
+a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3px}
+b{font-weight:640}
+em{font-style:italic}
+
+/* figures */
+figure{margin:8px 0;display:grid;gap:12px;min-width:0}
+.fig{background:var(--soft);border-radius:14px;padding:16px;display:grid;gap:14px;min-width:0}
+figcaption{font-size:1rem;line-height:1.5;color:var(--muted)}
+figcaption .fn{font-family:var(--f-ui);font-size:.74rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin-right:6px}
+.two{display:grid;gap:14px;grid-template-columns:1fr;min-width:0}
+.two.pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:10px}
+@media (max-width:560px){ .pair .stats{grid-template-columns:1fr} .pair .panel-title{font-size:.68rem} .pair .stat b{font-size:1rem} }
+@media (min-width:640px){ .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center} }
+.view3d{position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;background:var(--sunk);overflow:hidden;touch-action:pan-y;cursor:grab}
+.view3d canvas{display:block;width:100%!important;height:100%!important}
+.view3d .tag{position:absolute;left:10px;bottom:8px;font-family:var(--f-ui);font-size:.72rem;color:var(--muted);pointer-events:none}
+.view3d .hint{position:absolute;right:10px;top:8px;font-family:var(--f-ui);font-size:.72rem;color:var(--muted);pointer-events:none}
+.view3d .fallback{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--muted);font-size:.95rem}
+canvas.map{display:block;width:100%;max-width:340px;margin:0 auto;border-radius:8px}
+canvas.plan{display:block;width:100%;max-width:340px;margin:0 auto}
+svg.side{display:block;width:100%;height:auto}
+svg text{font-family:var(--f-ui)}
+.panel-title{font-family:var(--f-ui);font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center}
+.stack{display:grid;gap:8px;min-width:0}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--sunk);border-radius:999px;padding:3px}
+.seg button{font:600 .85rem/1 var(--f-ui);border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--walk);outline-offset:2px}
+.btn{font:600 .85rem/1 var(--f-ui);border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;width:100%}
+.ctl label{font:600 .8rem var(--f-ui);letter-spacing:.04em;color:var(--ink)}
+.ctl output{font:500 .85rem var(--f-data);color:var(--ink);font-variant-numeric:tabular-nums}
+.ctl input{grid-column:1/-1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:#C9C9C2}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:#C9C9C2}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--ink);border:4px solid var(--soft);box-shadow:0 0 0 1px var(--ink);margin-top:-10px}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:4px solid var(--soft);box-shadow:0 0 0 1px var(--ink)}
+input[type=range]:focus-visible{outline:2px solid var(--walk);outline-offset:2px;border-radius:4px}
+.say{font-size:1.02rem;line-height:1.5;background:var(--paper);border-radius:10px;padding:12px 14px;min-height:5.2em}
+.say b{font-weight:640}
+.legend{display:flex;flex-wrap:wrap;gap:2px;align-items:flex-end;justify-content:center;font-family:var(--f-ui);font-size:.72rem;color:var(--muted)}
+.legend .sw{display:grid;gap:3px;justify-items:center;min-width:30px}
+.legend .sw i{display:block;width:30px;height:10px;border:1px solid rgba(0,0,0,.08)}
+.legend .cap{width:100%;text-align:center;margin-top:4px}
+.ledge-key{display:inline-block;width:12px;height:10px;border-radius:2px;background:var(--ledge);vertical-align:-1px}
+.walk-key{display:inline-block;width:18px;border-top:2px dashed var(--walk);vertical-align:3px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--paper);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.stat b{font:500 1.15rem var(--f-data);font-variant-numeric:tabular-nums}
+.stat span{font:500 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.stat .from{font:400 .78rem var(--f-data);color:var(--muted)}
+.chart{position:relative;display:grid;gap:6px;min-width:0}
+.chart-title{font:600 .85rem/1.4 var(--f-ui);color:var(--ink)}
+.bars svg{display:block;width:100%;height:auto}
+.bars .bar{fill:var(--bar)}
+.bars .bar.hot{fill:var(--ink)}
+.bars text{font-family:var(--f-ui);font-size:11px;fill:var(--muted)}
+.bars text.acc{fill:var(--walk);font-weight:600}
+.tip{position:absolute;top:40px;transform:translateX(-50%);background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:6px 9px;font:500 .78rem/1.4 var(--f-ui);color:var(--ink);pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap}
+.tip span{color:var(--muted)}
+
+/* callout and lists */
+.rule{border-left:4px solid var(--ink);padding:4px 0 4px 18px;display:grid;gap:8px}
+.rule .kicker{color:var(--ink)}
+.tips{margin:0;padding-left:1.1em;display:grid;gap:10px;max-width:65ch}
+.more{background:var(--soft);border-radius:14px;padding:18px 20px;display:grid;gap:10px}
+.more p{font-size:1.05rem}
+.foot{border-top:1px solid var(--rule);padding-top:16px;font:400 .85rem/1.5 var(--f-ui);color:var(--muted);display:grid;gap:6px}
+.embed .head{display:none}
+.embed .post{padding-block:8px 24px}
+/* one figure on its own (#fig=N), for pages that embed figures between their own text */
+.figmode .post{max-width:880px;padding-block:4px 6px;gap:0}
+.figmode .post > :not(figure.solo){display:none!important}
+.figmode figure{margin:0}
+.figmode figcaption .fn{display:none}
+@media (max-width:420px){ body{font-size:1.125rem} .fig{padding:12px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<article class="post">
+  <header class="head">
+    <span class="kicker">Progressive lenses, explained</span>
+    <h1>The Staircase in Your Glasses</h1>
+    <p class="dek">Why every progressive lens has soft, blurry sides, and why no lens can ever get rid of them completely.</p>
+  </header>
+
+  <p>Put on a new pair of progressive lenses and look straight ahead: the world is sharp. Now glance down and off to one side. Things go soft, and the floor may seem to swim a little when you turn your head.</p>
+  <p>Most people's first thought is that something is wrong with the lenses. Nothing is. Those soft areas are built into every progressive lens ever made, at every price, and the easiest way to see why is to think about stairs.</p>
+
+  <h2>Your lens is a staircase</h2>
+  <p>Somewhere in our forties, the eye loses the ability to focus up close by itself. Glasses take over by adding extra power for reading. A progressive lens adds that power gradually: your distance prescription at the top, a little more partway down for a screen at arm's length, and the full reading power at the bottom.</p>
+  <p>Think of those distances as floors in a building, with far away at the top and reading at the bottom. Moving your eye down the lens is walking down the stairs between them. Every step adds a little power and brings your focus a little closer.</p>
+  <figure>
+    <div class="fig"><svg class="side" id="f1" viewBox="0 0 640 300" role="img" aria-label="A progressive lens with far, arm's length and reading zones from top to bottom, matched to the floors of a staircase"></svg></div>
+    <figcaption><span class="fn">Figure 1</span>Looking down through a progressive lens is like walking down a staircase, from far away at the top to reading at the bottom.</figcaption>
+  </figure>
+
+  <h2>One big step, two steps, many steps</h2>
+  <p>There are several ways to get between floors. The bifocal, which dates back to the 1700s, uses one big step: distance above a line, reading below it. It works, but you can see the line, things jump as your eye crosses it, and nothing is clear at arm's length.</p>
+  <p>A trifocal adds a landing halfway, for the computer or the dashboard. The jumps are smaller, but now there are two lines. Keep adding steps and they get smaller and smaller, until there are so many that the edges disappear and the climb becomes a smooth slope. That is a progressive lens: no lines, no jumps, and a spot for every distance from the horizon to your phone.</p>
+  <figure>
+    <div class="fig">
+      <div class="controls"><span class="seg" id="f2-seg"><button data-v="1" aria-pressed="true">Bifocal</button><button data-v="2" aria-pressed="false">Trifocal</button><button data-v="6" aria-pressed="false">6 steps</button><button data-v="0" aria-pressed="false">Progressive</button></span></div>
+      <div class="two">
+        <div class="stack"><span class="panel-title">The staircase</span><svg class="side" id="f2-side" viewBox="0 0 320 250" role="img" aria-label="Side view of the staircase"></svg></div>
+        <div class="stack"><span class="panel-title">The lens</span><div class="view3d" id="f2-3d"><span class="tag">depth magnified ×8</span><span class="hint">drag to turn</span></div></div>
+      </div>
+      <p class="say" id="f2-say"></p>
+    </div>
+    <figcaption><span class="fn">Figure 2</span>The same climb from distance to reading power, made in one, two, six or hundreds of steps. On the lens, orange marks the edge of each step, which is the line you can see on a bifocal. The depth is exaggerated so the steps show.</figcaption>
+  </figure>
+
+  <h2>The catch: the steps only line up in the middle</h2>
+  <p>Look closely at the six-step lens in Figure 2. The edge of each step is flush in the middle of the lens and gets taller toward the sides.</p>
+  <p>That's because each step of a lens is a thin slice of a ball. More power means a more steeply curved surface, so each step down is cut from a slightly smaller ball. Down the middle of the lens the slices line up perfectly. But a smaller ball curves away faster, so toward the edges each step falls a little further behind the one above it.</p>
+  <p>Smoothing the steps into a progressive hides the edges, but it can't make the mismatch go away. The mismatch gets spread out, and the surface on either side of the middle has to twist, like a towel being gently wrung. A twisted surface focuses more strongly in one direction than another, and your eye sees that as blur: the soft zones at the sides of every progressive.</p>
+  <figure>
+    <div class="fig">
+      <div class="ctl"><label for="f3-blend">Smooth the steps</label><output id="f3-out"></output><input type="range" id="f3-blend" min="0" max="100" step="1" value="0"></div>
+      <div class="two">
+        <div class="stack"><span class="panel-title">The lens surface</span><div class="view3d" id="f3-3d"><span class="tag">depth magnified ×8</span><span class="hint">drag to turn</span></div></div>
+        <div class="stack"><span class="panel-title">What your eye sees</span><canvas class="map" id="f3-map" aria-label="Front view of the lens coloured by blur"></canvas></div>
+      </div>
+      <div class="legend" id="f3-legend"></div>
+    </div>
+    <figcaption><span class="fn">Figure 3</span>Six steps, smoothed into one surface. As the orange edges melt away, blur appears exactly where they were tallest: at the sides. The middle stays clear. The short lines on the right show which way the blur smears.</figcaption>
+  </figure>
+
+  <h2>A staircase that has to turn</h2>
+  <p>Stair builders run into the same problem whenever a staircase turns a corner.</p>
+  <p>On a straight staircase, every step is the same depth all the way across. On a turning staircase, the steps become wedges. Along the walking line, the path most people take, every step can still be just the right depth. Toward the inside of the turn the steps get shallower, toward the outside they get deeper, and the farther you are from the walking line, the worse it gets. Too shallow and your foot doesn't fit; too deep and your stride is off.</p>
+  <p>That is a progressive lens in a nutshell. The narrow corridor down the middle is the walking line, where the power changes exactly as it should. Step off it to either side and the steps are the wrong size for your eye.</p>
+  <figure>
+    <div class="fig">
+      <div class="two">
+        <div class="ctl"><label for="f4-walk">Where you walk</label><output id="f4-walk-out"></output><input type="range" id="f4-walk" min="-50" max="50" step="5" value="-40"></div>
+        <div class="stack"><span class="ctl"><label>How tight the turn is</label></span><span class="seg" id="f4-seg"><button data-v="gentle" aria-pressed="false">Gentle</button><button data-v="medium" aria-pressed="false">Medium</button><button data-v="tight" aria-pressed="true">Tight</button></span></div>
+      </div>
+      <div class="two">
+        <div class="view3d" id="f4-3d"><span class="tag">to scale</span><span class="hint">drag to turn</span></div>
+        <div class="stack"><span class="panel-title">From above</span><canvas class="plan" id="f4-plan" aria-label="The staircase seen from above, steps coloured by how far their depth is from right"></canvas></div>
+      </div>
+      <div class="legend" id="f4-legend"></div>
+      <div class="chart"><span class="chart-title" id="f4-title"></span><div class="bars" id="f4-bars"></div><div class="tip" id="f4-tip" hidden></div></div>
+    </div>
+    <figcaption><span class="fn">Figure 4</span>A staircase 1 m wide that turns a corner, with every step cut square to the walking line (<span class="walk-key"></span>). Steps are coloured by how far their depth is from the right 25 cm. Dark dots are your footsteps; the chart shows how deep each step is along your path.</figcaption>
+  </figure>
+  <p>A tighter turn makes it worse, and so does a lens that has to climb faster: a stronger reading prescription, or a climb squeezed into a shallow frame. Both narrow the clear path.</p>
+
+  <div class="rule">
+    <span class="kicker">No design can remove it</span>
+    <p>However a builder lays out this staircase, its inside edge is 78.5 cm shorter than the walking line, because the inside of a turn is simply a shorter path. Lenses follow the same kind of rule. In 1963 the mathematician Günter Minkwitz proved that a lens can't change power down a clear middle path without blur growing beside it. Every progressive, cheap or expensive, obeys it.</p>
+  </div>
+
+  <h2>How designers deal with it</h2>
+  <p>If the problem can't be removed, it can be shared out. Stair builders call this <em>balancing</em> the winders, or dancing steps. Each step pivots around its spot on the walking line, so the straight steps before and after the turn each take a small share of the shortfall. Instead of four dangerous steps you get ten slightly shallow ones. The walking line stays perfect, and the worst step at the inside edge goes from 5 cm deep to about 16.</p>
+  <p>Lens designers do the same thing with a computer. The power down the corridor stays exactly as prescribed, but every other point on the surface may be raised or lowered by a fraction of a millimetre, until the leftover blur is as mild as it can be and sits where it bothers you least: low and out to the sides, away from where you look for distance and for reading.</p>
+  <figure>
+    <div class="fig">
+      <div class="controls"><button class="btn" id="f5-play" type="button">▶ Play</button></div>
+      <div class="ctl"><label for="f5-t">The designer's fix</label><output id="f5-out"></output><input type="range" id="f5-t" min="0" max="100" step="1" value="0"></div>
+      <div class="two pair">
+        <div class="stack"><span class="panel-title">The staircase, from above</span><canvas class="plan" id="f5-plan" aria-label="Staircase from above as its steps are balanced"></canvas><div class="stats" id="f5-stair"></div></div>
+        <div class="stack"><span class="panel-title">The lens, from the front</span><canvas class="map" id="f5-map" aria-label="Lens blur map as the surface is reshaped"></canvas><div class="stats" id="f5-lens"></div></div>
+      </div>
+      <div class="legend" id="f5-legend"></div>
+    </div>
+    <figcaption><span class="fn">Figure 5</span>The same fix for stairs and for lenses. Keep the middle path perfect, then spread the unavoidable error out, so no single spot is terrible. The stair and the lens use the same colours: pale is right, darker is further off.</figcaption>
+  </figure>
+  <p>Designers still have choices. Some keep large clear areas and pack the blur into a few strong pockets at the sides, often called hard designs. Others accept slightly smaller clear areas so the blur is milder and changes more gently, called soft designs, which many people find easier to get used to. Newer lenses are calculated for your own prescription and frame, and for how the frame sits on your face. None of them removes the blur. The good ones put it where you will notice it least.</p>
+
+  <h2>Living with your progressives</h2>
+  <ul class="tips">
+    <li><b>Point your nose at what you want to see.</b> The clear path runs down the middle of the lens, so turn your head rather than just your eyes, especially when reading.</li>
+    <li><b>Give it a week or two.</b> Your brain learns where the walking line is, and most people stop noticing the soft sides.</li>
+    <li><b>Fit matters.</b> The walking line has to sit right in front of your pupil. That is why your optician measures where your eyes sit in the frame you chose.</li>
+    <li><b>Come back if it still feels wrong.</b> Blur or swimming that lasts past a couple of weeks usually has a cause that can be fixed: an adjustment, a measurement, or a different design.</li>
+  </ul>
+
+  <div class="more">
+    <p><b>Want the full story, with the maths?</b> <a href="https://drburke-droid.github.io/VSL/progressive-lens/" target="_blank" rel="noopener">Building a Progressive Lens</a> takes the same journey step by step, from one curved surface to today's designs, in 3D and with the formulas behind every picture.</p>
+    <p>Questions about your own glasses? <a href="https://calgaryvisioncentre.com/book-an-appointment" target="_top">Book an eye exam</a>.</p>
+  </div>
+
+  <footer class="foot">
+    <p>By Dr Robert Burke, optometrist, Calgary Vision Centre.</p>
+    <p>For education only. The figures are simplified teaching models of real lenses and staircases; they do not examine anyone's eyes or replace an eye exam.</p>
+  </footer>
+</article>
+
+<script type="application/json" id="design-data">{"grid": {"x0": -30, "h": 1, "n": 61}, "A": {"15_2": "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"}, "bridge": {"L": 15, "soft": 2, "J0": 0.05292147253170392, "Jstar": 0.007661615016828204}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const NI = 1.5, KD = 500, FC = 4, RL = 28, INSET = 2.5;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- preferences ---------- */
+const prefs = { math: true, cyl: 'minus' };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem('progressive-prefs') || '{}')); } catch (e) {}
+function savePrefs() { try { localStorage.setItem('progressive-prefs', JSON.stringify(prefs)); } catch (e) {} }
+
+/* ---------- number helpers ---------- */
+function erf(x) { const s = x < 0 ? -1 : 1; x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x);
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; }
+const Phi = u => 0.5 * (1 + erf(u / Math.SQRT2));
+const phi = u => Math.exp(-0.5 * u * u) * 0.3989422804014327;
+const MINUS = '−';
+function sgn(v, d = 2) { if (Math.abs(v) < 0.5 * Math.pow(10, -d)) v = 0; return (v < 0 ? MINUS : '+') + Math.abs(v).toFixed(d); }
+function axisDeg(th) { let a = Math.round(th * 180 / Math.PI); a = ((a % 180) + 180) % 180; return a === 0 ? 180 : a; }
+const pad3 = a => String(a).padStart(3, '0');
+
+/* principal powers from the curvature tensor (all in dioptres) */
+function princ(h) { const m = (h.xx + h.yy) / 2, dd = (h.xx - h.yy) / 2, d = Math.hypot(dd, h.xy);
+  return { mean: m, cyl: 2 * d, p1: m + d, p2: m - d, th: 0.5 * Math.atan2(2 * h.xy, h.xx - h.yy) }; }
+function rxString(p) {
+  if (p.cyl < 0.06) return `${sgn(p.mean)} DS`;
+  if (prefs.cyl === 'minus') return `${sgn(p.p1)} ${sgn(-p.cyl)} × ${pad3(axisDeg(p.th))}`;
+  return `${sgn(p.p2)} ${sgn(p.cyl)} × ${pad3(axisDeg(p.th + Math.PI / 2))}`;
+}
+function tickAngle(p) { return prefs.cyl === 'minus' ? p.th : p.th + Math.PI / 2; }
+
+/* ---------- theme ramps ---------- */
+let RAMP = null;
+function hex2rgb(h) { h = h.trim().replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+const LENS_PAL = {
+  cyl: ['#F6F8F4', '#FBE5AE', '#F6C47A', '#EE9B57', '#DF6F3E', '#C64835', '#A02F3B', '#781F3D', '#4C1434'],
+  pow: ['#EEF3F5', '#CFE3EC', '#A3CADC', '#6FA9C8', '#3F88B1', '#22679A', '#134B78', '#0A3152'],
+  dz: ['#4B2C7A', '#6B4FA0', '#9479BE', '#BBA7D8', '#E6DFF0', '#E3F1EA', '#AEDBC6', '#6FBFA0', '#2E9A78', '#0A6F55']
+};
+/* Lens maps and 3D views share one palette in both themes, like a printed lens map on its own white disk. */
+function readRamps() {
+  const cs = getComputedStyle(document.documentElement), t = n => cs.getPropertyValue(n).trim();
+  RAMP = { stair: LENS_PAL.cyl.map(hex2rgb), cyl: LENS_PAL.cyl.map(hex2rgb), pow: LENS_PAL.pow.map(hex2rgb), dz: LENS_PAL.dz.map(hex2rgb), zone: '#6B4FA0', line: hex2rgb('#10232B'), ink: '#10232B', muted: t('--muted'), mark: '#0A6F5B', probe: '#0F1E26', panel: '#F9FBFA', rule: t('--rule'), accent: t('--accent') };
+}
+const BAND = { cyl: { step: 0.5, n: 9, off: 0, label: 'Blur (cylinder), D' }, pow: { step: 0.5, n: 8, off: 0, label: 'Reading power, D' }, dz: { step: 0.15, n: 10, off: 5, label: 'Height change so far, mm (purple lowered, green raised)' }, stair: { step: 20, n: 9, off: 0, fmt: v => (v / 10).toFixed(0), label: 'Step depth mismatch, cm (25 cm is right)' } };
+function bandOf(mode, v) { const B = BAND[mode]; return clamp(Math.floor(v / B.step + 1e-9) + B.off, 0, B.n - 1); }
+function buildLegend(el, mode, ledge = false) {
+  const B = BAND[mode], R = RAMP[mode]; let h = '';
+  for (let i = 0; i < B.n; i++) { const v = (i - B.off) * B.step, last = i === B.n - 1;
+    const lo = B.fmt ? B.fmt(v) + (last ? '+' : '') : B.off ? (i === 0 ? `${MINUS}${Math.abs(v).toFixed(2)}` : i === B.off ? '0' : last ? `+${((i + 1 - B.off) * B.step).toFixed(2)}` : '&nbsp;') : v.toFixed(2);
+    h += `<span class="sw"><i style="background:rgb(${R[i].join(',')})"></i>${last && !B.off && !B.fmt ? lo + '+' : lo}</span>`; }
+  el.innerHTML = h + `<span class="cap">${B.label}${ledge ? ' · <b class="ledge-key"></b> ledge' : ''}</span>`;
+}
+
+/* ---------- model A: stacked bands z = ½ k(y) x² + f(y) ---------- */
+function buildBand({ add, L, N, blend }) {
+  const y0 = -31, dy = 0.02, M = Math.round(62 / dy) + 1;
+  const k = new Float64Array(M), k1 = new Float64Array(M), k2 = new Float64Array(M), g = new Float64Array(M);
+  const inf = !isFinite(N), S0 = 1.2, seams = [];
+  if (!inf) for (let i = 1; i <= N; i++) seams.push(FC - (i - 0.5) * L / N);
+  const sigma = inf ? S0 : (blend / 100) * Math.max(0.7 * L / N, S0);
+  const sharp = !inf && sigma < 1e-3;
+  for (let j = 0; j < M; j++) {
+    const y = y0 + j * dy;
+    if (inf) {
+      const t = FC - y, s = sigma, c = add / L, F = u => u * Phi(u / s) + s * phi(u / s);
+      k[j] = c * (F(t) - F(t - L));
+      k1[j] = -c * (Phi(t / s) - Phi((t - L) / s));
+      k2[j] = c * (phi(t / s) - phi((t - L) / s)) / s;
+    } else if (sharp) {
+      let cnt = 0; for (const sy of seams) if (y < sy) cnt++;
+      k[j] = add * cnt / N;
+    } else {
+      const c = add / N; let a = 0, b = 0, cc = 0;
+      for (const sy of seams) { const u = (sy - y) / sigma, p = phi(u); a += Phi(u); b -= p / sigma; cc -= u * p / (sigma * sigma); }
+      k[j] = c * a; k1[j] = c * b; k2[j] = c * cc;
+    }
+  }
+  // f'' = k, integrated down from the top of the lens (distance zone is the reference)
+  let gs = 0; g[M - 1] = 0;
+  for (let j = M - 2; j >= 0; j--) { const kk = 0.5 * (k[j] + k[j + 1]); const gn = gs + kk * dy; g[j] = g[j + 1] + 0.5 * (gs + gn) * dy; gs = gn; }
+  return { k, k1, k2, g, y0, dy, M, seams, sharp, add, L, N, sigma, inf };
+}
+function bandAt(m, x, y) {
+  let f = (y - m.y0) / m.dy; f = clamp(f, 0, m.M - 1.0001);
+  const j = f | 0, t = f - j, L = a => a[j] + (a[j + 1] - a[j]) * t;
+  const k = m.sharp ? m.k[t < 0.5 ? j : j + 1] : L(m.k), k1 = L(m.k1), k2 = L(m.k2);
+  return { xx: k, yy: 0.5 * k2 * x * x + k, xy: k1 * x, sag: (0.5 * k * x * x + L(m.g)) / KD };
+}
+
+/* ---------- model B: optimized designs (precomputed, add = 1 D) ---------- */
+const DATA = JSON.parse(document.getElementById('design-data').textContent);
+const DG = DATA.grid, DN = DG.n;
+const designCache = {};
+function decodeF32(b64) { const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Float32Array(u8.buffer); }
+function getDesign(L, s) {
+  const key = `${L}_${s}`; if (designCache[key]) return designCache[key];
+  return (designCache[key] = Object.assign(designFromA(decodeF32(DATA.A[key])), { L }));
+}
+function designFromA(A) {
+  const n = DN, h = DG.h, x0 = DG.x0;
+  const xx = new Float32Array(n * n), yy = new Float32Array(n * n), xy = new Float32Array(n * n), ok = new Uint8Array(n * n);
+  const inside = (i, j) => { const x = x0 + j * h, y = x0 + i * h; return x * x + y * y <= 900 + 1e-6; };
+  for (let i = 1; i < n - 1; i++) for (let j = 1; j < n - 1; j++) {
+    let good = true; for (let di = -1; di <= 1 && good; di++) for (let dj = -1; dj <= 1; dj++) if (!inside(i + di, j + dj)) { good = false; break; }
+    if (!good) continue;
+    const a = (ii, jj) => A[ii * n + jj], c = a(i, j), id = i * n + j;
+    xx[id] = KD * (a(i, j + 1) - 2 * c + a(i, j - 1)) / (h * h);
+    yy[id] = KD * (a(i + 1, j) - 2 * c + a(i - 1, j)) / (h * h);
+    xy[id] = KD * (a(i + 1, j + 1) - a(i + 1, j - 1) - a(i - 1, j + 1) + a(i - 1, j - 1)) / (4 * h * h);
+    ok[id] = 1;
+  }
+  return { xx, yy, xy, ok, A };
+}
+function designAt(d, add, x, y) {
+  const fx = (x - DG.x0) / DG.h, fy = (y - DG.x0) / DG.h, j = Math.floor(fx), i = Math.floor(fy);
+  if (i < 0 || j < 0 || i >= DN - 1 || j >= DN - 1) return null;
+  const tx = fx - j, ty = fy - i; let w = 0, a = 0, b = 0, c = 0;
+  const pts = [[i, j, (1 - tx) * (1 - ty)], [i, j + 1, tx * (1 - ty)], [i + 1, j, (1 - tx) * ty], [i + 1, j + 1, tx * ty]];
+  for (const [ii, jj, ww] of pts) { const id = ii * DN + jj; if (!d.ok[id]) continue; w += ww; a += ww * d.xx[id]; b += ww * d.yy[id]; c += ww * d.xy[id]; }
+  if (w < 0.05) return null;
+  return { xx: add * a / w, yy: add * b / w, xy: add * c / w };
+}
+
+/* ---------- frame and lens markings ---------- */
+const FRAME = { cx: -3, cy: 0, hw: 24, hh: 15, r: 8 };
+function inFrame(x, y) { const dx = Math.max(Math.abs(x - FRAME.cx) - (FRAME.hw - FRAME.r), 0), dy = Math.max(Math.abs(y - FRAME.cy) - (FRAME.hh - FRAME.r), 0); return dx * dx + dy * dy <= FRAME.r * FRAME.r; }
+
+/* ---------- wish-list zones (same formulas as the solver) ---------- */
+function zonePaths(softVal, L) {
+  const yN = FC - L, inR = (x, y) => x * x + y * y <= (RL - 0.2) ** 2, out = [];
+  const split = (pts, dotted) => { let cur = []; for (const q of pts) { if (inR(q[0], q[1])) cur.push(q); else if (cur.length) { if (cur.length > 1) out.push({ pts: cur, dotted }); cur = []; } } if (cur.length > 1) out.push({ pts: cur, dotted }); };
+  const c = 0.006 + 0.028 * softVal, far = [];
+  for (let x = -RL; x <= RL; x += 0.25) far.push([x, FC + 1 + c * x * x]);
+  split(far, false);
+  const h0 = 5.5 - 3 * softVal, m = 0.75 - 0.45 * softVal, cap = 15 - 6 * softVal, top = yN + 0.5, half = y => Math.min(h0 + m * Math.max(yN - y, 0), cap);
+  const left = [], right = [];
+  for (let y = -RL; y <= top + 1e-9; y += 0.25) { left.push([INSET - half(y), y]); right.push([INSET + half(y), y]); }
+  const ring = [...left, [INSET - half(top), top], [INSET + half(top), top], ...right.reverse()];
+  split(ring, false);
+  out.push({ pts: [[0, FC + 1], [INSET, yN]], dotted: true });
+  return out;
+}
+/* ---------- 2D map renderer ---------- */
+class LensMap {
+  constructor(canvas, view, onProbe) {
+    this.c = canvas; this.ctx = canvas.getContext('2d'); this.view = view; this.state = null; this.probe = null; this.onProbe = onProbe;
+    let down = null;
+    canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
+    canvas.addEventListener('pointerup', e => { if (!down) return; if (Math.hypot(e.clientX - down.x, e.clientY - down.y) < 10) this.setProbeFromEvent(e); down = null; });
+    canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && e.buttons === 1) this.setProbeFromEvent(e); });
+    canvas.addEventListener('keydown', e => {
+      if (!this.probe) return; const st = 1, k = e.key; let { x, y } = this.probe;
+      if (k === 'ArrowLeft') x -= st; else if (k === 'ArrowRight') x += st; else if (k === 'ArrowUp') y += st; else if (k === 'ArrowDown') y -= st; else return;
+      e.preventDefault(); if (x * x + y * y <= RL * RL) { this.probe = { x, y }; this.draw(this.state); this.onProbe && this.onProbe(this.probe); }
+    });
+    canvas.tabIndex = 0;
+  }
+  setProbeFromEvent(e) {
+    const r = this.c.getBoundingClientRect(), v = this.view;
+    const x = v.x0 + (e.clientX - r.left) / r.width * (v.x1 - v.x0), y = v.y1 - (e.clientY - r.top) / r.height * (v.y1 - v.y0);
+    if (this.noProbe || x * x + y * y > RL * RL) return;
+    this.probe = { x, y }; this.draw(this.state); this.onProbe && this.onProbe(this.probe);
+  }
+  size() {
+    const v = this.view, cw = this.c.clientWidth || 340, ch = cw * (v.y1 - v.y0) / (v.x1 - v.x0);
+    this.c.style.height = ch + 'px';
+    const dpr = Math.min(window.devicePixelRatio || 1, 2) * (this.fast ? 0.5 : 1);
+    const W = Math.max(60, Math.round(cw * dpr)), H = Math.max(60, Math.round(ch * dpr));
+    if (this.c.width !== W || this.c.height !== H) { this.c.width = W; this.c.height = H; }
+    this.cw = cw; this.ch = ch;
+  }
+  X(x) { const v = this.view; return (x - v.x0) / (v.x1 - v.x0) * this.cw; }
+  Y(y) { const v = this.view; return (v.y1 - y) / (v.y1 - v.y0) * this.ch; }
+  S(mm) { const v = this.view; return mm / (v.x1 - v.x0) * this.cw; }
+  draw(state) {
+    if (!state || !RAMP) return; this.state = state; this.size();
+    const { field, mode } = state, ctx = this.ctx, W = this.c.width, H = this.c.height, v = this.view;
+    const img = ctx.createImageData(W, H), data = img.data, band = new Int8Array(W * H).fill(-1);
+    const ramp = RAMP[mode], B = BAND[mode];
+    for (let py = 0; py < H; py++) {
+      const y = v.y1 - (py + 0.5) / H * (v.y1 - v.y0);
+      for (let px = 0; px < W; px++) {
+        const x = v.x0 + (px + 0.5) / W * (v.x1 - v.x0);
+        if (x * x + y * y > RL * RL) continue;
+        const h = field(x, y); if (!h) continue;
+        const val = state.value ? state.value(x, y) : (mode === 'cyl' ? princ(h).cyl : princ(h).mean);
+        band[py * W + px] = clamp(Math.floor(val / B.step + 1e-9) + B.off, 0, B.n - 1);
+      }
+    }
+    const L = RAMP.line, lw = Math.max(1, Math.round(W / 420));
+    for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) {
+      const i = py * W + px, b = band[i]; if (b < 0) continue;
+      let edge = false;
+      for (let s = 1; s <= lw && !edge; s++) {
+        if (px + s < W) { const b2 = band[i + s]; if (b2 >= 0 && b2 !== b) edge = true; }
+        if (py + s < H) { const b3 = band[i + s * W]; if (b3 >= 0 && b3 !== b) edge = true; }
+      }
+      const c = ramp[b], o = i * 4, m = edge ? 0.55 : 0;
+      data[o] = c[0] + (L[0] - c[0]) * m; data[o + 1] = c[1] + (L[1] - c[1]) * m; data[o + 2] = c[2] + (L[2] - c[2]) * m; data[o + 3] = 255;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H); ctx.putImageData(img, 0, 0);
+    const sc = W / this.cw; ctx.setTransform(sc, 0, 0, sc, 0, 0);
+    this.overlays(state);
+  }
+  overlays(state) {
+    const ctx = this.ctx, X = x => this.X(x), Y = y => this.Y(y), S = mm => this.S(mm);
+    ctx.save(); ctx.beginPath(); ctx.arc(X(0), Y(0), S(RL), 0, 2 * Math.PI); ctx.clip();
+    // ledges
+    if (state.seams) { ctx.setLineDash([S(1.2), S(0.9)]); ctx.strokeStyle = RAMP.ink; ctx.lineWidth = 1.4;
+      for (const sy of state.seams) { ctx.beginPath(); ctx.moveTo(X(-RL), Y(sy)); ctx.lineTo(X(RL), Y(sy)); ctx.stroke(); } ctx.setLineDash([]); }
+    // axis ticks
+    if (state.mode === 'cyl') {
+      ctx.strokeStyle = RAMP.ink; ctx.globalAlpha = 0.62; ctx.lineWidth = 1.1; const st = state.tickStep || 4;
+      const v = this.view;
+      for (let x = Math.ceil(v.x0 / st) * st; x <= v.x1; x += st) for (let y = Math.ceil(v.y0 / st) * st; y <= v.y1; y += st) {
+        if (x * x + y * y > (RL - 1.5) ** 2) continue; const h = state.field(x, y); if (!h) continue; const p = princ(h); if (p.cyl < 0.5) continue;
+        const a = tickAngle(p), len = S(Math.min(st * 0.42, 0.8 + 0.35 * p.cyl)), dx = Math.cos(a) * len, dy = Math.sin(a) * len;
+        ctx.beginPath(); ctx.moveTo(X(x) - dx, Y(y) + dy); ctx.lineTo(X(x) + dx, Y(y) - dy); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // wish-list zones and corridor line
+    if (state.zones) { ctx.strokeStyle = RAMP.zone; ctx.lineWidth = 1.8;
+      for (const z of state.zones) { ctx.setLineDash(z.dotted ? [2, 3] : []); ctx.beginPath(); z.pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.stroke(); }
+      ctx.setLineDash([]); }
+    // frame
+    if (state.frame && state.dimOutside) { const f = state.frameRect || FRAME, x0 = X(f.cx - f.hw), y0 = Y(f.cy + f.hh), w = S(2 * f.hw), hgt = S(2 * f.hh), r = S(f.r);
+      ctx.beginPath(); ctx.arc(X(0), Y(0), S(RL), 0, 2 * Math.PI); ctx.moveTo(x0 + r, y0); ctx.arcTo(x0, y0, x0, y0 + hgt, r); ctx.arcTo(x0, y0 + hgt, x0 + w, y0 + hgt, r); ctx.arcTo(x0 + w, y0 + hgt, x0 + w, y0, r); ctx.arcTo(x0 + w, y0, x0, y0, r); ctx.closePath();
+      ctx.fillStyle = 'rgba(120,134,140,0.55)'; ctx.fill('evenodd'); }
+    if (state.frame) { const f = state.frameRect || FRAME; ctx.setLineDash([5, 4]); ctx.strokeStyle = RAMP.ink; ctx.globalAlpha = .7; ctx.lineWidth = 1.3;
+      const x0 = X(f.cx - f.hw), y0 = Y(f.cy + f.hh), w = S(2 * f.hw), hgt = S(2 * f.hh), r = S(f.r);
+      ctx.beginPath(); ctx.moveTo(x0 + r, y0); ctx.arcTo(x0 + w, y0, x0 + w, y0 + hgt, r); ctx.arcTo(x0 + w, y0 + hgt, x0, y0 + hgt, r); ctx.arcTo(x0, y0 + hgt, x0, y0, r); ctx.arcTo(x0, y0, x0 + w, y0, r); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1; }
+    if (!state.noMarks) {
+    // markings: distance circle, fitting cross, prism dot, near circle
+    ctx.strokeStyle = RAMP.mark; ctx.fillStyle = RAMP.mark; ctx.lineWidth = 1.5;
+    const nx = state.nearX || 0, ny = FC - state.L;
+    ctx.beginPath(); ctx.arc(X(0), Y(FC + 4.5), S(2.8), 0, 2 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(-3), Y(FC)); ctx.lineTo(X(-1), Y(FC)); ctx.moveTo(X(1), Y(FC)); ctx.lineTo(X(3), Y(FC)); ctx.moveTo(X(0), Y(FC + 1.6)); ctx.lineTo(X(0), Y(FC + 0.8)); ctx.moveTo(X(0), Y(FC - 0.8)); ctx.lineTo(X(0), Y(FC - 1.6)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(0), Y(0), S(0.6), 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(X(nx), Y(ny), S(3), 0, 2 * Math.PI); ctx.stroke();
+    }
+    if (state.extra) state.extra(ctx, this);
+    ctx.restore();
+    // rim
+    ctx.strokeStyle = RAMP.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(X(0), Y(0), S(RL), 0, 2 * Math.PI); ctx.stroke();
+    // probe
+    if (this.probe) { const px = X(this.probe.x), py = Y(this.probe.y);
+      ctx.strokeStyle = RAMP.panel; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(px, py, 7, 0, 2 * Math.PI); ctx.stroke();
+      ctx.strokeStyle = RAMP.probe; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, 7, 0, 2 * Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px - 11, py); ctx.lineTo(px - 4, py); ctx.moveTo(px + 4, py); ctx.lineTo(px + 11, py); ctx.moveTo(px, py - 11); ctx.lineTo(px, py - 4); ctx.moveTo(px, py + 4); ctx.lineTo(px, py + 11); ctx.stroke(); }
+  }
+}
+
+/* ---------- 3D viewer: the progressive layer as a solid block ---------- */
+const LEDGE3D = '#E07A2F';
+const VIEWS3D = [];
+let EXAG = 8;
+function gAtFn(m) { const gL = m.g; return y => { const f = clamp((y - m.y0) / m.dy, 0, m.M - 1.0001), j = f | 0, t = f - j; return gL[j] + (gL[j + 1] - gL[j]) * t; }; }
+function surfBand(m) {
+  const patches = [], top = RL - 0.003, bot = -RL + 0.003;
+  if (m.sharp) {
+    const gAt = gAtFn(m), cuts = [top, ...m.seams.filter(s => s < RL && s > -RL), bot];
+    for (let i = 0; i < cuts.length - 1; i++) { const k = m.add * i / m.N;
+      patches.push({ yTop: cuts[i], yBot: cuts[i + 1], k, h: (x, y) => (0.5 * k * x * x + gAt(y)) / KD, t: () => ({ xx: k, yy: k, xy: 0 }) }); }
+  } else patches.push({ yTop: top, yBot: bot, k: null, h: (x, y) => bandAt(m, x, y).sag, t: (x, y) => bandAt(m, x, y) });
+  return { patches, ledges: m.sharp };
+}
+function sampleA(d, x, y) {
+  const fx = clamp((x - DG.x0) / DG.h, 0, DN - 1.0001), fy = clamp((y - DG.x0) / DG.h, 0, DN - 1.0001), j = fx | 0, i = fy | 0, tx = fx - j, ty = fy - i, A = d.A, n = DN;
+  return (A[i * n + j] * (1 - tx) + A[i * n + j + 1] * tx) * (1 - ty) + (A[(i + 1) * n + j] * (1 - tx) + A[(i + 1) * n + j + 1] * tx) * ty;
+}
+function surfDesign(d, add) {
+  const t = (x, y) => designAt(d, add, x, y) || designAt(d, add, x * 0.95, y * 0.95) || { xx: 0, yy: 0, xy: 0 };
+  return { patches: [{ yTop: RL - 0.003, yBot: -RL + 0.003, k: null, h: (x, y) => add * sampleA(d, x, y), t }], ledges: false };
+}
+class Lens3D {
+  constructor(host, opts = {}) {
+    this.host = host; this.az = opts.az ?? -0.62; this.el = opts.el ?? -0.42; this.zc = 0; this.ok = false; this.started = false; this.last = null;
+    this.tag = host.querySelector('.tag');
+    VIEWS3D.push(this);
+    const start = () => { if (this.started) return; this.started = true; this.init(); if (this.ok && this.last) this.build(); };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '500px 0px' });
+      io.observe(host);
+    } else start();
+  }
+  init() {
+    if (!window.THREE) { this.fail('The 3D view could not load. The map shows the same surface.'); return; }
+    try {
+      const T = THREE;
+      this.renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); this.renderer.setClearColor(0x000000, 0); this.renderer.outputEncoding = T.sRGBEncoding;
+      this.host.insertBefore(this.renderer.domElement, this.host.firstChild);
+      this.scene = new T.Scene(); this.camera = new T.PerspectiveCamera(30, 4 / 3, 1, 2000);
+      this.scene.add(new T.HemisphereLight(0xffffff, 0x4a5860, 0.52));
+      const d = new T.DirectionalLight(0xffffff, 0.78); d.position.set(-70, 80, 100); this.scene.add(d);
+      const d2 = new T.DirectionalLight(0xffffff, 0.32); d2.position.set(60, -90, 50); this.scene.add(d2);
+      this.surfGroup = new T.Group(); this.ovGroup = new T.Group(); this.scene.add(this.surfGroup, this.ovGroup);
+      const lin = h => new T.Color(h).convertSRGBToLinear();
+      const tex = cols => { const n = cols.length, data = new Uint8Array(n * 4); cols.forEach((c, i) => data.set([c[0], c[1], c[2], 255], i * 4));
+        const tx = new T.DataTexture(data, n, 1, T.RGBAFormat); tx.magFilter = tx.minFilter = T.NearestFilter; tx.generateMipmaps = false;
+        tx.wrapS = tx.wrapT = T.ClampToEdgeWrapping; tx.encoding = T.sRGBEncoding; tx.needsUpdate = true; return tx; };
+      const face = map => new T.MeshPhongMaterial({ map, shininess: 40, specular: 0x2b3236, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
+      this.mats = {
+        cyl: face(tex(RAMP.cyl)), pow: face(tex(RAMP.pow)), dz: face(tex(RAMP.dz)),
+        zone: new T.LineBasicMaterial({ color: lin('#6B4FA0') }), zoneDot: new T.LineDashedMaterial({ color: lin('#6B4FA0'), dashSize: 0.8, gapSize: 0.9 }),
+        ledge: new T.MeshPhongMaterial({ color: lin(LEDGE3D), shininess: 25, side: T.DoubleSide }),
+        edge: new T.MeshPhongMaterial({ color: lin('#B9C7CC'), shininess: 30, specular: 0x222222, side: T.DoubleSide }),
+        line: new T.LineBasicMaterial({ color: lin('#1A2A31') }),
+        slice: new T.LineBasicMaterial({ color: lin('#1A2A31'), transparent: true, opacity: 0.24 }),
+        mark: new T.LineBasicMaterial({ color: lin('#0A6F5B') }),
+        frame: new T.LineDashedMaterial({ color: lin('#1A2A31'), dashSize: 1.6, gapSize: 1.1 }),
+        probe: new T.MeshPhongMaterial({ color: lin('#0F1E26'), shininess: 60 }),
+        dirMax: new T.MeshPhongMaterial({ color: lin('#0A7560'), shininess: 40 }),
+        dirMin: new T.MeshPhongMaterial({ color: lin('#5A6B72'), shininess: 40 }),
+        bracket: new T.MeshPhongMaterial({ color: lin('#10232B'), shininess: 40 })
+      };
+      this.ok = true; this.bindControls(); this.resize();
+      new ResizeObserver(() => { this.resize(); this.render(); }).observe(this.host);
+    } catch (e) { this.fail('This device could not start the 3D view. The map shows the same surface.'); }
+  }
+  fail(msg) { const d = document.createElement('div'); d.className = 'fallback'; d.textContent = msg; this.host.appendChild(d); }
+  bindControls() {
+    const el = this.renderer.domElement; let drag = null;
+    el.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, az: this.az, el: this.el, type: e.pointerType }; if (e.pointerType === 'mouse') el.setPointerCapture(e.pointerId); this.host.style.cursor = 'grabbing'; });
+    el.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      this.az = drag.az - dx * 0.008; if (drag.type === 'mouse') this.el = clamp(drag.el + dy * 0.008, -1.45, 1.45); this.render(); });
+    const end = () => { drag = null; this.host.style.cursor = ''; };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end); el.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') end(); });
+  }
+  setView(v) {
+    if (v === 'angled') { this.az = -0.62; this.el = -0.42; }
+    else if (v === 'below') { this.az = -0.22; this.el = -0.95; }
+    else if (v === 'side') { this.az = -1.52; this.el = -0.04; }
+    else { this.az = 0; this.el = 0; }
+    this.render();
+  }
+  resize() { if (!this.ok) return; const w = this.host.clientWidth, h = this.host.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  update(surf, mode, ov) { this.last = { surf, mode, ov: ov || {} }; if (this.ok) this.build(); }
+  setOverlay(patch) { if (!this.last) return; Object.assign(this.last.ov, patch); if (this.ok && this.patches) { this.buildOverlays(); this.render(); } }
+  refresh() { if (this.ok && this.last) this.build(); }
+  static clearGroup(g) { for (const c of [...g.children]) { g.remove(c); c.geometry && c.geometry.dispose(); } }
+  build() {
+    const T = THREE, R = RL, E = EXAG, COLS = 97, DY = 0.35, { surf, mode } = this.last;
+    const B = BAND[mode], range = B.n * B.step;
+    const patches = surf.patches.map(p => Object.assign({}, p, { rows: [] }));
+    const bp = [], buv = [], bi = []; let hmin = 0;
+    for (const p of patches) {
+      const nr = Math.max(2, Math.ceil((p.yTop - p.yBot) / DY) + 1), base = bp.length / 3;
+      for (let r = 0; r < nr; r++) {
+        const y = p.yTop - (p.yTop - p.yBot) * r / (nr - 1), w = Math.sqrt(Math.max(R * R - y * y, 0)), row = [];
+        for (let c = 0; c < COLS; c++) {
+          const x = -w + 2 * w * c / (COLS - 1), h = -E * p.h(x, y);
+          let val; if (mode === 'dz') val = p.v ? p.v(x, y) : 0; else if (p.k !== null) val = mode === 'cyl' ? 0 : p.k; else { const q = princ(p.t(x, y)); val = mode === 'cyl' ? q.cyl : q.mean; }
+          bp.push(x, y, h); buv.push(clamp((val / B.step + B.off) / B.n + 1e-6, 0, 0.9999), 0.5); if (h < hmin) hmin = h; row.push(h);
+        }
+        p.rows.push({ y, w, h: row });
+      }
+      for (let r = 0; r < nr - 1; r++) for (let c = 0; c < COLS - 1; c++) { const a = base + r * COLS + c, b = a + 1, d = a + COLS, e = d + 1; bi.push(a, d, b, b, d, e); }
+    }
+    const zBack = hmin - 2.5; this.zc = zBack / 2; this.patches = patches;
+    const mk = (pos, idx, nor, uv) => { const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+      if (uv) g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); if (idx) g.setIndex(idx); if (nor) g.setAttribute('normal', new T.Float32BufferAttribute(nor, 3)); else g.computeVertexNormals(); return g; };
+    const mkLine = pos => { const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); return g; };
+    Lens3D.clearGroup(this.surfGroup);
+    this.surfGroup.add(new T.Mesh(mk(bp, bi, null, buv), this.mats[mode]));
+    // ledge walls at each sharp seam
+    if (surf.ledges && patches.length > 1) {
+      const lp = [], ln = [], li = [], crest = [];
+      for (let i = 0; i < patches.length - 1; i++) {
+        const up = patches[i].rows[patches[i].rows.length - 1], dn = patches[i + 1].rows[0], base = lp.length / 3;
+        for (let c = 0; c < COLS; c++) { const x = -up.w + 2 * up.w * c / (COLS - 1);
+          lp.push(x, up.y, up.h[c], x, up.y, dn.h[c]); ln.push(0, -1, 0, 0, -1, 0);
+          if (c < COLS - 1) { const a = base + 2 * c; li.push(a, a + 1, a + 2, a + 2, a + 1, a + 3);
+            crest.push(x, up.y, up.h[c] + 0.02, -up.w + 2 * up.w * (c + 1) / (COLS - 1), up.y, up.h[c + 1] + 0.02); } }
+      }
+      this.surfGroup.add(new T.Mesh(mk(lp, li, ln), this.mats.ledge));
+      this.surfGroup.add(new T.LineSegments(mkLine(crest), this.mats.line));
+    }
+    // outer edge wall, rim outline and back face
+    const wp = [], wn = [], wi = [], rim = [];
+    for (const side of [-1, 1]) for (const p of patches) {
+      const base = wp.length / 3, rows = p.rows, ci = side < 0 ? 0 : COLS - 1;
+      for (let r = 0; r < rows.length; r++) { const ro = rows[r], x = side * ro.w, hf = ro.h[ci];
+        wp.push(x, ro.y, hf, x, ro.y, zBack); wn.push(x / R, ro.y / R, 0, x / R, ro.y / R, 0);
+        if (r < rows.length - 1) { const a = base + 2 * r, r2 = rows[r + 1]; wi.push(a, a + 1, a + 2, a + 2, a + 1, a + 3);
+          rim.push(x, ro.y, hf + 0.02, side * r2.w, r2.y, r2.h[ci] + 0.02); } }
+    }
+    this.surfGroup.add(new T.Mesh(mk(wp, wi, wn), this.mats.edge));
+    this.surfGroup.add(new T.LineSegments(mkLine(rim), this.mats.line));
+    const back = new T.Mesh(new T.CircleGeometry(R, 96), this.mats.edge); back.position.z = zBack; back.rotation.y = Math.PI; this.surfGroup.add(back);
+    this.buildOverlays();
+    if (this.tag) this.tag.textContent = E === 1 ? 'true depth' : `depth magnified ×${E}`;
+    this.render();
+  }
+  heightAt(x, y) { for (const p of this.patches) if (y <= p.yTop + 1e-9 && y >= p.yBot - 1e-9) return -EXAG * p.h(x, y); return 0; }
+  buildOverlays() {
+    const T = THREE, ov = this.last.ov, g = this.ovGroup, lift = 0.12;
+    Lens3D.clearGroup(g);
+    const P = (x, y, up = lift) => new T.Vector3(x, y, this.heightAt(x, y) + up);
+    const line = (pts, mat, loop = false) => { const geo = new T.BufferGeometry().setFromPoints(pts); const l = loop ? new T.LineLoop(geo, mat) : new T.Line(geo, mat); if (mat.isLineDashedMaterial) l.computeLineDistances(); g.add(l); };
+    const circle = (cx, cy, r, mat, n = 48) => line(Array.from({ length: n }, (_, i) => P(cx + r * Math.cos(2 * Math.PI * i / n), cy + r * Math.sin(2 * Math.PI * i / n))), mat, true);
+    const tube = (pts, r, mat) => g.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), Math.max(8, pts.length * 3), r, 6, false), mat));
+    if (ov.slices) for (let y = -27; y <= 27.01; y += 1.5) { const w = Math.sqrt(RL * RL - y * y) - 0.15, pts = [];
+      for (let i = 0; i <= 60; i++) pts.push(P(-w + 2 * w * i / 60, y, 0.06)); line(pts, this.mats.slice); }
+    if (ov.marks) { const { L, nearX = 0 } = ov.marks, m = this.mats.mark;
+      circle(0, FC + 4.5, 2.8, m); circle(0, 0, 0.5, m, 16); circle(nearX, FC - L, 3, m);
+      line([P(-3, FC), P(-0.8, FC)], m); line([P(0.8, FC), P(3, FC)], m); line([P(0, FC + 0.8), P(0, FC + 1.6)], m); line([P(0, FC - 0.8), P(0, FC - 1.6)], m); }
+    if (ov.zones) for (const z of ov.zones) line(z.pts.map(([x, y]) => P(x, y, 0.14)), z.dotted ? this.mats.zoneDot : this.mats.zone);
+    if (ov.frame) { const f = FRAME, pts = [], arc = (cx, cy, a0) => { for (let i = 0; i <= 8; i++) { const a = a0 + Math.PI / 2 * i / 8; pts.push(P(cx + f.r * Math.cos(a), cy + f.r * Math.sin(a), 0.1)); } };
+      const L = f.cx - f.hw + f.r, Rr = f.cx + f.hw - f.r, Tt = f.cy + f.hh - f.r, Bb = f.cy - f.hh + f.r;
+      arc(Rr, Tt, 0); arc(L, Tt, Math.PI / 2); arc(L, Bb, Math.PI); arc(Rr, Bb, 1.5 * Math.PI); pts.push(pts[0].clone()); line(pts, this.mats.frame); }
+    if (ov.bracket) { const { y, x1, x2 } = ov.bracket, pts = []; for (let i = 0; i <= 16; i++) pts.push(P(x1 + (x2 - x1) * i / 16, y, 0.35));
+      tube(pts, 0.28, this.mats.bracket); for (const x of [x1, x2]) tube([P(x, y, 0.1), P(x, y, 3.2)], 0.28, this.mats.bracket); }
+    if (ov.probe) { const { x, y, p } = ov.probe, s = new T.Mesh(new T.SphereGeometry(0.75, 16, 12), this.mats.probe); s.position.copy(P(x, y, 0.5)); g.add(s);
+      const dir = (a, mat, len) => { const pts = []; for (let i = -6; i <= 6; i++) { const t = len * i / 6, px = x + t * Math.cos(a), py = y + t * Math.sin(a); if (px * px + py * py < RL * RL) pts.push(P(px, py, 0.3)); } if (pts.length > 2) tube(pts, 0.22, mat); };
+      if (p && p.cyl >= 0.12) { dir(p.th, this.mats.dirMax, 4.5); dir(p.th + Math.PI / 2, this.mats.dirMin, 3.2); } }
+  }
+  render() {
+    if (!this.ok) return; const D = 138, c = this.camera, zc = this.zc || 0;
+    c.position.set(D * Math.cos(this.el) * Math.sin(this.az), D * Math.sin(this.el), zc + D * Math.cos(this.el) * Math.cos(this.az));
+    c.up.set(0, 1, 0); c.lookAt(0, -2, zc); this.renderer.render(this.scene, c);
+  }
+}
+
+/* ---------- segmented control helper ---------- */
+function seg(id, onChange) {
+  const el = document.getElementById(id), btns = $$('button', el);
+  const set = v => { btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); };
+  btns.forEach(b => b.addEventListener('click', () => { set(b.dataset.v); onChange(b.dataset.v); }));
+  return { set, get: () => (btns.find(b => b.getAttribute('aria-pressed') === 'true') || btns[0]).dataset.v };
+}
+function raf(fn) { let q = false; return () => { if (q) return; q = true; requestAnimationFrame(() => { q = false; fn(); }); }; }
+
+/* ---------- staircase model: quarter turn, walking line down the middle ---------- */
+/* Units mm. Flight A runs north along x = 0, turns right around C = (rw, 0), flight B runs east.
+   Offset u > 0 is toward the inside of the turn. Step lines pass through fixed points on the
+   walking line (spacing g) and may pivot by an angle phi from square. */
+function makeStair(o) {
+  const g = o.g, W = o.W, nA = o.nA, nB = o.nB, nT = o.nT, rw = nT * g / (Math.PI / 2);
+  const LA = nA * g, ARC = nT * g, LB = nB * g, C = [rw, 0], nLines = nA + nT + nB + 1;
+  function walk(s) {
+    if (s <= LA) return { p: [0, s - LA], n: [1, 0] };
+    if (s <= LA + ARC) { const a = Math.PI - (s - LA) / rw; return { p: [C[0] + rw * Math.cos(a), C[1] + rw * Math.sin(a)], n: [-Math.cos(a), -Math.sin(a)] }; }
+    return { p: [rw + (s - LA - ARC), rw], n: [0, -1] };
+  }
+  const lineDir = (i, phi) => { const w = walk(i * g), c = Math.cos(phi), s = Math.sin(phi); return { p: w.p, d: [w.n[0] * c - w.n[1] * s, w.n[0] * s + w.n[1] * c] }; };
+  // where step line (p, d) crosses the path at offset u: arc length along that path, and the point
+  function cross(L, u, phi) {
+    const { p, d } = L, rho = rw - u, t0 = u / Math.max(Math.cos(phi), 0.2), cand = [];
+    if (Math.abs(d[0]) > 1e-9) { const t = (u - p[0]) / d[0], y = p[1] + t * d[1]; if (y <= 1e-6) cand.push({ t, s: y + LA, x: u, y }); }
+    { const q = [p[0] - C[0], p[1] - C[1]], b = q[0] * d[0] + q[1] * d[1], c = q[0] * q[0] + q[1] * q[1] - rho * rho, disc = b * b - c;
+      if (disc >= 0) for (const sg of [-1, 1]) { const t = -b + sg * Math.sqrt(disc), x = p[0] + t * d[0], y = p[1] + t * d[1];
+        let a = Math.atan2(y - C[1], x - C[0]); if (a < 0) a += 2 * Math.PI;
+        if (a >= Math.PI / 2 - 1e-7 && a <= Math.PI + 1e-7) cand.push({ t, s: LA + rho * (Math.PI - a), x, y }); } }
+    if (Math.abs(d[1]) > 1e-9) { const t = (rho - p[1]) / d[1], x = p[0] + t * d[0]; if (x >= rw - 1e-6) cand.push({ t, s: LA + rho * Math.PI / 2 + (x - rw), x, y: rho }); }
+    let best = null; for (const c of cand) if (!best || Math.abs(c.t - t0) < Math.abs(best.t - t0)) best = c;
+    return best;
+  }
+  // point on the path at offset u, arc length s
+  function pathPoint(u, s) {
+    const rho = rw - u;
+    if (s <= LA) return [u, s - LA];
+    if (s <= LA + rho * Math.PI / 2) { const a = Math.PI - (s - LA) / rho; return [C[0] + rho * Math.cos(a), C[1] + rho * Math.sin(a)]; }
+    return [rw + (s - LA - rho * Math.PI / 2), rho];
+  }
+  function goings(phis, u) { // tread depths along offset u
+    const out = []; let prev = cross(lineDir(0, phis[0]), u, phis[0]);
+    for (let i = 1; i < nLines; i++) { const c = cross(lineDir(i, phis[i]), u, phis[i]); out.push(c && prev ? c.s - prev.s : NaN); prev = c; }
+    return out;
+  }
+  function residuals(phis, lam) {
+    const ei = goings(phis, W / 2).map(v => v - g), eo = goings(phis, -W / 2).map(v => v - g), r = [];
+    for (let i = 0; i < ei.length; i++) r.push(ei[i], eo[i]);
+    const sl = Math.sqrt(lam);
+    for (let i = 0; i + 1 < ei.length; i++) r.push(sl * (ei[i + 1] - ei[i]), sl * (eo[i + 1] - eo[i]));
+    return r.map(v => isFinite(v) ? v : 1e4);
+  }
+  const score = (phis, lam) => residuals(phis, lam).reduce((a, v) => a + v * v, 0);
+  function freeLines(k) { const a = nA + 1 - k, b = nA + nT - 1 + k, f = []; for (let i = Math.max(1, a); i <= Math.min(nLines - 2, b); i++) f.push(i); return f; }
+  function optimize(k, lam) {
+    const free = freeLines(k), phis = new Array(nLines).fill(0);
+    if (!free.length) return phis;
+    let mu = 1e-3, r = residuals(phis, lam), f = r.reduce((a, v) => a + v * v, 0);
+    for (let it = 0; it < 60; it++) {
+      const m = r.length, n = free.length, J = [];
+      for (let j = 0; j < n; j++) { const ph = phis.slice(); ph[free[j]] += 1e-6; const r2 = residuals(ph, lam); J.push(r2.map((v, i) => (v - r[i]) / 1e-6)); }
+      const A = [], bv = [];
+      for (let a = 0; a < n; a++) { A.push([]); let s = 0; for (let i = 0; i < m; i++) s += J[a][i] * r[i]; bv.push(-s);
+        for (let b = 0; b < n; b++) { let t = 0; for (let i = 0; i < m; i++) t += J[a][i] * J[b][i]; A[a].push(t); } }
+      let improved = false;
+      for (let tries = 0; tries < 8 && !improved; tries++) {
+        const M = A.map((row, a) => row.map((v, b) => v + (a === b ? mu * (1 + A[a][a]) : 0)));
+        const dlt = solveLin(M, bv.slice()); const ph = phis.slice();
+        free.forEach((li, j) => { ph[li] = clamp(ph[li] + dlt[j], -1.1, 1.1); });
+        const r2 = residuals(ph, lam), f2 = r2.reduce((a, v) => a + v * v, 0);
+        if (f2 < f) { for (const li of free) phis[li] = ph[li]; r = r2; const df = f - f2; f = f2; mu = Math.max(mu / 3, 1e-9); improved = true; if (df < 1e-9 * f) it = 999; }
+        else mu *= 4;
+      }
+      if (!improved) break;
+    }
+    return phis;
+  }
+  return { g, W, nA, nB, nT, rw, LA, ARC, LB, C, nLines, walk, lineDir, cross, pathPoint, goings, score, optimize, freeLines };
+}
+function solveLin(A, b) {
+  const n = b.length;
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [b[c], b[p]] = [b[p], b[c]];
+    const d = A[c][c] || 1e-12;
+    for (let r = c + 1; r < n; r++) { const f = A[r][c] / d; if (!f) continue; for (let k = c; k < n; k++) A[r][k] -= f * A[c][k]; b[r] -= f * b[c]; }
+  }
+  const x = new Array(n).fill(0);
+  for (let r = n - 1; r >= 0; r--) { let s = b[r]; for (let k = r + 1; k < n; k++) s -= A[r][k] * x[k]; x[r] = s / (A[r][r] || 1e-12); }
+  return x;
+}
+
+
+/* =========================================================
+   BLOG POST FIGURES
+   ========================================================= */
+/* modes: ?embed=1 or #embed hides the title (the blog post has its own); #fig=N shows only figure N.
+   The hash keeps one URL for every figure, so a page with several figures downloads this file once. */
+const MODE = new URLSearchParams(location.search.slice(1) + '&' + location.hash.slice(1));
+const FIG = +(MODE.get('fig') || 0);
+if (MODE.has('embed') || FIG) document.documentElement.classList.add('embed');
+if (FIG) { document.documentElement.classList.add('figmode'); $$('figure').forEach((f, i) => { if (i + 1 === FIG) f.classList.add('solo'); }); }
+readRamps();
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+/* ---- blur legend in words ---- */
+function blurLegend(el, kind) {
+  const R = RAMP.cyl, words = kind === 'stair' ? ['right', '', '4 cm', '', '8 cm', '', '12 cm', '', '16 cm+'] : ['clear', '', 'slight', '', 'noticeable', '', 'strong', '', 'very strong'];
+  el.innerHTML = R.map((c, i) => `<span class="sw"><i style="background:rgb(${c.join(',')})"></i>${words[i] || '&nbsp;'}</span>`).join('') +
+    `<span class="cap">${kind === 'stair' ? 'How far a step is from the right depth' : kind === 'both' ? 'Pale is right, darker is further off: step depth on the stairs, blur on the lens' : 'Blur, from clear to strong'}</span>`;
+}
+
+/* ---- Figure 1 and 2: side views of a staircase ---- */
+function sideStairs(svg, n, opts = {}) {
+  const W = +svg.viewBox.baseVal.width, H = +svg.viewBox.baseVal.height;
+  const x0 = opts.x0 ?? 70, x1 = opts.x1 ?? W - 40, yTop = opts.yTop ?? 42, yBot = opts.yBot ?? H - 40;
+  const ink = '#141414', fill = '#E4E4DE', powCols = LENS_PAL.pow;
+  let g = `<rect x="0" y="${yBot}" width="${W}" height="${H - yBot}" fill="#D9D9D2"/>`;
+  g += `<rect x="0" y="${yTop - 6}" width="${x0}" height="6" fill="${ink}"/>`;
+  let path = `M0 ${yTop} H${x0}`;
+  const steps = n === 0 ? 0 : n;
+  if (steps) {
+    const dx = (x1 - x0) / steps, dy = (yBot - yTop) / steps;
+    for (let i = 0; i < steps; i++) {
+      const xa = x0 + i * dx, ya = yTop + i * dy;
+      path += ` V${ya + dy} H${xa + dx}`;
+      const col = powCols[Math.min(powCols.length - 1, Math.round((i + 1) / steps * (powCols.length - 2)) + 1)];
+      g += `<rect x="${xa + 0.5}" y="${ya + dy}" width="${dx}" height="${yBot - ya - dy}" fill="${col}" opacity=".55"/>`;
+    }
+  } else {
+    path += ` L${x1} ${yBot}`;
+    g += `<path d="M${x0} ${yTop} L${x1} ${yBot} V${yBot} H${x0} Z" fill="${powCols[3]}" opacity=".45"/>`;
+    for (let i = 1; i < 40; i++) { const x = x0 + (x1 - x0) * i / 40, y = yTop + (yBot - yTop) * i / 40; g += `<path d="M${x - 1.6} ${y - 1.6} v1.6 h1.6" stroke="${ink}" stroke-width=".6" fill="none" opacity=".35"/>`; }
+  }
+  path += ` H${W}`;
+  g += `<path d="${path}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const lab = (x, y, t, anchor = 'start', w = 600) => `<text x="${x}" y="${y}" font-size="14" font-weight="${w}" fill="${ink}" text-anchor="${anchor}" style="paint-order:stroke;stroke:#F4F4F1;stroke-width:4px">${t}</text>`;
+  g += lab(8, yTop - 14, 'Far away');
+  g += lab(W - 8, yBot + 22, 'Reading', 'end');
+  if (n === 2) { const dx = (x1 - x0) / 2, dy = (yBot - yTop) / 2; g += lab(x0 + dx + 4, yTop + dy - 10, "Arm's length"); }
+  if (n === 1) g += lab(x0 + 10, (yTop + yBot) / 2, 'one big step', 'start', 400);
+  if (n === 0) g += lab(x0 + (x1 - x0) * 0.55, yTop + (yBot - yTop) * 0.42, 'hundreds of tiny steps', 'start', 400);
+  svg.innerHTML = g;
+}
+function drawF1() {
+  const svg = $('#f1'), ink = '#141414', P = LENS_PAL.pow;
+  let g = '';
+  // lens, front view: three zones
+  const lx = 30, ly = 30, lw = 190, lh = 240;
+  g += `<defs><clipPath id="f1clip"><rect x="${lx}" y="${ly}" width="${lw}" height="${lh}" rx="70"/></clipPath><linearGradient id="f1g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${P[0]}"/><stop offset=".38" stop-color="${P[1]}"/><stop offset=".62" stop-color="${P[3]}"/><stop offset="1" stop-color="${P[5]}"/></linearGradient></defs>`;
+  g += `<rect x="${lx}" y="${ly}" width="${lw}" height="${lh}" rx="70" fill="url(#f1g)" stroke="${ink}" stroke-width="2.5"/>`;
+  const zl = (y, t, c) => `<text x="${lx + lw / 2}" y="${y}" font-size="15" font-weight="600" fill="${c}" text-anchor="middle">${t}</text>`;
+  g += zl(ly + 62, 'Far away', ink) + zl(ly + 132, "Arm's length", ink) + zl(ly + 206, 'Reading', '#FFFFFF');
+  // staircase going down, floors at the same heights
+  const sx0 = 330, sx1 = 610, yF = ly + 56, yR = ly + 200, n = 9, dx = (sx1 - sx0) / n, dy = (yR - yF) / n;
+  let p = `M${sx0 - 50} ${yF} H${sx0}`;
+  for (let i = 0; i < n; i++) { p += ` V${yF + (i + 1) * dy} H${sx0 + (i + 1) * dx}`; const col = P[Math.min(6, 1 + Math.round(i / n * 5))]; g += `<rect x="${sx0 + i * dx}" y="${yF + (i + 1) * dy}" width="${dx + .5}" height="${yR + 30 - yF - (i + 1) * dy}" fill="${col}" opacity=".55"/>`; }
+  p += ` H${sx1 + 20}`;
+  g += `<rect x="${sx0 - 50}" y="${yR + 30}" width="${sx1 - sx0 + 70}" height="8" fill="#D9D9D2"/>`;
+  g += `<path d="${p}" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const fl = (x, y, t, a = 'start') => `<text x="${x}" y="${y}" font-size="14" font-weight="600" fill="${ink}" text-anchor="${a}" style="paint-order:stroke;stroke:#F4F4F1;stroke-width:4px">${t}</text>`;
+  g += fl(sx0 - 50, yF - 12, 'Far away') + fl(sx0 + 4.5 * dx + 10, yF + 4.5 * dy - 14, "Arm's length") + fl(sx1 + 20, yR - 12, 'Reading', 'end');
+  // connectors
+  const dash = (y, x2) => `<path d="M${lx + lw + 6} ${y} H${x2}" fill="none" stroke="#6B4FA0" stroke-width="1.6" stroke-dasharray="4 4"/><circle cx="${x2}" cy="${y}" r="3" fill="#6B4FA0"/>`;
+  g += dash(yF, sx0 - 50) + dash(yF + 4.5 * dy, sx0 + 4.5 * dx) + dash(yR, sx1 - 40);
+  g += `<text x="${(sx0 + sx1) / 2}" y="${yR + 58}" font-size="12.5" fill="#5E5E5E" text-anchor="middle">each step down adds a little power</text>`;
+  svg.innerHTML = g;
+}
+
+/* ---- Figure 2: steps to progressive ---- */
+const F2TEXT = {
+  1: '<b>Bifocal: one big step.</b> Distance above the line, reading below it. You can see the line, things jump as your eye crosses it, and nothing is clear at arm\'s length.',
+  2: '<b>Trifocal: two steps with a landing.</b> The landing is for arm\'s length: a computer or a dashboard. The jumps are smaller, but there are two lines to cross.',
+  6: '<b>Six steps.</b> Gentler jumps, more edges. Look at the orange edges on the lens: flush in the middle, and taller and taller toward the sides.',
+  0: '<b>Progressive: hundreds of tiny steps.</b> No lines and no jumps, and every distance gets its own spot on the way down. But the steps still don\'t line up at the sides. That is where the trouble starts.'
+};
+const f2 = { n: 1 };
+let v2 = null, v3 = null;
+function drawF2() {
+  const N = f2.n === 0 ? Infinity : f2.n, m = buildBand({ add: 2, L: 15, N, blend: 0 });
+  if (v2) v2.update(surfBand(m), 'pow', {});
+  sideStairs($('#f2-side'), f2.n);
+  $('#f2-say').innerHTML = F2TEXT[f2.n];
+}
+seg('f2-seg', v => { f2.n = +v; drawF2(); });
+
+/* ---- Figure 3: smooth the steps ---- */
+const map3 = new LensMap($('#f3-map'), { x0: -RL, x1: RL, y0: -RL, y1: RL }, null);
+map3.noProbe = true; map3.c.style.cursor = 'default';
+const f3 = { b: 0 };
+const drawF3 = raf(() => {
+  const b = f3.b, N = b >= 100 ? Infinity : 6, m = buildBand({ add: 2, L: 15, N, blend: b });
+  $('#f3-out').textContent = b === 0 ? 'six separate steps' : b >= 100 ? 'one smooth progressive' : `${b}%`;
+  if (v3) v3.update(surfBand(m), 'cyl', {});
+  map3.draw({ field: (x, y) => bandAt(m, x, y), mode: 'cyl', L: 15, seams: m.sharp ? m.seams : null, tickStep: 4, noMarks: true });
+});
+$('#f3-blend').addEventListener('input', e => { f3.b = +e.target.value; drawF3(); });
+
+/* ---- staircases: geometry, plan, 3D, bars ---- */
+const ST_LAM = 1, ST_RISE = 180, ST_STRIPS = 14, ST_ALONG = 5;
+const STAIRS = {}, stairOf = key => STAIRS[key] || (STAIRS[key] = (() => {
+  const S = makeStair({ g: 250, W: 1000, nA: 6, nT: { tight: 4, medium: 6, gentle: 9 }[key], nB: 6 });
+  S.PB = { x0: -640, x1: S.rw + S.LB + 140, y0: -S.LA - 220, y1: S.rw + S.W / 2 + 120 };
+  S.zero = new Array(S.nLines).fill(0); S.J0 = S.score(S.zero, ST_LAM); S.opt = {};
+  return S;
+})());
+function stairGeom(S, phis) {
+  const us = [], rows = [];
+  for (let j = 0; j <= ST_STRIPS; j++) { const u = S.W / 2 - S.W * j / ST_STRIPS; us.push(u); rows.push(Array.from({ length: S.nLines }, (_, i) => S.cross(S.lineDir(i, phis[i]), u, phis[i]))); }
+  return { us, rows };
+}
+function drawPlan(canvas, S, geo, s) {
+  const PB = S.PB, cw = canvas.clientWidth || 320, ch = cw * (PB.y1 - PB.y0) / (PB.x1 - PB.x0);
+  canvas.style.height = ch + 'px';
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), W = Math.round(cw * dpr), H = Math.round(ch * dpr);
+  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+  const ctx = canvas.getContext('2d'), k = cw / (PB.x1 - PB.x0), X = x => (x - PB.x0) * k, Y = y => (PB.y1 - y) * k;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cw, ch);
+  const { us, rows } = geo, P = (u, a) => S.pathPoint(u, a);
+  for (let j = 0; j < ST_STRIPS; j++) {
+    const ua = us[j], ub = us[j + 1], um = (ua + ub) / 2;
+    for (let i = 0; i < S.nLines - 1; i++) {
+      const ca = rows[j][i], cb = rows[j][i + 1], da = rows[j + 1][i], db = rows[j + 1][i + 1];
+      if (!ca || !cb || !da || !db) continue;
+      const m1 = S.cross(S.lineDir(i, s.phis[i]), um, s.phis[i]), m2 = S.cross(S.lineDir(i + 1, s.phis[i + 1]), um, s.phis[i + 1]);
+      const col = RAMP.cyl[bandOf('stair', Math.abs(m2.s - m1.s - S.g))];
+      ctx.beginPath();
+      for (let q = 0; q <= ST_ALONG; q++) { const p = P(ua, ca.s + (cb.s - ca.s) * q / ST_ALONG); q ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); }
+      for (let q = ST_ALONG; q >= 0; q--) { const p = P(ub, da.s + (db.s - da.s) * q / ST_ALONG); ctx.lineTo(X(p[0]), Y(p[1])); }
+      ctx.closePath(); ctx.fillStyle = `rgb(${col.join(',')})`; ctx.fill(); ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 1.1; ctx.stroke();
+    }
+  }
+  ctx.strokeStyle = '#141414'; ctx.lineWidth = 1.2;
+  for (let i = 0; i < S.nLines; i++) { const a = rows[0][i], b = rows[ST_STRIPS][i]; if (!a || !b) continue; ctx.beginPath(); ctx.moveTo(X(a.x), Y(a.y)); ctx.lineTo(X(b.x), Y(b.y)); ctx.stroke(); }
+  ctx.lineWidth = 2;
+  for (const j of [0, ST_STRIPS]) { const u = us[j], a = rows[j][0].s, b = rows[j][S.nLines - 1].s; ctx.beginPath();
+    for (let q = 0; q <= 160; q++) { const p = P(u, a + (b - a) * q / 160); q ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); } ctx.stroke(); }
+  ctx.fillStyle = '#56656B'; ctx.beginPath(); ctx.arc(X(S.C[0]), Y(S.C[1]), Math.max(2.5, 55 * k), 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = '#6B4FA0'; ctx.fillStyle = '#6B4FA0'; ctx.lineWidth = 1.8; ctx.setLineDash([3, 4]); ctx.beginPath();
+  for (let q = 0; q <= 200; q++) { const p = S.walk(q / 200 * (S.nLines - 1) * S.g).p; q ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); }
+  ctx.stroke(); ctx.setLineDash([]);
+  for (let i = 0; i < S.nLines; i++) { const p = S.walk(i * S.g).p; ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 2.8, 0, 2 * Math.PI); ctx.fill(); }
+  if (s.u !== undefined && Math.abs(s.u) > 1) { const cs = Array.from({ length: S.nLines }, (_, i) => S.cross(S.lineDir(i, s.phis[i]), s.u, s.phis[i]));
+    ctx.fillStyle = '#141414';
+    for (let i = 0; i < S.nLines - 1; i++) { const p = P(s.u, (cs[i].s + cs[i + 1].s) / 2); ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), 3.4, 0, 2 * Math.PI); ctx.fill(); } }
+  ctx.font = '500 11px Archivo, Arial, sans-serif'; ctx.fillStyle = '#5E5E5E';
+  ctx.textAlign = 'center'; ctx.fillText('start', X(0), Math.min(ch - 3, Y(-S.LA) + 15));
+  ctx.textAlign = 'left'; ctx.fillText('inside', X(S.C[0]) + 8, Y(S.C[1]) + 16);
+  ctx.fillText('outside', X(-S.W / 2 + 10), Math.max(11, Y(S.rw + S.W / 2) - 6));
+}
+class Stair3D {
+  constructor(host) {
+    this.host = host; this.az = -0.55; this.el = 0.88; this.ok = false; this.started = false; this.last = null;
+    const start = () => { if (this.started) return; this.started = true; this.init(); if (this.ok && this.last) this.build(); };
+    if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '500px 0px' }); io.observe(host); } else start();
+  }
+  init() {
+    if (!window.THREE) { this.host.insertAdjacentHTML('beforeend', '<div class="fallback">The 3D view could not load. The view from above shows the same staircase.</div>'); return; }
+    try {
+      const T = THREE, lin = h => new T.Color(h).convertSRGBToLinear();
+      this.renderer = new T.WebGLRenderer({ antialias: true, alpha: true }); this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); this.renderer.setClearColor(0, 0); this.renderer.outputEncoding = T.sRGBEncoding;
+      this.host.insertBefore(this.renderer.domElement, this.host.firstChild);
+      this.scene = new T.Scene(); this.camera = new T.PerspectiveCamera(30, 4 / 3, 1, 4000);
+      this.scene.add(new T.HemisphereLight(0xffffff, 0x5a666c, 0.55));
+      const d = new T.DirectionalLight(0xffffff, 0.75); d.position.set(-60, -90, 140); this.scene.add(d);
+      const d2 = new T.DirectionalLight(0xffffff, 0.25); d2.position.set(90, 60, 60); this.scene.add(d2);
+      this.group = new T.Group(); this.scene.add(this.group);
+      const data = new Uint8Array(RAMP.cyl.length * 4); RAMP.cyl.forEach((c, i) => data.set([c[0], c[1], c[2], 255], i * 4));
+      const tx = new T.DataTexture(data, RAMP.cyl.length, 1, T.RGBAFormat); tx.magFilter = tx.minFilter = T.NearestFilter; tx.generateMipmaps = false; tx.encoding = T.sRGBEncoding; tx.needsUpdate = true;
+      this.mats = {
+        top: new T.MeshPhongMaterial({ map: tx, shininess: 20, side: T.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }),
+        riser: new T.MeshPhongMaterial({ color: lin('#DCE3E2'), shininess: 10, side: T.DoubleSide }),
+        side: new T.MeshPhongMaterial({ color: lin('#9AAAB0'), shininess: 10, side: T.DoubleSide }),
+        edge: new T.LineBasicMaterial({ color: lin('#10232B') }),
+        walk: new T.LineDashedMaterial({ color: lin('#6B4FA0'), dashSize: 1.2, gapSize: 1.2 }),
+        pivot: new T.MeshPhongMaterial({ color: lin('#6B4FA0') }), foot: new T.MeshPhongMaterial({ color: lin('#10232B') }),
+        newel: new T.MeshPhongMaterial({ color: lin('#56656B'), shininess: 30 })
+      };
+      this.ok = true;
+      const el = this.renderer.domElement; let drag = null;
+      el.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, az: this.az, el: this.el, type: e.pointerType }; if (e.pointerType === 'mouse') el.setPointerCapture(e.pointerId); });
+      el.addEventListener('pointermove', e => { if (!drag) return; this.az = drag.az - (e.clientX - drag.x) * 0.008; if (drag.type === 'mouse') this.el = clamp(drag.el + (e.clientY - drag.y) * 0.008, 0.05, 1.5); this.render(); });
+      const end = () => { drag = null; }; el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+      this.resize(); new ResizeObserver(() => { this.resize(); this.render(); }).observe(this.host);
+    } catch (e) { this.ok = false; }
+  }
+  resize() { if (!this.ok) return; const w = this.host.clientWidth, h = this.host.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  update(S, s, geo) { this.last = { S, s, geo }; if (this.ok) this.build(); }
+  build() {
+    const T = THREE, K = 1 / 50, { S, s, geo } = this.last, { us, rows } = geo, n = S.nLines;
+    for (const c of [...this.group.children]) { this.group.remove(c); c.geometry && c.geometry.dispose(); }
+    const tp = [], tuv = [], ti = [], rp = [], ri = [], sp = [], si = [], ep = [], P = (u, a) => S.pathPoint(u, a);
+    for (let i = 0; i < n - 1; i++) {
+      const z = (i + 1) * ST_RISE * K, z0 = i * ST_RISE * K, base = tp.length / 3;
+      for (let j = 0; j <= ST_STRIPS; j++) { const ca = rows[j][i], cb = rows[j][i + 1], v = clamp((Math.abs(cb.s - ca.s - S.g) / BAND.stair.step) / BAND.stair.n + 1e-6, 0, 0.9999);
+        for (let q = 0; q <= ST_ALONG; q++) { const p = P(us[j], ca.s + (cb.s - ca.s) * q / ST_ALONG); tp.push(p[0] * K, p[1] * K, z); tuv.push(v, 0.5); } }
+      const C = ST_ALONG + 1;
+      for (let j = 0; j < ST_STRIPS; j++) for (let q = 0; q < ST_ALONG; q++) { const a = base + j * C + q, b = a + 1, c = a + C, d = c + 1; ti.push(a, b, c, b, d, c); }
+      const rb = rp.length / 3;
+      for (let j = 0; j <= ST_STRIPS; j++) { const c = rows[j][i]; rp.push(c.x * K, c.y * K, z0 - 0.6 * ST_RISE * K, c.x * K, c.y * K, z); if (j < ST_STRIPS) { const a = rb + 2 * j; ri.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); } }
+      for (const j of [0, ST_STRIPS]) { const ca = rows[j][i], cb = rows[j][i + 1], sb = sp.length / 3;
+        for (let q = 0; q <= ST_ALONG; q++) { const p = P(us[j], ca.s + (cb.s - ca.s) * q / ST_ALONG); sp.push(p[0] * K, p[1] * K, z0 - 0.6 * ST_RISE * K, p[0] * K, p[1] * K, z); if (q < ST_ALONG) { const a = sb + 2 * q; si.push(a, a + 1, a + 2, a + 2, a + 1, a + 3); } } }
+      const a = rows[0][i], b = rows[ST_STRIPS][i]; ep.push(a.x * K, a.y * K, z + 0.02, b.x * K, b.y * K, z + 0.02);
+      for (const j of [0, ST_STRIPS]) { const ca = rows[j][i], cb = rows[j][i + 1]; for (let q = 0; q < ST_ALONG; q++) { const p1 = P(us[j], ca.s + (cb.s - ca.s) * q / ST_ALONG), p2 = P(us[j], ca.s + (cb.s - ca.s) * (q + 1) / ST_ALONG); ep.push(p1[0] * K, p1[1] * K, z + 0.02, p2[0] * K, p2[1] * K, z + 0.02); } }
+    }
+    const mk = (pos, idx, uv) => { const g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); if (uv) g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); if (idx) { g.setIndex(idx); g.computeVertexNormals(); } return g; };
+    this.group.add(new T.Mesh(mk(tp, ti, tuv), this.mats.top), new T.Mesh(mk(rp, ri), this.mats.riser), new T.Mesh(mk(sp, si), this.mats.side), new T.LineSegments(mk(ep), this.mats.edge));
+    const wl = [];
+    for (let i = 0; i < n - 1; i++) { const z = (i + 1) * ST_RISE * K + 0.05; for (let q = 0; q < 6; q++) { const p1 = S.walk((i + q / 6) * S.g).p, p2 = S.walk((i + (q + 1) / 6) * S.g).p; wl.push(p1[0] * K, p1[1] * K, z, p2[0] * K, p2[1] * K, z); } }
+    const wlm = new T.LineSegments(mk(wl), this.mats.walk); wlm.computeLineDistances(); this.group.add(wlm);
+    if (Math.abs(s.u) > 1) { const cs = Array.from({ length: n }, (_, i) => S.cross(S.lineDir(i, s.phis[i]), s.u, s.phis[i])), fg = new T.CylinderGeometry(0.75, 0.75, 0.16, 16); fg.rotateX(Math.PI / 2);
+      for (let i = 0; i < n - 1; i++) { const p = P(s.u, (cs[i].s + cs[i + 1].s) / 2), m = new T.Mesh(fg, this.mats.foot); m.position.set(p[0] * K, p[1] * K, (i + 1) * ST_RISE * K + 0.1); this.group.add(m); } }
+    const ph = (S.nA + S.nT + 2) * ST_RISE * K, post = new T.CylinderGeometry(1.1, 1.1, ph, 16); post.rotateX(Math.PI / 2);
+    const pm = new T.Mesh(post, this.mats.newel); pm.position.set(S.C[0] * K, S.C[1] * K, ph / 2); this.group.add(pm);
+    const PB = S.PB; this.target = new T.Vector3((PB.x0 + PB.x1) / 2 * K, (PB.y0 + PB.y1) / 2 * K, S.nLines * ST_RISE * K * 0.42);
+    this.D = 2.0 * Math.max(PB.x1 - PB.x0, PB.y1 - PB.y0) * K + 20;
+    this.render();
+  }
+  render() {
+    if (!this.ok || !this.target) return; const D = this.D, c = this.camera, t = this.target;
+    c.position.set(t.x + D * Math.cos(this.el) * Math.cos(this.az), t.y + D * Math.cos(this.el) * Math.sin(this.az), t.z + D * Math.sin(this.el));
+    c.up.set(0, 0, 1); c.lookAt(t); this.renderer.render(this.scene, c);
+  }
+}
+function drawBars(box, depths, S) {
+  const Wv = Math.max(300, Math.round(box.clientWidth || 600)), Hv = Wv < 480 ? 190 : 210, m = { l: 30, r: 8, t: 16, b: 24 }, iw = Wv - m.l - m.r, ih = Hv - m.t - m.b, n = depths.length, bw = iw / n;
+  box._layout = { Wv, l: m.l, iw, depths };
+  const Yv = v => m.t + ih - v / 50 * ih;
+  let svg = `<svg viewBox="0 0 ${Wv} ${Hv}" role="img" aria-label="Depth of each step along your path">`;
+  const t0 = m.l + S.nA * bw, t1 = m.l + (S.nA + S.nT) * bw;
+  svg += `<rect x="${t0}" y="${m.t}" width="${t1 - t0}" height="${ih}" fill="#E4E4DE"/><text x="${(t0 + t1) / 2}" y="${m.t + 11}" text-anchor="middle">turn</text>`;
+  for (const v of [0, 10, 20, 30, 40, 50]) svg += `<line x1="${m.l}" x2="${Wv - m.r}" y1="${Yv(v)}" y2="${Yv(v)}" stroke="#DEDEDE"/><text x="${m.l - 6}" y="${Yv(v) + 4}" text-anchor="end">${v}</text>`;
+  depths.forEach((d, i) => { const cm = d / 10, x = m.l + i * bw + 1, w = bw - 2, y = Yv(cm), y0 = Yv(0), r = Math.min(4, (y0 - y) / 2, w / 2);
+    svg += `<path class="bar" data-i="${i}" d="M${x},${y0} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y0} Z"/>`;
+    if (i === 0 || (i + 1) % 4 === 0 || i === n - 1) svg += `<text x="${x + w / 2}" y="${Hv - 8}" text-anchor="middle">${i + 1}</text>`; });
+  svg += `<line x1="${m.l}" x2="${Wv - m.r}" y1="${Yv(25)}" y2="${Yv(25)}" stroke="#6B4FA0" stroke-width="2" stroke-dasharray="6 4"/><text x="${Wv - m.r - 2}" y="${Yv(25) - 6}" class="acc" text-anchor="end">right depth: 25 cm</text></svg>`;
+  box.innerHTML = svg;
+}
+function barTips(box, tip) {
+  const hover = e => {
+    const L = box._layout; if (!L) return; const r = box.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * L.Wv, i = Math.floor((fx - L.l) / (L.iw / L.depths.length));
+    $$('.bar', box).forEach(b => b.classList.toggle('hot', +b.dataset.i === i));
+    if (i < 0 || i >= L.depths.length) { tip.hidden = true; return; }
+    const cm = L.depths[i] / 10, diff = cm - 25;
+    tip.innerHTML = `<b>Step ${i + 1}</b> ${cm.toFixed(1)} cm deep<br><span>${Math.abs(diff) < 0.05 ? 'just right' : `${Math.abs(diff).toFixed(1)} cm ${diff < 0 ? 'too shallow' : 'too deep'}`}</span>`;
+    tip.hidden = false; tip.style.left = clamp((L.l + (i + 0.5) * L.iw / L.depths.length) / L.Wv * r.width, 70, r.width - 70) + 'px';
+  };
+  box.addEventListener('pointermove', hover); box.addEventListener('pointerdown', hover);
+  box.addEventListener('pointerleave', () => { tip.hidden = true; $$('.bar', box).forEach(b => b.classList.remove('hot')); });
+}
+
+/* ---- Figure 4: the turning staircase ---- */
+const f4 = { walk: -40, turn: 'tight' };
+let v4 = null;
+const walkWords = w => w === 0 ? 'on the walking line' : w < 0 ? `${-w} cm toward the inside` : `${w} cm toward the outside`;
+const drawF4 = raf(() => {
+  const S = stairOf(f4.turn), s = { phis: S.zero, u: -f4.walk * 10 }, geo = stairGeom(S, s.phis), d = S.goings(s.phis, s.u);
+  $('#f4-walk-out').textContent = walkWords(f4.walk);
+  $('#f4-title').textContent = `Walking ${walkWords(f4.walk)}: steps from ${(Math.min(...d) / 10).toFixed(1)} to ${(Math.max(...d) / 10).toFixed(1)} cm deep`;
+  drawPlan($('#f4-plan'), S, geo, s); drawBars($('#f4-bars'), d, S); if (v4) v4.update(S, s, geo);
+});
+$('#f4-walk').addEventListener('input', e => { f4.walk = +e.target.value; drawF4(); });
+seg('f4-seg', v => { f4.turn = v; drawF4(); });
+barTips($('#f4-bars'), $('#f4-tip'));
+
+/* ---- Figure 5: the fix, stairs and lens together ---- */
+const f5 = { t: 0, k: 3 };
+const S5 = stairOf('tight');
+const optS5 = () => S5.opt[f5.k] || (S5.opt[f5.k] = S5.optimize(f5.k, ST_LAM));
+const map5 = new LensMap($('#f5-map'), { x0: -RL, x1: RL, y0: -RL, y1: RL }, null);
+map5.noProbe = true; map5.c.style.cursor = 'default';
+const BR = DATA.bridge;
+let brBase = null;
+function bridgeBase() {
+  if (brBase) return brBase;
+  const n = DN, Ac = new Float32Array(n * n), m = buildBand({ add: 1, L: BR.L, N: Infinity, blend: 0 });
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const x = DG.x0 + j * DG.h, y = DG.x0 + i * DG.h; if (x * x + y * y <= 900 + 1e-6) Ac[i * n + j] = bandAt(m, x, y).sag; }
+  const Ao = getDesign(BR.L, BR.soft).A, dA = new Float32Array(n * n);
+  for (let k = 0; k < n * n; k++) dA[k] = Ao[k] - Ac[k];
+  return (brBase = { Ac, dA });
+}
+function bridgeAt(t) { const { Ac, dA } = bridgeBase(), A = new Float32Array(DN * DN); for (let k = 0; k < A.length; k++) A[k] = Ac[k] + t * dA[k]; return designFromA(A); }
+const stat = (big, label, from) => `<div class="stat"><b>${big}</b><span>${label}</span>${from ? `<span class="from">${from}</span>` : ''}</div>`;
+const drawF5 = raf(() => {
+  const t = f5.t, o = optS5(), s = { phis: o.map(v => v * t) }, geo = stairGeom(S5, s.phis), gi = S5.goings(s.phis, S5.W / 2);
+  $('#f5-out').textContent = t === 0 ? 'before' : t === 1 ? 'after' : `${Math.round(t * 100)}%`;
+  drawPlan($('#f5-plan'), S5, geo, s);
+  const s0 = Math.min(...S5.goings(S5.zero, S5.W / 2)) / 10;
+  $('#f5-stair').innerHTML = stat(`${(Math.min(...gi) / 10).toFixed(1)} cm`, 'Shallowest step, inside edge', t > 0 ? `before the fix: ${s0.toFixed(1)} cm` : 'before the fix') + stat('25 cm', 'Every step on the walking line', 'unchanged');
+  const d = bridgeAt(t), score = (BR.Jstar + (1 - t) ** 2 * (BR.J0 - BR.Jstar)) / BR.J0 * 100;
+  map5.draw({ field: (x, y) => designAt(d, 2, x, y), mode: 'cyl', L: BR.L, tickStep: 4, noMarks: true });
+  $('#f5-lens').innerHTML = stat(`${score.toFixed(0)}`, 'Blur score (before the fix = 100)', 'lower is better') + stat('exact', 'Power down the corridor', 'unchanged');
+});
+$('#f5-t').addEventListener('input', e => { stop5(); f5.t = +e.target.value / 100; drawF5(); });
+let play5 = null;
+function stop5() { if (play5) { cancelAnimationFrame(play5); play5 = null; $('#f5-play').textContent = '▶ Play'; map5.fast = false; drawF5(); } }
+$('#f5-play').addEventListener('click', () => {
+  if (play5) { stop5(); return; }
+  const t0 = f5.t >= 0.999 ? 0 : f5.t, dur = 4200 * (1 - t0), start = performance.now();
+  if (dur <= 0) return;
+  $('#f5-play').textContent = '❚❚ Pause'; map5.fast = true;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const step = now => { const u = reduce ? 1 : Math.min(1, (now - start) / dur), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    f5.t = t0 + (1 - t0) * e; $('#f5-t').value = Math.round(f5.t * 100); drawF5();
+    if (u < 1) play5 = requestAnimationFrame(step); else { play5 = null; $('#f5-play').textContent = '▶ Play'; map5.fast = false; drawF5(); } };
+  play5 = requestAnimationFrame(step);
+});
+
+/* ---- start ---- */
+EXAG = 8;
+blurLegend($('#f3-legend'), 'lens'); blurLegend($('#f4-legend'), 'stair'); blurLegend($('#f5-legend'), 'both');
+drawF1();
+try { v2 = new Lens3D($('#f2-3d')); v3 = new Lens3D($('#f3-3d')); v4 = new Stair3D($('#f4-3d')); } catch (e) {}
+drawF2(); drawF3(); drawF4(); drawF5();
+let rT = null; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { drawF3(); drawF4(); drawF5(); }, 150); });
+$$('input[type=range]').forEach(inp => {
+  inp.addEventListener('pointerdown', () => { [map3, map5].forEach(m => m.fast = true); });
+  const done = () => { if (![map3, map5].some(m => m.fast)) return; [map3, map5].forEach(m => m.fast = false); drawF3(); drawF5(); };
+  inp.addEventListener('pointerup', done); inp.addEventListener('change', done);
+});
+/* in a frame (the Squarespace post), tell the parent how tall the article is */
+(function () {
+  if (window.parent === window) return;
+  let last = 0;
+  const send = () => { const h = Math.ceil(document.body.getBoundingClientRect().height); if (h === last) return; last = h; window.parent.postMessage({ stairs: 'height', height: h }, '*'); };
+  if ('ResizeObserver' in window) new ResizeObserver(send).observe(document.body);
+  window.addEventListener('load', send); send();
+})();
+})();
+</script>
+</body>
+</html>

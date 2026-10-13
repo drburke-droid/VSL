@@ -1,0 +1,46 @@
+<!-- The Staircase in Your Glasses, figure 4 (A staircase that turns) on its own,
+     for the Lenses page. Each figure has its own snippet; use them as a set.
+     Paste this whole file into a Squarespace Code Block (or an Embed Block,
+     Embed code). The page inside tells this one how tall it is and the
+     script below sizes the frame to fit, so there is no inner scrollbar.
+     If scripts cannot run, the heights in the style rules are used.
+     To force browsers to fetch a new version, change ?v=1 to ?v=2. -->
+<div class="stairs-embed">
+  <iframe
+    id="stairs-fig-4"
+    src="https://drburke-droid.github.io/VSL/staircase/?v=1#fig=4"
+    title="The Staircase in Your Glasses: A staircase that turns"
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<style>
+.stairs-embed {
+  margin: 24px 0;
+}
+.stairs-embed iframe {
+  display: block;
+  width: 100%;
+  height: 890px;
+  border: 0;
+  background: #fff;
+}
+@media (max-width: 760px) {
+  .stairs-embed iframe {
+    height: 1250px;
+  }
+}
+</style>
+<script>
+(function () {
+  var f = document.getElementById('stairs-fig-4');
+  var box = f.closest ? f.closest('.embed-block-wrapper') : null;
+  if (box) { box.style.paddingBottom = '0'; box.style.height = 'auto'; }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.stairs !== 'height') return;
+    if (e.source !== f.contentWindow) return;
+    f.style.height = d.height + 'px';
+  });
+})();
+</script>

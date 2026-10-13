@@ -1807,7 +1807,7 @@ let rT = null; window.addEventListener('resize', () => { clearTimeout(rT); rT = 
   if (window.parent === window) return;
   var last = 0;
   function send() {
-    var h = Math.ceil(document.documentElement.scrollHeight);
+    var h = Math.ceil(document.body.getBoundingClientRect().height);
     if (h === last) return;
     last = h;
     window.parent.postMessage({ lensbuilder: 'height', height: h }, '*');
