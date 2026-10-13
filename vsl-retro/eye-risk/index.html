@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eye Health Risk Check</title>
+<meta name="description" content="A short questionnaire that estimates your risk level for glaucoma, macular degeneration, diabetic retinopathy, cataract, retinal detachment, keratoconus and dry eye, and suggests when to have your eyes examined.">
+<meta name="author" content="Dr Robert Burke, Calgary Vision Centre">
+<style>
+/* One light theme on purpose: it sits on the clinic's white pages, in the clinic's own look
+   (Arial, burgundy controls, warm greys), like the staircase figures on /lenses.
+   Everything runs in the browser; no answer leaves the page. */
+:root{
+  --paper:#FFFFFF; --ink:#222222; --muted:#666666; --rule:#E0DCDC; --soft:#F7F4F4; --sunk:#ECE7E7;
+  --accent:#8B1E2D; --on-accent:#FFFFFF; --focus:#1F5FBF;
+  --l0:#2E7D4F; --l1:#8A6200; --l2:#B5521B; --l3:#B42318; --known:#3B5B7A;
+  --f:Arial,Helvetica,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font:16px/1.5 var(--f);-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px}
+h1,h2,h3{margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:clamp(1.6rem,5vw,2.1rem)}
+h2{font-size:1.35rem}
+h3{font-size:1.1rem}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+.muted{color:var(--muted)}
+.small{font-size:.86rem;line-height:1.45}
+.head{display:grid;gap:8px}
+.embed .head{display:none}
+
+/* progress */
+.progress{display:grid;gap:8px}
+.steps{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+.steps li{flex:1;height:6px;border-radius:3px;background:var(--sunk)}
+.steps li.done{background:var(--accent);opacity:.45}
+.steps li.now{background:var(--accent)}
+.progress-label{font-size:.85rem;color:var(--muted)}
+
+/* questions */
+.card{border:1px solid var(--rule);border-radius:14px;padding:20px;background:var(--paper);display:grid;gap:20px}
+.step-head{display:grid;gap:6px}
+.step-head h2:focus{outline:none}
+fieldset{border:0;margin:0;padding:0;min-width:0;display:grid;gap:10px}
+legend{font-weight:700;font-size:1.02rem;padding:0;margin-bottom:2px}
+.q{display:grid;gap:10px;padding-top:18px;border-top:1px solid var(--rule)}
+.q:first-child{padding-top:0;border-top:0}
+.help{font-size:.88rem;color:var(--muted);margin-top:-4px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts.col{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.opt{position:relative;display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border:1.5px solid var(--rule);border-radius:10px;cursor:pointer;background:var(--paper);font-size:.95rem;line-height:1.35;user-select:none}
+.opt:hover{border-color:#B9B1B1;background:var(--soft)}
+.opt input{margin:2px 0 0;accent-color:var(--accent);flex:none;width:16px;height:16px}
+.opt:has(input:checked){border-color:var(--accent);background:#FBF3F4}
+.opt:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+.scale .opt{flex:1 1 0;min-width:84px;justify-content:center;text-align:center;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;font-size:.86rem}
+.scale .opt input{margin:0}
+.num{display:flex;align-items:center;gap:8px}
+.num input{width:120px;padding:10px 11px;border:1.5px solid var(--rule);border-radius:10px;font:inherit}
+.num input:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--ink)}
+.num span{color:var(--muted);font-size:.92rem}
+.nums{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.nums label{display:grid;gap:6px;font-size:.92rem;font-weight:700}
+.nums label small{font-weight:400;color:var(--muted)}
+.err{color:var(--l3);font-size:.9rem}
+.sub{border-left:3px solid var(--sunk);padding-left:14px}
+
+/* buttons */
+.nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.nav .spacer{flex:1}
+.btn{font:700 .95rem/1 var(--f);padding:12px 18px;border-radius:999px;border:1.5px solid var(--accent);background:var(--paper);color:var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#FBF3F4}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:#6F1723}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn.quiet{border-color:transparent;color:var(--muted);padding-inline:8px}
+.btn.quiet:hover{background:transparent;color:var(--ink);text-decoration:underline}
+
+/* urgent */
+.urgent{border:2px solid var(--l3);background:#FEF3F2;border-radius:14px;padding:18px 20px;display:grid;gap:10px}
+.urgent h2{color:var(--l3)}
+.urgent ul{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.urgent .call{font-size:1.05rem;font-weight:700}
+
+/* results */
+.summary{background:var(--soft);border-radius:14px;padding:20px;display:grid;gap:14px}
+.summary .big{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.pill{display:inline-block;font-weight:700;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;color:#fff;border-radius:999px;padding:5px 11px;white-space:nowrap}
+.pill.l0{background:var(--l0)} .pill.l1{background:var(--l1)} .pill.l2{background:var(--l2)} .pill.l3{background:var(--l3)} .pill.known,.pill.done{background:var(--known)}
+.pill.big{font-size:1rem;padding:7px 14px}
+.exam{display:grid;gap:4px;background:var(--paper);border-radius:10px;padding:12px 14px}
+.exam b{font-size:1.05rem}
+.results{display:grid;gap:14px}
+.res{border:1px solid var(--rule);border-radius:14px;padding:18px 20px;display:grid;gap:12px;background:var(--paper)}
+.res-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.meter{display:flex;gap:3px;width:180px;max-width:100%}
+.meter i{flex:1;height:8px;border-radius:2px;background:var(--sunk)}
+.meter.l0 i:nth-child(-n+1){background:var(--l0)}
+.meter.l1 i:nth-child(-n+2){background:var(--l1)}
+.meter.l2 i:nth-child(-n+3){background:var(--l2)}
+.meter.l3 i:nth-child(-n+4){background:var(--l3)}
+.meter-wrap{display:grid;gap:4px;justify-items:end}
+.meter-wrap span{font-size:.75rem;color:var(--muted)}
+.res .lead{font-size:1rem}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cols h4{margin:0 0 6px;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cols ul{margin:0;padding-left:1.15em;display:grid;gap:5px;font-size:.93rem}
+.f-up::marker{content:"▲  ";color:var(--l2);font-size:.75em}
+.f-down::marker{content:"▼  ";color:var(--l0);font-size:.75em}
+details{border-top:1px solid var(--rule);padding-top:10px}
+summary{cursor:pointer;font-size:.9rem;font-weight:700;color:var(--accent)}
+summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+details .body{display:grid;gap:8px;margin-top:10px;font-size:.88rem;line-height:1.45;color:#444}
+.refs{margin:0;padding-left:1.15em;display:grid;gap:4px}
+.others{font-size:.92rem;color:var(--muted)}
+.foot{border-top:1px solid var(--rule);padding-top:14px;font-size:.84rem;color:var(--muted);display:grid;gap:6px}
+.print-only{display:none}
+
+@media (max-width:640px){
+  .card,.res,.summary{padding:16px}
+  .cols{grid-template-columns:1fr}
+  .opts.col{grid-template-columns:1fr}
+  .nav .btn{flex:1 1 auto;justify-content:center}
+  .nav .spacer{display:none}
+}
+@media print{
+  body{font-size:12px}
+  .wrap{max-width:none;padding:0}
+  .no-print,.nav,.progress,#quiz{display:none!important}
+  .print-only{display:block}
+  .res,.summary{break-inside:avoid;border:1px solid #bbb}
+  details{display:block}
+  details>summary{display:none}
+  details .body{display:grid!important}
+  .pill,.meter i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <h1>Eye Health Risk Check</h1>
+    <p class="muted">About 5 minutes. Answer what you can and skip what you don't know. At the end you get a risk level for seven common eye conditions, what is driving each one, and when to have your eyes examined. Your answers stay on this page: nothing is sent or saved.</p>
+  </header>
+
+  <div class="progress" id="progress" aria-live="polite">
+    <ol class="steps" id="stepbar" aria-hidden="true"></ol>
+    <div class="progress-label" id="steplabel"></div>
+  </div>
+
+  <section id="quiz" class="card" aria-labelledby="step-title">
+    <div class="step-head">
+      <h2 id="step-title" tabindex="-1"></h2>
+      <p class="muted" id="step-intro"></p>
+    </div>
+    <form id="form" novalidate></form>
+    <div class="nav">
+      <button type="button" class="btn" id="back">← Back</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn quiet" id="skip">Skip this section</button>
+      <button type="button" class="btn primary" id="next">Next →</button>
+    </div>
+  </section>
+
+  <section id="results" hidden aria-labelledby="res-title">
+    <div style="display:grid;gap:16px">
+      <p class="print-only small">Eye Health Risk Check · printed <span id="printdate"></span> · calgaryvisioncentre.com</p>
+      <div id="urgent"></div>
+      <div class="summary" id="summary"></div>
+      <h2 id="res-title">Your results, condition by condition</h2>
+      <div class="results" id="cards"></div>
+      <p class="others" id="others"></p>
+      <div class="nav no-print">
+        <a class="btn primary" href="https://calgaryvisioncentre.com/book-an-appointment" target="_top">Book an eye exam</a>
+        <button type="button" class="btn" id="print">Print or save as PDF</button>
+        <button type="button" class="btn" id="edit">Change my answers</button>
+        <button type="button" class="btn quiet" id="restart">Start over</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p><b>This is an estimate for education, not a diagnosis.</b> It cannot see your eyes. Many eye diseases cause no symptoms until vision is lost, and an eye exam (pressure, optic nerve, retina, cornea) can change these risks a lot in either direction. If something feels wrong with your vision, don't wait for a score: call the clinic.</p>
+    <p>Risk levels are built from published studies (listed under each result) and simplified for public use. Created by Dr Robert Burke, optometrist, Calgary Vision Centre. Part of the <a href="https://calgaryvisioncentre.com/lab" target="_top">Visual Systems Lab</a>.</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+const PHONE = "403-237-0505", TEL = "tel:+14032370505";
+const BOOK = "https://calgaryvisioncentre.com/book-an-appointment";
+const MYOPIA_TOOL = "https://calgaryvisioncentre.com/myopia-risk";
+
+if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.add("embed");
+
+/* ---------- the questionnaire ----------
+   Each step is a list of questions. type: single | multi | number | scale | nums.
+   showIf(A) hides a question until it applies; hidden answers are ignored. */
+const NONE = "none";
+const has = (A, id, v) => Array.isArray(A[id]) && A[id].includes(v);
+const isDiabetic = A => A.dm === "t1" || A.dm === "t2";
+const FREQ = [["0","Never"],["1","Rarely"],["2","Sometimes"],["3","Often"],["4","Constantly"]];
+const INTENS = [["0","Never have it"],["1","1 · very mild"],["2","2"],["3","3"],["4","4"],["5","5 · very intense"]];
+
+const STEPS = [
+  { id:"you", title:"About you", intro:"Age is the strongest single risk factor for most eye diseases.", qs:[
+    { id:"age", type:"number", label:"How old are you?", min:1, max:110, unit:"years", required:true },
+    { id:"sex", type:"single", label:"Sex", help:"Some conditions are more common in women (dry eye) or men (retinal detachment).",
+      opts:[["f","Female"],["m","Male"],["x","Prefer not to say"]] },
+    { id:"anc", type:"multi", label:"Family background", help:"Several eye diseases are more common in some backgrounds. Choose any that apply.", col:true,
+      opts:[["afr","African or Caribbean"],["eas","East Asian"],["sas","South Asian"],["mena","Middle Eastern or North African"],["his","Hispanic or Latin American"],["eur","European"],["ind","Indigenous"],["oth","Other or prefer not to say"]] }
+  ]},
+  { id:"health", title:"Your general health", intro:"Diabetes, blood pressure, smoking and some medicines all affect the eyes.", qs:[
+    { id:"dm", type:"single", label:"Do you have diabetes?", col:true,
+      opts:[["no","No"],["pre","Prediabetes (borderline)"],["t1","Yes, type 1"],["t2","Yes, type 2"],["unsure","Not sure"]] },
+    { id:"dmYears", type:"number", label:"How many years since your diabetes was diagnosed?", min:0, max:90, step:0.5, unit:"years", showIf:isDiabetic, sub:true },
+    { id:"a1c", type:"single", label:"Your most recent A1c (HbA1c)", help:"The 3-month blood sugar average from your blood test.", showIf:isDiabetic, sub:true,
+      opts:[["6.5","Under 7%"],["7.5","7 to 8%"],["8.5","8 to 9%"],["9.8","9% or higher"],["unk","I don't know"]] },
+    { id:"dmKidney", type:"single", label:"Has diabetes affected your kidneys (protein in the urine or reduced kidney function)?", showIf:isDiabetic, sub:true,
+      opts:[["no","No"],["yes","Yes"],["unk","Not sure"]] },
+    { id:"preg", type:"single", label:"Are you pregnant or planning a pregnancy?", showIf:A => isDiabetic(A) && A.sex === "f" && A.age >= 14 && A.age <= 50, sub:true,
+      opts:[["no","No"],["yes","Yes"]] },
+    { id:"bp", type:"single", label:"High blood pressure?", col:true,
+      opts:[["no","No"],["ok","Yes, usually at target"],["high","Yes, often above target"],["unk","Don't know"]] },
+    { id:"smoke", type:"single", label:"Smoking", opts:[["never","Never smoked"],["former","Used to smoke"],["current","Smoke now"]] },
+    { id:"steroid", type:"single", label:"Have you used steroid medicine for months at a time?", help:"Steroid eye drops, pills like prednisone, high-dose inhalers, or steroid creams around the eyes.",
+      opts:[["no","No"],["yes","Yes"],["unk","Not sure"]] },
+    { id:"cond", type:"multi", label:"Do any of these apply to you?", col:true, help:"Choose any that apply.",
+      opts:[["apnea","Sleep apnea"],["autoimm","Sjögren's, rheumatoid arthritis, lupus or thyroid eye disease"],["heart","Heart disease or stroke"],["meds","Regular antihistamines, antidepressants, or isotretinoin (acne medicine)"],["down","Down syndrome"],["ctd","Marfan, Ehlers-Danlos or Stickler syndrome"],[NONE,"None of these"]] }
+  ]},
+  { id:"family", title:"Your family", intro:"Count parents, brothers, sisters and children.", qs:[
+    { id:"fam", type:"multi", label:"Has a close family member had any of these?", col:true,
+      opts:[["glaucoma","Glaucoma"],["amd","Macular degeneration (AMD)"],["kc","Keratoconus"],["rd","Retinal detachment"],["blind","Serious vision loss, cause unknown"],[NONE,"None that I know of"]] }
+  ]},
+  { id:"eyes", title:"Your eyes", intro:"Your prescription, past surgery and habits.", qs:[
+    { id:"rx", type:"single", label:"Without glasses or contacts, what is your vision like?", col:true,
+      help:"Nearsighted means distance is blurry. If you have your prescription, use the larger minus number of your two eyes.",
+      opts:[["none","Fine, or I only need reading glasses"],["hyper","Farsighted (plus-power glasses for distance)"],["low","Mildly nearsighted (up to −3.00)"],["mod","Moderately nearsighted (−3.00 to −6.00)"],["high","Highly nearsighted (beyond −6.00)"],["unk","Not sure"]] },
+    { id:"cl", type:"single", label:"Do you wear contact lenses?", opts:[["no","No"],["yes","Yes"]] },
+    { id:"surg", type:"multi", label:"Eye surgery or laser you have had", col:true, help:"Choose any that apply.",
+      opts:[["cat1","Cataract surgery, one eye"],["cat2","Cataract surgery, both eyes"],["refr","LASIK, PRK or SMILE"],["retina","Retinal surgery or retinal laser"],["glauc","Glaucoma laser or surgery"],["cxl","Corneal cross-linking"],[NONE,"None"]] },
+    { id:"injury", type:"single", label:"Have you ever had a serious eye injury?", help:"Hit hard enough to bruise, bleed inside the eye, or need emergency care.",
+      opts:[["no","No"],["yes","Yes"]] },
+    { id:"rub", type:"single", label:"How often do you rub your eyes?", opts:[["rare","Rarely"],["some","Sometimes"],["often","Often, or hard rubbing"]] },
+    { id:"allergy", type:"single", label:"Itchy, allergic eyes, or eczema or asthma?", opts:[["no","No"],["yes","Yes"]] },
+    { id:"sun", type:"single", label:"Time outdoors", col:true,
+      opts:[["low","Mostly indoors"],["mid","Some, usually with sunglasses"],["high","Many hours outside, often without sunglasses"]] },
+    { id:"screen", type:"single", label:"Screen time on a typical day", opts:[["low","Under 4 hours"],["mid","4 to 8 hours"],["high","More than 8 hours"]] },
+    { id:"lastExam", type:"single", label:"When was your last full eye exam?", col:true,
+      opts:[["1","Within the last year"],["2","1 to 2 years ago"],["5","2 to 5 years ago"],["99","More than 5 years ago, or never"],["unk","Not sure"]] }
+  ]},
+  { id:"told", title:"What an eye doctor has told you", intro:"Only what you have actually been told. If you're unsure, leave it unticked.", qs:[
+    { id:"dx", type:"multi", label:"Has an optometrist or ophthalmologist ever told you that you have:", col:true,
+      opts:[["oht","High eye pressure (ocular hypertension)"],["gsus","Glaucoma suspect, or a suspicious optic nerve"],["narrow","Narrow angles"],["thin","Thin corneas"],["glaucoma","Glaucoma"],
+            ["drusen","Drusen, or early macular degeneration"],["iamd","Intermediate macular degeneration"],["aamd","Wet macular degeneration or geographic atrophy"],
+            ["dr","Diabetic retinopathy or diabetic macular edema"],["cataract","Cataract"],["lattice","Lattice degeneration, retinal holes or tears"],["rd","A retinal detachment"],
+            ["kc","Keratoconus, or an irregular cornea"],["dry","Dry eye or blepharitis"],[NONE,"None of these"]] }
+  ]},
+  { id:"now", title:"How your eyes are right now", intro:"Some symptoms need same-day care. These questions check for them first.", qs:[
+    { id:"red", type:"multi", label:"In the last few days or weeks, have you noticed any of these?", col:true,
+      opts:[["flash","New flashes of light"],["float","A sudden shower of new floaters"],["curtain","A shadow or curtain over part of your vision"],["loss","Sudden loss or dimming of vision"],
+            ["pain","A painful red eye with halos, headache or nausea"],["diplo","Sudden double vision or a drooping eyelid"],["wavy","Straight lines that suddenly look wavy or bent"],["chem","A chemical splash or injury to the eye"],[NONE,"None of these"]] },
+    { id:"sx", type:"multi", label:"Any of these, more gradually?", col:true,
+      opts:[["glare","Glare or halos, especially driving at night"],["colour","Colours looking faded or yellowed"],["rxchange","Prescription changing more often than it used to"],["ghost","Ghosting or doubling in one eye"],["blurry","Blurry even with up-to-date glasses"],["dim","Needing much more light to read"],[NONE,"None of these"]] },
+    { id:"q1", type:"scale", label:"Over the past month, how often did your eyes feel uncomfortable?", opts:FREQ },
+    { id:"q1b", type:"scale", label:"When they did, how intense was it by the end of the day?", opts:INTENS, showIf:A => A.q1 != null && A.q1 !== "0", sub:true },
+    { id:"q2", type:"scale", label:"Over the past month, how often did your eyes feel dry?", opts:FREQ },
+    { id:"q2b", type:"scale", label:"When they did, how intense was the dryness by the end of the day?", opts:INTENS, showIf:A => A.q2 != null && A.q2 !== "0", sub:true },
+    { id:"q3", type:"scale", label:"Over the past month, how often did your eyes look or feel watery?", opts:FREQ }
+  ]},
+  { id:"numbers", title:"Results from an eye exam (optional)", intro:"If your eye doctor has given you these numbers, they make the glaucoma and macular degeneration results much more precise. Most people can skip this.", qs:[
+    { id:"haveNums", type:"single", label:"Do you have measurements from an eye exam?", opts:[["no","No, skip this"],["yes","Yes, I'll enter them"]] },
+    { id:"ohts", type:"nums", label:"Glaucoma measurements (average of both eyes)", showIf:A => A.haveNums === "yes", sub:true,
+      help:"Used by the OHTS–EGPS model, which estimates the 5-year chance that high eye pressure turns into glaucoma. All five are needed.",
+      fields:[["iop","Eye pressure (IOP), untreated","mmHg",5,60,0.5],["cct","Corneal thickness (CCT)","µm",350,750,1],["vcdr","Vertical cup-to-disc ratio","0 to 1",0,1,0.05],["psd","Visual field PSD (Humphrey)","dB",0,15,0.1]] },
+    { id:"drR", type:"single", label:"Drusen, right eye", showIf:A => A.haveNums === "yes", sub:true, col:true,
+      opts:[["none","None or small only"],["inter","Intermediate drusen"],["large","Large drusen"],["adv","Wet AMD or geographic atrophy"],["unk","Don't know"]] },
+    { id:"pgR", type:"single", label:"Pigment changes, right eye", showIf:A => A.haveNums === "yes", sub:true, opts:[["no","No"],["yes","Yes"],["unk","Don't know"]] },
+    { id:"drL", type:"single", label:"Drusen, left eye", showIf:A => A.haveNums === "yes", sub:true, col:true,
+      opts:[["none","None or small only"],["inter","Intermediate drusen"],["large","Large drusen"],["adv","Wet AMD or geographic atrophy"],["unk","Don't know"]] },
+    { id:"pgL", type:"single", label:"Pigment changes, left eye", showIf:A => A.haveNums === "yes", sub:true, opts:[["no","No"],["yes","Yes"],["unk","Don't know"]] }
+  ]}
+];
+
+/* ---------- state and rendering ---------- */
+let A = {}, step = 0;
+const $ = s => document.querySelector(s);
+const form = $("#form");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function qHtml(q){
+  const sub = q.sub ? " sub" : "";
+  const help = q.help ? `<p class="help" id="h-${q.id}">${q.help}</p>` : "";
+  const desc = q.help ? ` aria-describedby="h-${q.id}"` : "";
+  if (q.type === "number"){
+    const v = A[q.id] != null ? A[q.id] : "";
+    return `<div class="q${sub}" data-q="${q.id}"><fieldset><legend><label for="f-${q.id}">${q.label}</label></legend>${help}
+      <div class="num"><input id="f-${q.id}" name="${q.id}" type="number" inputmode="decimal" min="${q.min}" max="${q.max}" step="${q.step||1}" value="${esc(v)}"${desc}${q.required?" required":""}><span>${q.unit||""}</span></div>
+      <p class="err" id="e-${q.id}" hidden></p></fieldset></div>`;
+  }
+  if (q.type === "nums"){
+    const fields = q.fields.map(([id,lab,unit,min,max,st]) => `<label>${lab} <small>(${unit})</small>
+      <input class="numf" name="${id}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${st}" value="${A[id]!=null?esc(A[id]):""}" style="width:100%;padding:10px 11px;border:1.5px solid var(--rule);border-radius:10px;font:inherit"></label>`).join("");
+    return `<div class="q${sub}" data-q="${q.id}"><fieldset><legend>${q.label}</legend>${help}<div class="nums">${fields}</div></fieldset></div>`;
+  }
+  const multi = q.type === "multi";
+  const cls = q.type === "scale" ? "opts scale" : (q.col ? "opts col" : "opts");
+  const opts = q.opts.map(([v,lab]) => {
+    const on = multi ? has(A, q.id, v) : A[q.id] === v;
+    return `<label class="opt"><input type="${multi?"checkbox":"radio"}" name="${q.id}" value="${v}"${on?" checked":""}><span>${lab}</span></label>`;
+  }).join("");
+  return `<div class="q${sub}" data-q="${q.id}"><fieldset${desc}><legend>${q.label}</legend>${help}<div class="${cls}">${opts}</div></fieldset></div>`;
+}
+
+function render(){
+  const s = STEPS[step];
+  $("#step-title").textContent = s.title;
+  $("#step-intro").textContent = s.intro;
+  form.innerHTML = s.qs.map(qHtml).join("");
+  $("#stepbar").innerHTML = STEPS.map((_,i) => `<li class="${i<step?"done":i===step?"now":""}"></li>`).join("");
+  $("#steplabel").textContent = `Step ${step+1} of ${STEPS.length}`;
+  $("#back").hidden = step === 0;
+  $("#skip").hidden = s.qs.some(q => q.required);
+  $("#next").textContent = step === STEPS.length-1 ? "See my results →" : "Next →";
+  applyShowIf();
+}
+
+function applyShowIf(){
+  STEPS[step].qs.forEach(q => {
+    const el = form.querySelector(`[data-q="${q.id}"]`);
+    if (el) el.hidden = q.showIf ? !q.showIf(A) : false;
+  });
+}
+
+form.addEventListener("change", onInput);
+form.addEventListener("input", e => { if (e.target.type === "number") onInput(e); });
+function onInput(e){
+  const t = e.target, name = t.name;
+  if (t.type === "number"){
+    const v = parseFloat(t.value);
+    A[name] = isFinite(v) ? v : null;
+  } else if (t.type === "checkbox"){
+    // "None" is exclusive
+    const boxes = form.querySelectorAll(`input[name="${name}"]`);
+    if (t.checked && t.value === NONE) boxes.forEach(b => { if (b !== t) b.checked = false; });
+    if (t.checked && t.value !== NONE) boxes.forEach(b => { if (b.value === NONE) b.checked = false; });
+    A[name] = [...boxes].filter(b => b.checked).map(b => b.value);
+  } else if (t.type === "radio"){
+    A[name] = t.value;
+  }
+  applyShowIf();
+}
+
+function validate(){
+  const s = STEPS[step];
+  for (const q of s.qs){
+    if (q.type !== "number") continue;
+    const err = $("#e-"+q.id), v = A[q.id];
+    let msg = "";
+    if (q.required && v == null) msg = "Please enter your age to continue.";
+    else if (v != null && (v < q.min || v > q.max)) msg = `Please enter a number from ${q.min} to ${q.max}.`;
+    if (err){ err.hidden = !msg; err.textContent = msg; }
+    if (msg){ $("#f-"+q.id).focus(); return false; }
+  }
+  return true;
+}
+
+function go(n){
+  step = n;
+  render();
+  toTop();
+  $("#step-title").focus({ preventScroll:true });
+}
+function toTop(){
+  if (window.parent !== window){ try { window.parent.postMessage({ eyerisk:"top" }, "*"); } catch(e){} }
+  window.scrollTo({ top:0 });
+}
+
+$("#next").addEventListener("click", () => {
+  if (!validate()) return;
+  if (step < STEPS.length-1) go(step+1); else showResults();
+});
+$("#skip").addEventListener("click", () => { if (step < STEPS.length-1) go(step+1); else showResults(); });
+$("#back").addEventListener("click", () => go(Math.max(0, step-1)));
+$("#edit").addEventListener("click", () => { $("#results").hidden = true; $("#quiz").hidden = false; $("#progress").hidden = false; go(0); });
+$("#restart").addEventListener("click", () => { A = {}; $("#results").hidden = true; $("#quiz").hidden = false; $("#progress").hidden = false; go(0); });
+$("#print").addEventListener("click", () => window.print());
+// closed <details> can't be shown by CSS alone, so open them for printing and restore after
+let shut = [];
+window.addEventListener("beforeprint", () => { shut = [...document.querySelectorAll("#results details:not([open])")]; shut.forEach(d => d.open = true); });
+window.addEventListener("afterprint", () => { shut.forEach(d => d.open = false); shut = []; });
+
+/* ---------- the risk models ----------
+   Each condition starts from an age-based baseline (how common it is in the general
+   population at that age, over the stated time frame) and multiplies by published
+   relative risks for each factor. Multiplying assumes the factors act independently,
+   which overstates risk when many pile up, so the combined multiplier is capped.
+   The baseline x multiplier lands in one of four levels; the cut-offs are per condition.
+   Where a validated clinical model applies (OHTS–EGPS, AREDS) and the inputs are given,
+   it replaces the questionnaire estimate. */
+
+const LEVELS = ["Low","Moderate","Elevated","High"];
+const ANSWERED = id => A[id] != null && !(Array.isArray(A[id]) && !A[id].length);
+const inList = (id, v) => has(A, id, v);
+const dx = v => inList("dx", v);
+const fam = v => inList("fam", v);
+const anc = v => inList("anc", v);
+const cond = v => inList("cond", v);
+const sym = v => inList("sx", v);
+const surg = v => inList("surg", v);
+function byAge(age, rows){ for (const [lim,v] of rows) if (age < lim) return v; return rows[rows.length-1][1]; }
+function levelOf(p, cuts){ let l = 0; cuts.forEach((c,i) => { if (p >= c) l = i+1; }); return l; }
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+// "about 3 in 100", "about 1 in 400"
+function inN(p){
+  if (p >= 1) return `about ${Math.round(p)} in 100`;
+  const n = 100 / p;
+  const r = n < 200 ? Math.round(n/10)*10 : n < 1000 ? Math.round(n/50)*50 : n < 5000 ? Math.round(n/500)*500 : Math.round(n/1000)*1000;
+  return `about 1 in ${r.toLocaleString("en-CA")}`;
+}
+
+function estimate(base, F, capRR, capP){
+  const raw = F.reduce((m,f) => m*f.m, 1), rr = clamp(raw, 0.05, capRR);
+  return { rr, capped: raw > capRR, p: clamp(base*rr, 0, capP) };
+}
+function rrText(e, forAge = true){
+  const rr = e.rr, tail = forAge ? " for your age." : ".";
+  if (rr >= 1.15) return `Your answers put you at ${e.capped ? "at least" : "roughly"} ${rr < 10 ? rr.toFixed(1).replace(/\.0$/,"") : Math.round(rr)} times the usual risk${tail}`;
+  if (rr <= 0.87) return `Your answers put you below the usual risk${tail}`;
+  return `Your answers put you close to the usual risk${tail}`;
+}
+
+/* Glaucoma ------------------------------------------------------- */
+function ohtsPoints(age, iop, cct, vcdr, psd){
+  const pa = age < 45 ? 0 : age < 55 ? 1 : age < 65 ? 2 : age < 75 ? 3 : 4;
+  const pi = iop < 22 ? 0 : iop < 24 ? 1 : iop < 26 ? 2 : iop < 28 ? 3 : 4;
+  const pc = cct >= 600 ? 0 : cct >= 576 ? 1 : cct >= 551 ? 2 : cct >= 526 ? 3 : 4;
+  const pv = vcdr < 0.3 ? 0 : vcdr < 0.4 ? 1 : vcdr < 0.5 ? 2 : vcdr < 0.6 ? 3 : 4;
+  const pp = psd < 1.8 ? 0 : psd < 2.0 ? 1 : psd < 2.4 ? 2 : psd < 2.8 ? 3 : 4;
+  return { pa, pi, pc, pv, pp, sum: pa+pi+pc+pv+pp };
+}
+function glaucoma(){
+  const c = { id:"glaucoma", name:"Glaucoma", what:"chance of developing glaucoma over the next 10 years",
+    actions:[], refs:[
+      "Gordon MO et al. Validated prediction model for the development of primary open-angle glaucoma in individuals with ocular hypertension (OHTS–EGPS). Ophthalmology 2007;114:10–19.",
+      "Tham YC et al. Global prevalence of glaucoma and projections of glaucoma burden through 2040. Ophthalmology 2014;121:2081–90.",
+      "Wolfs RC et al. Genetic risk of primary open-angle glaucoma: population-based familial aggregation study (Rotterdam). Arch Ophthalmol 1998;116:1640–45.",
+      "Marcus MW et al. Myopia as a risk factor for open-angle glaucoma: a systematic review and meta-analysis. Ophthalmology 2011;118:1989–94.",
+      "Zhao D et al. Diabetes, fasting glucose, and the risk of glaucoma: a meta-analysis. Ophthalmology 2015;122:72–78."
+    ]};
+  if (dx("glaucoma") || surg("glauc")){
+    c.state = "known";
+    c.lead = "You've been diagnosed with glaucoma (or treated for it). The aim now is to keep it from progressing: use your drops exactly as prescribed, even though you can't feel the difference, and keep every follow-up visit.";
+    return c;
+  }
+  const age = A.age, F = [];
+  const add = (t, m) => F.push({ t, m });
+  if (anc("afr")) add("African or Caribbean background: glaucoma is 3 to 4 times as common and starts younger", 3);
+  if (anc("his") && age >= 60) add("Hispanic or Latin American background, over 60", 1.5);
+  if (anc("eas") || anc("sas")) add("East or South Asian background: a higher risk of angle-closure glaucoma", 1.2);
+  if (fam("glaucoma")) add("Glaucoma in a parent, brother, sister or child", 2.5);
+  if (A.rx === "mod") add("Moderate nearsightedness", 1.5);
+  if (A.rx === "high") add("High nearsightedness", 2.3);
+  if (A.rx === "hyper" && age >= 50) add("Farsighted eyes are more prone to angle closure as the lens thickens with age", 1.2);
+  if (isDiabetic(A)) add("Diabetes", 1.4);
+  if (A.steroid === "yes") add("Long-term steroid use can raise eye pressure", 1.5);
+  if (cond("apnea")) add("Sleep apnea", 1.3);
+  if (A.injury === "yes") add("A past serious eye injury can damage the eye's drainage angle", 1.3);
+  if (dx("narrow")) add("Narrow angles (risk of angle closure)", 3);
+  if (dx("gsus")) add("You've been called a glaucoma suspect", 4);
+
+  const n = ["iop","cct","vcdr","psd"].map(k => A[k]);
+  const ohtsOK = A.haveNums === "yes" && n.every(v => v != null) && A.iop >= 21;
+  if (ohtsOK){
+    const P = ohtsPoints(age, A.iop, A.cct, A.vcdr, A.psd);
+    const bins = [[6,4,"4% or less",1],[8,10,"about 10%",2],[10,15,"about 15%",2],[12,20,"about 20%",3],[99,33,"33% or more",3]];
+    const b = bins.find(r => P.sum <= r[0]);
+    c.level = b[3];
+    c.what = "5-year chance that high eye pressure turns into glaucoma (OHTS–EGPS model)";
+    c.lead = `Using your exam numbers, the OHTS–EGPS model gives ${P.sum} points: a 5-year risk of ${b[2]} of developing glaucoma if the pressure is left untreated.`;
+    c.factors = [
+      [`Age ${age}`, P.pa], [`Eye pressure ${A.iop} mmHg`, P.pi],
+      [`Corneal thickness ${A.cct} µm${P.pc>=3?" (thin corneas raise risk)":""}`, P.pc],
+      [`Cup-to-disc ratio ${A.vcdr}`, P.pv], [`Visual field PSD ${A.psd} dB`, P.pp]
+    ].map(([t,pt]) => ({ t:`${t}: ${pt} of 4 points`, m:pt>=2?2:0.9, show:true }));
+    if (F.length) c.extraFactors = F;
+    c.method = "OHTS–EGPS point system: age, mean untreated IOP, mean central corneal thickness, mean vertical cup-to-disc ratio and mean Humphrey PSD, each scored 0 to 4. Totals of 0–6 carry a 5-year risk of 4% or less, 7–8 about 10%, 9–10 about 15%, 11–12 about 20%, and 13 or more 33% or more. It was built for people with ocular hypertension and no glaucoma damage yet; inputs are meant to be averages of repeated measurements in both eyes.";
+  } else {
+    if (dx("oht")) add("High eye pressure (ocular hypertension)", 5);
+    if (dx("thin")) add("Thin corneas", 1.5);
+    if (A.haveNums === "yes" && A.vcdr >= 0.6) add(`A large cup-to-disc ratio (${A.vcdr})`, 2);
+    if (A.haveNums === "yes" && A.iop >= 21 && !dx("oht")) add(`Eye pressure of ${A.iop} mmHg`, 3);
+    const base = byAge(age, [[40,0.2],[50,0.5],[60,1],[70,2],[80,4],[200,6]]);
+    const e = estimate(base, F, 12, 60);
+    c.level = levelOf(e.p, [1,3,8]);
+    c.est = e;
+    c.factors = F;
+    c.lead = `${rrText(e)} Glaucoma usually causes no symptoms until a lot of side vision is gone, so it is found by measuring eye pressure and examining the optic nerve.`;
+    if (A.haveNums === "yes" && n.some(v => v != null) && !ohtsOK) c.note = "To use the OHTS–EGPS model, enter all four measurements with an eye pressure of 21 mmHg or more; otherwise the questionnaire estimate is shown.";
+    c.method = `Starts from how often open-angle glaucoma develops at your age (about ${inN(base)} over 10 years), then multiplies by published relative risks for each factor you reported (combined multiplier capped at 12×). Levels: under 1% Low, 1–3% Moderate, 3–8% Elevated, 8% or more High.`;
+  }
+  c.actions.push("An eye exam that checks eye pressure, the optic nerve and, if needed, an OCT scan and visual field test.");
+  if (fam("glaucoma")) c.actions.push("Tell your eye doctor about the family history; it changes how closely you should be watched.");
+  if (dx("narrow")) c.actions.push("Ask whether a laser iridotomy is advised for your narrow angles.");
+  if (A.steroid === "yes") c.actions.push("If you use steroids long-term, have your eye pressure checked regularly.");
+  return c;
+}
+
+/* AMD ------------------------------------------------------------ */
+function aredsScore(){
+  const eyes = [[A.drR, A.pgR], [A.drL, A.pgL]];
+  if (eyes.some(([d,p]) => d == null || d === "unk" || p == null || p === "unk")) return null;
+  let s = 0;
+  eyes.forEach(([d,p]) => {
+    if (d === "adv") s += 2;
+    else { if (d === "large") s += 1; if (p === "yes") s += 1; }
+  });
+  if (eyes.every(([d]) => d === "inter")) s += 1;
+  return Math.min(s, 4);
+}
+function amd(){
+  const c = { id:"amd", name:"Macular degeneration (AMD)", what:"chance of developing advanced (vision-threatening) AMD over the next 10 years",
+    actions:[], refs:[
+      "Ferris FL et al. A simplified severity scale for age-related macular degeneration: AREDS Report No. 18. Arch Ophthalmol 2005;123:1570–74.",
+      "Wong WL et al. Global prevalence of age-related macular degeneration and disease burden projection for 2020 and 2040. Lancet Glob Health 2014;2:e106–16.",
+      "Thornton J et al. Smoking and age-related macular degeneration: a review of association. Eye 2005;19:935–44.",
+      "AREDS2 Research Group. Lutein + zeaxanthin and omega-3 fatty acids for age-related macular degeneration. JAMA 2013;309:2005–15."
+    ]};
+  const age = A.age, F = [];
+  const add = (t, m) => F.push({ t, m });
+  const ar = A.haveNums === "yes" ? aredsScore() : null;
+  if (ar != null){
+    const risk = [0.4, 3.1, 11.8, 25.9, 47.3][ar];
+    c.level = [0,1,2,3,3][ar];
+    c.what = "5-year chance of advanced AMD (AREDS simplified scale)";
+    c.lead = `Your exam findings score ${ar} of 4 on the AREDS simplified scale: a 5-year risk of advanced AMD of about ${risk}%.`;
+    c.factors = [];
+    c.method = "AREDS simplified severity scale: one point per eye for large drusen and one per eye for pigment changes; an eye with advanced AMD counts 2. If neither eye has large drusen but both have intermediate drusen, that adds 1. Five-year risks of advanced AMD by score 0–4: 0.4%, 3.1%, 11.8%, 25.9%, 47.3%.";
+    if (A.smoke === "current") c.factors.push({ t:"Smoking roughly doubles to triples AMD risk on top of this", m:2.5 });
+    if (fam("amd")) c.factors.push({ t:"Macular degeneration in the family", m:2.5 });
+  } else {
+    if (dx("aamd")){
+      c.state = "known";
+      c.lead = "You've been diagnosed with advanced AMD in at least one eye. The other eye is at high risk (roughly 1 in 3 to 1 in 2 over 5 years), so watch it daily with an Amsler grid and keep your retina follow-ups. Supplements of the AREDS2 formula are recommended at this stage; ask your eye doctor.";
+      c.actions = ["Check each eye separately with an Amsler grid every day; report new distortion within days.","AREDS2-formula supplements, if your eye doctor agrees.","Don't smoke."];
+      return c;
+    }
+    if (A.smoke === "current") add("Smoking now: the largest risk factor you can change", 2.5);
+    if (A.smoke === "former") add("Past smoking (the extra risk fades over about 20 years)", 1.4);
+    if (fam("amd")) add("Macular degeneration in a parent, brother or sister", 2.5);
+    if (anc("afr") && !anc("eur")) add("Advanced AMD is less common in people of African background", 0.5);
+    if (cond("heart")) add("Heart disease or stroke", 1.2);
+    if (dx("drusen")) add("Drusen or early AMD already seen", 4);
+    if (dx("iamd")) add("Intermediate AMD already seen", 12);
+    if (sym("dim") && age >= 55) add("Needing much more light to read can be an early macular sign", 1.3);
+    const base = byAge(age, [[50,0.05],[60,0.2],[70,0.7],[80,2.5],[200,7]]);
+    const e = estimate(base, F, 25, 60);
+    c.level = levelOf(e.p, [1,3,10]);
+    c.est = e;
+    c.factors = F;
+    c.lead = `${rrText(e)} AMD affects the centre of vision used for reading and faces. Early AMD has no symptoms; it is seen on a retinal exam or scan.`;
+    c.method = `Starts from how often advanced AMD develops at your age (about ${inN(base)} over 10 years), then multiplies by published relative risks for each factor (capped at 25×). Levels: under 1% Low, 1–3% Moderate, 3–10% Elevated, 10% or more High. If you enter drusen and pigment findings in the optional step, the AREDS scale is used instead.`;
+  }
+  if (A.smoke === "current") c.actions.push("Stopping smoking is the single most effective step for AMD.");
+  c.actions.push("Leafy greens and fish a few times a week; sunglasses outdoors.");
+  if (c.level >= 2) c.actions.push("Check each eye with an Amsler grid weekly, and ask whether AREDS2 supplements are right for you (they help only from the intermediate stage on).");
+  else c.actions.push("A dilated retinal exam (or retinal photos/OCT) at your regular visits.");
+  return c;
+}
+
+/* Diabetic retinopathy ------------------------------------------- */
+function dr(){
+  const c = { id:"dr", name:"Diabetic retinopathy", what:"chance that some diabetic retinopathy is present",
+    actions:[], refs:[
+      "Klein R et al. Wisconsin Epidemiologic Study of Diabetic Retinopathy (WESDR) II and III: prevalence and risk by duration of diabetes. Arch Ophthalmol 1984;102:520–32.",
+      "DCCT Research Group. The effect of intensive treatment of diabetes on the development and progression of long-term complications. N Engl J Med 1993;329:977–86.",
+      "Stratton IM et al. Association of glycaemia with macrovascular and microvascular complications of type 2 diabetes (UKPDS 35). BMJ 2000;321:405–12.",
+      "UKPDS Group. Tight blood pressure control and risk of macrovascular and microvascular complications in type 2 diabetes (UKPDS 38). BMJ 1998;317:703–13.",
+      "Diabetes Canada Clinical Practice Guidelines: Retinopathy. Can J Diabetes 2018;42(Suppl 1):S210–S216."
+    ]};
+  if (!isDiabetic(A)) return null;
+  if (dx("dr")){
+    c.state = "known";
+    c.lead = "You've been told you have diabetic retinopathy or macular edema. Follow-up timing depends on the stage (often every 3 to 6 months). Keeping A1c, blood pressure and cholesterol at target slows it, and treatments work best when started on time.";
+    c.actions = ["Keep every retinal follow-up, even if you see well.", "Work with your doctor on A1c and blood pressure targets.", "Tell us promptly about any new blur or floaters."];
+    return c;
+  }
+  const y = A.dmYears != null ? A.dmYears : 5;
+  const t1 = A.dm === "t1", F = [];
+  const add = (t, m) => F.push({ t, m });
+  const base = t1 ? byAge(y, [[5,10],[10,40],[15,70],[200,90]]) : byAge(y, [[5,15],[10,30],[15,45],[200,60]]);
+  if (A.dmYears == null) add("Years with diabetes not given: assumed 5 to 10", 1);
+  if (A.a1c && A.a1c !== "unk"){
+    const a = parseFloat(A.a1c), m = clamp(Math.pow(1.37, a - 7), 0.4, 3.5);
+    if (a >= 7.5) add(`A1c ${A.a1c === "9.8" ? "9% or higher" : A.a1c === "8.5" ? "8 to 9%" : "7 to 8%"}: each 1% above target raises risk by roughly a third`, m);
+    else add("A1c under 7%", m);
+  } else add("A1c not known (assumed a little above target)", 1.15);
+  if (A.bp === "high") add("Blood pressure often above target", 1.25);
+  if (A.bp === "unk") add("Blood pressure not known", 1.1);
+  if (A.dmKidney === "yes") add("Kidney involvement: the same small-vessel damage often affects the retina", 1.4);
+  if (A.preg === "yes") add("Pregnancy can speed up retinopathy", 1.4);
+  const e = estimate(base, F, 4, 95);
+  c.level = levelOf(e.p, [20,40,65]);
+  c.est = e;
+  c.factors = F;
+  c.lead = `Years with diabetes, blood sugar and blood pressure drive this risk. Early retinopathy has no symptoms, which is why everyone with diabetes needs a dilated eye exam or retinal photos regularly.`;
+  c.method = `Starts from how common any retinopathy is after ${A.dmYears != null ? y : "about 5"} years of type ${t1?"1":"2"} diabetes in the Wisconsin study (about ${Math.round(base)}%), then adjusts for A1c (about 1.37× per 1% above 7%, from UKPDS and DCCT), blood pressure, kidney involvement and pregnancy. Levels: under 20% Low, 20–40% Moderate, 40–65% Elevated, 65% or more High. This estimates whether any retinopathy is present, not whether it threatens vision.`;
+  c.actions.push(A.preg === "yes" ? "An eye exam before or early in pregnancy, and again as your eye doctor advises during it." : "A dilated eye exam or retinal photos every year (Diabetes Canada allows 1 to 2 years for type 2 with no retinopathy).");
+  if (A.a1c && parseFloat(A.a1c) >= 7.5) c.actions.push("Bringing A1c down by even 1% cuts the risk of retinopathy substantially.");
+  if (A.bp === "high" || A.bp === "unk") c.actions.push("Get blood pressure to target; it slows retinopathy too.");
+  return c;
+}
+
+/* Cataract ------------------------------------------------------- */
+function cataract(){
+  const c = { id:"cataract", name:"Cataract", what:"chance that a cataract affects your vision within 10 years",
+    actions:[], refs:[
+      "Klein BEK et al. Incidence of age-related cataract over a 15-year interval: the Beaver Dam Eye Study. Ophthalmology 2008;115:477–82.",
+      "National Eye Institute. Cataract data and statistics (by age 80, more than half of Americans have a cataract or have had surgery for one).",
+      "Ye J et al. Smoking and risk of age-related cataract: a meta-analysis. Invest Ophthalmol Vis Sci 2012;53:3885–95."
+    ]};
+  if (surg("cat2")){
+    c.state = "done";
+    c.lead = "You've had cataract surgery in both eyes, so a cataract can't come back. If vision slowly clouds again, it is usually a film behind the lens implant (posterior capsule opacification), fixed with a quick laser.";
+    return c;
+  }
+  if (dx("cataract")){
+    c.state = "known";
+    c.lead = "You've been told you have a cataract. Surgery is considered when it gets in the way of what you need to do, such as driving at night or reading. Glare, faded colours and frequent prescription changes are signs it is progressing.";
+    c.actions = ["Tell us when glare or blur starts limiting driving or reading.", "Sunglasses outdoors."];
+    return c;
+  }
+  const age = A.age, F = [];
+  const add = (t, m) => F.push({ t, m });
+  if (isDiabetic(A)) add("Diabetes", 1.6);
+  if (A.smoke === "current") add("Smoking now", 1.6);
+  if (A.smoke === "former") add("Past smoking", 1.2);
+  if (A.steroid === "yes") add("Long-term steroid use", 2);
+  if (A.injury === "yes") add("A past serious eye injury", 1.5);
+  if (A.rx === "high") add("High nearsightedness", 1.5);
+  if (A.sun === "high") add("Lots of sun without sunglasses (UV)", 1.3);
+  if (surg("retina")) add("Past retinal surgery (vitrectomy speeds up cataract)", 3);
+  if (surg("cat1")) add("Cataract surgery in one eye: the other eye usually follows", 1.5);
+  const sx = ["glare","colour","rxchange","blurry"].filter(sym);
+  if (sx.length && age >= 45) add("Your symptoms (glare, faded colours, prescription changes or blur) are typical of an early cataract", 1 + 0.6*sx.length);
+  const base = byAge(age, [[40,0.5],[50,2],[60,7],[70,20],[80,40],[200,60]]);
+  const e = estimate(base, F, 8, 85);
+  c.level = levelOf(e.p, [5,15,35]);
+  c.est = e;
+  c.factors = F;
+  c.lead = `${rrText(e)} Almost everyone develops a cataract eventually. It is not an emergency, and surgery is very effective when the time comes.`;
+  c.method = `Starts from how often a cataract becomes significant at your age (about ${inN(base)} over 10 years), then multiplies by relative risks for each factor (capped at 8×). Levels: under 5% Low, 5–15% Moderate, 15–35% Elevated, 35% or more High.`;
+  c.actions.push("Sunglasses that block UV, and a hat in strong sun.");
+  if (A.smoke === "current") c.actions.push("Stopping smoking lowers cataract risk too.");
+  return c;
+}
+
+/* Retinal detachment --------------------------------------------- */
+function rrd(){
+  const c = { id:"rrd", name:"Retinal detachment", what:"chance of a retinal detachment over the next 10 years",
+    actions:[], refs:[
+      "Mitry D et al. The epidemiology of rhegmatogenous retinal detachment: geographical variation and clinical associations. Br J Ophthalmol 2010;94:678–84.",
+      "The Eye Disease Case-Control Study Group. Risk factors for idiopathic rhegmatogenous retinal detachment. Am J Epidemiol 1993;137:749–57.",
+      "IRIS Registry analysis of retinal detachment after cataract surgery (about 0.2% within one year; higher with lattice, myopia and male sex). Ophthalmology Science, 2023."
+    ]};
+  const age = A.age, F = [];
+  const add = (t, m) => F.push({ t, m });
+  if (A.rx === "low") add("Mild nearsightedness", 2);
+  if (A.rx === "mod") add("Moderate nearsightedness: a longer eye has a thinner, more stretched retina", 3.5);
+  if (A.rx === "high") add("High nearsightedness: a longer eye has a thinner, more stretched retina", 8);
+  if (surg("cat1") || surg("cat2")) add("Past cataract surgery", 4);
+  if (dx("lattice")) add("Lattice degeneration, holes or tears", 4);
+  if (dx("rd")) add("A previous retinal detachment (the other eye is at much higher risk)", 30);
+  else if (surg("retina")) add("Past retinal surgery or laser", 3);
+  if (fam("rd")) add("Retinal detachment in the family", 2);
+  if (A.injury === "yes") add("A past serious eye injury", 2);
+  if (cond("ctd")) add("Marfan, Ehlers-Danlos or Stickler syndrome", 10);
+  if (A.sex === "m") add("Male", 1.3);
+  const base = byAge(age, [[30,0.05],[50,0.1],[70,0.2],[200,0.15]]);
+  const e = estimate(base, F, 80, 30);
+  c.level = levelOf(e.p, [0.3,1,3]);
+  c.est = e;
+  c.factors = F;
+  c.lead = `${rrText(e)} Detachment is uncommon, but it is an emergency: treated early, sight is usually saved.`;
+  c.method = `Starts from the population rate at your age (about ${inN(base)} over 10 years; roughly 10 to 18 per 100,000 people a year overall), then multiplies by relative risks from case-control and registry studies (capped at 80×). Levels: under 0.3% Low, 0.3–1% Moderate, 1–3% Elevated, 3% or more High.`;
+  c.actions.push(`Know the warning signs: new flashes, a shower of floaters, or a curtain over your vision. Call ${PHONE} the same day.`);
+  if (c.level >= 2) c.actions.push("A dilated exam of the far edges of the retina at each visit.");
+  if (A.injury === "yes" || A.rx === "high") c.actions.push("Protective eyewear for contact sports and hammering.");
+  return c;
+}
+
+/* Keratoconus ---------------------------------------------------- */
+function kc(){
+  const c = { id:"kc", name:"Keratoconus", what:"chance of having keratoconus",
+    actions:[], refs:[
+      "Godefrooij DA et al. Age-specific incidence and prevalence of keratoconus: a nationwide registration study. Am J Ophthalmol 2017;175:169–72.",
+      "Hashemi H et al. The prevalence and risk factors for keratoconus: a systematic review and meta-analysis. Cornea 2020;39:263–70.",
+      "Gomes JAP et al. Global consensus on keratoconus and ectatic diseases. Cornea 2015;34:359–69."
+    ]};
+  if (dx("kc") || surg("cxl")){
+    c.state = "known";
+    c.lead = "You've been diagnosed with keratoconus. The priorities are to stop rubbing your eyes, check for progression with corneal maps, and consider cross-linking if it is changing. Specialty contact lenses usually give the clearest vision.";
+    c.actions = ["Don't rub your eyes; treat itch with cold compresses and allergy drops instead.", "Corneal topography or tomography at each visit to watch for progression."];
+    return c;
+  }
+  const age = A.age, F = [];
+  const add = (t, m) => F.push({ t, m });
+  if (A.rub === "often") add("Frequent or hard eye rubbing", 3);
+  if (A.rub === "some") add("Occasional eye rubbing", 1.5);
+  if (fam("kc")) add("Keratoconus in the family", 6);
+  if (A.allergy === "yes") add("Allergic eyes, eczema or asthma", 1.5);
+  if (cond("down")) add("Down syndrome", 15);
+  if (cond("ctd")) add("A connective tissue condition", 3);
+  if (anc("mena") || anc("sas")) add("Middle Eastern or South Asian background", 2);
+  if (cond("apnea")) add("Sleep apnea", 1.5);
+  if (sym("ghost")) add("Ghosting or doubling in one eye", 3);
+  if (sym("rxchange") && age < 40) add("Your prescription changing often at a young age", 2);
+  if (sym("blurry") && age < 40) add("Blur even with up-to-date glasses", 1.5);
+  if (surg("refr")) add("Past laser vision correction (rarely, the cornea weakens afterwards)", 1.5);
+  if (age >= 40) add("Keratoconus rarely starts after 35 to 40", 0.3);
+  const e = estimate(0.2, F, 60, 30);
+  c.level = levelOf(e.p, [0.5,2,6]);
+  c.est = e;
+  c.factors = F;
+  c.lead = `${rrText(e, false)} Keratoconus is a gradual thinning and bulging of the cornea, usually starting in the teens or twenties. Caught early, cross-linking can stop it from getting worse.`;
+  c.method = "Starts from a population prevalence of about 0.2% (1 in 500; recent corneal-mapping studies range from about 1 in 2,000 to 1 in 375), then multiplies by odds ratios from a 2020 meta-analysis (eye rubbing about 3×, family history about 6×, allergy about 1.5×) and other studies, capped at 60×. Levels: under 0.5% Low, 0.5–2% Moderate, 2–6% Elevated, 6% or more High.";
+  if (A.rub === "some" || A.rub === "often") c.actions.push("Break the eye-rubbing habit; treat itch with cold compresses and allergy drops.");
+  if (c.level >= 2) c.actions.push("Ask for corneal topography or tomography at your next exam; it detects keratoconus years before glasses stop working.");
+  else c.actions.push("Nothing special beyond regular exams.");
+  return c;
+}
+
+/* Dry eye -------------------------------------------------------- */
+function dryEye(){
+  const c = { id:"dry", name:"Dry eye", what:"symptom score (DEQ-5) and risk factors",
+    actions:[], refs:[
+      "Chalmers RL, Begley CG, Caffery B. Validation of the 5-Item Dry Eye Questionnaire (DEQ-5): discrimination across self-assessed severity and aqueous tear deficient dry eye diagnoses. Cont Lens Anterior Eye 2010;33:55–60.",
+      "Stapleton F et al. TFOS DEWS II Epidemiology Report. Ocul Surf 2017;15:334–65."
+    ]};
+  const F = [];
+  const add = (t, m) => F.push({ t, m });
+  if (A.sex === "f" && A.age >= 45) add("Women over 45 (hormonal changes)", 1.5);
+  else if (A.age >= 50) add("Age over 50", 1.3);
+  if (A.cl === "yes") add("Contact lens wear", 1.5);
+  if (surg("refr")) add("Past laser vision correction", 1.5);
+  if (A.screen === "high") add("More than 8 hours of screens a day (blinking slows)", 1.4);
+  if (A.screen === "mid") add("4 to 8 hours of screens a day", 1.2);
+  if (cond("autoimm")) add("Sjögren's, rheumatoid arthritis, lupus or thyroid eye disease", 2.5);
+  if (cond("meds")) add("Antihistamines, antidepressants or isotretinoin can reduce tears", 1.4);
+  if (isDiabetic(A)) add("Diabetes", 1.3);
+  c.factors = F;
+  const answered = ["q1","q2","q3"].some(k => A[k] != null);
+  // an intensity answer only counts while its frequency question says the symptom happens
+  const live = k => !(k === "q1b" && (A.q1 == null || A.q1 === "0")) && !(k === "q2b" && (A.q2 == null || A.q2 === "0"));
+  const score = ["q1","q1b","q2","q2b","q3"].filter(live).reduce((s,k) => s + (A[k] ? parseInt(A[k],10) : 0), 0);
+  const nF = F.filter(f => f.m > 1).length;
+  if (answered){
+    c.level = score >= 12 ? 2 : score >= 6 ? 1 : 0;
+    if (score >= 12 && cond("autoimm")) c.level = 3;
+    if (c.level < 3 && nF >= 3 && score >= 6) c.level += 1;
+    c.score = score;
+    c.lead = `Your dry eye symptom score (DEQ-5) is ${score} of 22. ` + (score >= 12 ? "That is in the range where dry eye is likely and worth checking for an underlying cause, such as Sjögren's." : score >= 6 ? "6 or more suggests dry eye. It is common, and very treatable once the type (low tears vs. blocked oil glands) is known." : "That's below the usual cut-off for dry eye.");
+  } else {
+    c.level = nF >= 3 ? 1 : 0;
+    c.lead = "You skipped the symptom questions, so this is based on risk factors only.";
+  }
+  if (dx("dry")){ c.state = c.level >= 1 ? undefined : "known"; c.factors.unshift({ t:"Already diagnosed with dry eye or blepharitis", m:1.5 }); if (c.state === "known") c.lead = "You've been diagnosed with dry eye or blepharitis and your symptom score is currently low: whatever you're doing is working."; }
+  c.method = "DEQ-5: how often your eyes felt uncomfortable, dry and watery over the past month (0–4 each), plus how intense the discomfort and dryness were late in the day (0–5 each); total 0–22. A score of 6 or more suggests dry eye and 12 or more suggests possible Sjögren's syndrome. The level moves up one step if three or more risk factors are present with symptoms.";
+  if (c.level >= 1){
+    c.actions.push("A dry eye assessment: tear film, oil glands (meibography) and eyelids, to find which type you have.");
+    c.actions.push("Screen breaks: every 20 minutes, look 6 metres away for 20 seconds and blink fully.");
+  } else c.actions.push("Nothing special; mention symptoms if they start.");
+  return c;
+}
+
+/* ---------- urgent symptoms and exam timing ---------- */
+const RED = {
+  flash: "New flashes of light can mean a retinal tear. Be seen today.",
+  float: "A sudden shower of floaters can mean a retinal tear or bleeding. Be seen today.",
+  curtain: "A shadow or curtain over your vision can be a retinal detachment. Be seen today.",
+  loss: "Sudden loss or dimming of vision needs same-day care.",
+  pain: "A painful red eye with halos, headache or nausea can be acute angle-closure glaucoma: go to an emergency department now if you can't be seen right away.",
+  diplo: "Sudden double vision or a drooping eyelid can come from a nerve or blood vessel problem. Go to an emergency department; call 911 if you also have weakness, numbness, trouble speaking or a severe headache.",
+  wavy: "Lines that suddenly look wavy can be wet macular degeneration, which is treatable but time-sensitive. Call us today to be seen within days.",
+  chem: "For a chemical splash, rinse the eye with clean water for 15 minutes, then go to an emergency department."
+};
+
+function examAdvice(cards){
+  const age = A.age;
+  let months = age < 19 ? 12 : age >= 65 ? 12 : 24;
+  const why = [];
+  if (age < 19) why.push("children and teens should be checked yearly");
+  if (age >= 65) why.push("yearly from age 65");
+  if (isDiabetic(A)){ months = Math.min(months, 12); why.push("diabetes"); }
+  if (A.cl === "yes"){ months = Math.min(months, 12); why.push("contact lens wear"); }
+  const raised = cards.filter(c => c.level >= 2 && !c.state);
+  if (raised.length){ months = Math.min(months, 12); why.push(`your ${raised.map(c => c.name.replace(/ \(.*\)/,"").toLowerCase()).join(" and ")} risk`); }
+  const known = cards.filter(c => c.state === "known");
+  if (known.length){ months = Math.min(months, 12); }
+  const high = cards.some(c => c.level >= 3 && !c.state);
+  const last = A.lastExam && A.lastExam !== "unk" ? parseInt(A.lastExam,10)*12 : null;
+  const overdue = last != null && (last > months || (high && last >= 24));
+  let when;
+  if (overdue || (high && (last == null || last > 12))) when = "Book an exam now";
+  else if (A.lastExam === "unk" || A.lastExam == null) when = `An eye exam every ${months === 12 ? "year" : "1 to 2 years"}; if you're not sure when your last one was, book one now`;
+  else when = `Next exam within ${months === 12 ? "a year" : "1 to 2 years"} of your last one`;
+  return { when, why, overdue, months, known };
+}
+
+/* ---------- results ---------- */
+function showResults(){
+  const cards = [glaucoma(), amd(), dr(), cataract(), rrd(), kc(), dryEye()].filter(Boolean);
+  cards.forEach(c => { if (c.state) c.level = c.state === "known" ? (c.level ?? 2) : -1; });
+
+  // urgent
+  const reds = (A.red || []).filter(v => v !== NONE);
+  $("#urgent").innerHTML = reds.length ? `<div class="urgent" role="alert">
+      <h2>Don't wait for a booking</h2>
+      <ul>${reds.map(r => `<li>${RED[r]}</li>`).join("")}</ul>
+      <p class="call">Call the clinic now: <a href="${TEL}" target="_top">${PHONE}</a>. After hours, go to the nearest emergency department.</p>
+    </div>` : "";
+
+  // overall
+  const scored = cards.filter(c => !c.state);
+  const top = Math.max(0, ...scored.map(c => c.level));
+  const drivers = scored.filter(c => c.level === top && top > 0).map(c => c.name);
+  const known = cards.filter(c => c.state === "known").map(c => c.name);
+  const ex = examAdvice(cards);
+  if (reds.length){ ex.when = "Call today about the symptoms in the red box above"; ex.why = []; }
+  const overallText = top === 0
+    ? "None of the conditions checked comes out above Low for you right now. Regular exams still matter: the commonest eye diseases are silent early on."
+    : `Your highest risk is ${drivers.join(" and ")}. See below for what is driving it and what helps.`;
+  $("#summary").innerHTML = `
+    <div class="big"><h2 style="font-size:1.2rem">Overall</h2><span class="pill big l${top}">${LEVELS[top]} risk</span></div>
+    <p>${overallText}${known.length ? ` You already have a diagnosis for ${known.join(" and ")}; follow your eye doctor's plan for it.` : ""}</p>
+    <div class="exam"><b>${ex.when}.</b>${ex.why.length ? `<span class="small muted">Because of: ${ex.why.join(", ")}.</span>` : ""}
+      <span class="small muted">Book online or call <a href="${TEL}" target="_top">${PHONE}</a>. Bring a printout of this page if you like.</span></div>
+    ${A.age < 18 ? `<p class="small">For a child, nearsightedness is the main thing to watch. Try our <a href="${MYOPIA_TOOL}" target="_top">myopia risk calculator</a>.</p>` : ""}
+    ${A.dm === "unsure" ? `<p class="small">You weren't sure about diabetes. Ask your family doctor for an A1c test: diabetes damages the retina before it causes symptoms.</p>` : ""}
+    ${A.dm === "pre" ? `<p class="small">Prediabetes: the retina is usually still healthy, but keeping blood sugar from rising protects it. Have your eyes checked when diabetes is diagnosed.</p>` : ""}`;
+
+  // highest level first (a diagnosis sorts with Elevated); "not applicable" last
+  cards.sort((a,b) => b.level - a.level || (b.state==="known") - (a.state==="known"));
+  $("#cards").innerHTML = cards.map(cardHtml).join("");
+  $("#others").textContent = isDiabetic(A) ? "" : "Diabetic retinopathy isn't shown because it only affects people with diabetes.";
+
+  $("#printdate").textContent = new Date().toLocaleDateString("en-CA", { year:"numeric", month:"long", day:"numeric" });
+  $("#quiz").hidden = true; $("#progress").hidden = true; $("#results").hidden = false;
+  toTop();
+  $("#res-title").setAttribute("tabindex","-1");
+  (reds.length ? $("#urgent h2") : $("#summary h2")).setAttribute("tabindex","-1");
+  (reds.length ? $("#urgent h2") : $("#summary h2")).focus({ preventScroll:true });
+}
+
+function cardHtml(c){
+  let pill, meter = "";
+  if (c.state === "known") pill = `<span class="pill known">Diagnosed</span>`;
+  else if (c.state === "done") pill = `<span class="pill done">Not applicable</span>`;
+  else {
+    pill = `<span class="pill l${c.level}">${LEVELS[c.level]}</span>`;
+    meter = `<div class="meter-wrap"><div class="meter l${c.level}" aria-hidden="true"><i></i><i></i><i></i><i></i></div><span>Low · Moderate · Elevated · High</span></div>`;
+  }
+  const fl = (c.factors || []).filter(f => f.m !== 1 || f.show || /not given|not known/.test(f.t));
+  const up = fl.map(f => `<li class="${f.m < 1 ? "f-down" : "f-up"}">${f.t}</li>`).join("");
+  const extra = (c.extraFactors || []).map(f => `<li class="f-up">${f.t}</li>`).join("");
+  const factors = up || extra ? `<div><h4>What's driving it</h4><ul>${up}${extra}</ul></div>`
+    : (c.state ? "" : `<div><h4>What's driving it</h4><p class="small muted">Mostly your age; you reported no extra risk factors.</p></div>`);
+  const actions = c.actions && c.actions.length ? `<div><h4>What helps</h4><ul>${c.actions.map(a => `<li>${a}</li>`).join("")}</ul></div>` : "";
+  const estLine = c.est ? `<p>Rough figure: ${inN(c.est.p)} people with answers like yours (${c.what}). Treat it as a guide to the level, not a precise number.</p>` : "";
+  const how = c.method || c.refs ? `<details><summary>How this was worked out</summary><div class="body">
+      ${estLine}${c.method ? `<p>${c.method}</p>` : ""}${c.note ? `<p>${c.note}</p>` : ""}
+      <ol class="refs">${c.refs.map(r => `<li>${r}</li>`).join("")}</ol></div></details>` : "";
+  return `<article class="res" aria-label="${esc(c.name)}">
+    <div class="res-top"><div style="display:grid;gap:6px"><h3>${c.name}</h3><div>${pill}</div></div>${meter}</div>
+    <p class="lead">${c.lead}</p>
+    ${factors || actions ? `<div class="cols">${factors}${actions}</div>` : ""}
+    ${how}
+  </article>`;
+}
+
+/* ---------- start ---------- */
+render();
+
+/* in a frame (the clinic page), report height so the host sizes the frame (see embed/eye-risk.html) */
+if (window.parent !== window){
+  let last = 0;
+  const send = () => {
+    const h = Math.ceil(document.body.getBoundingClientRect().height);
+    if (Math.abs(h - last) < 2) return;
+    last = h;
+    try { window.parent.postMessage({ eyerisk:"height", height:h }, "*"); } catch(e){}
+  };
+  if ("ResizeObserver" in window) new ResizeObserver(send).observe(document.body);
+  window.addEventListener("load", send); send();
+}
+
+// for testing from the console
+window.__eyerisk = { answers: () => A, set: o => { A = Object.assign({}, o); render(); }, results: () => showResults() };
+})();
+</script>
+</body>
+</html>

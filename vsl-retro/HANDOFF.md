@@ -13,6 +13,7 @@ GitHub Pages publishes `vsl-retro/` from `main` via `.github/workflows/pages.yml
 | https://drburke-droid.github.io/VSL/ | Visual Systems Lab (15 tools) on the CRT. Target: calgaryvisioncentre.com/lab |
 | https://drburke-droid.github.io/VSL/progressive-lens/ | Building a Progressive Lens (8-step explainer), opened from the lab desktop |
 | https://drburke-droid.github.io/VSL/staircase/ | The Staircase in Your Glasses: blog article (`#embed`) and single figures (`#fig=N`) for /lenses; snippets in `embed/staircase-*.html` |
+| https://drburke-droid.github.io/VSL/eye-risk/ | Eye Health Risk Check questionnaire; snippet in `embed/eye-risk.html` replaces the old inline calculator on the clinic page |
 | https://drburke-droid.github.io/VSL/home.html | Homepage "then": 1998 web on the CRT (landscape) or a PDA (portrait) |
 | https://drburke-droid.github.io/VSL/today.html | Homepage "now": Momento360 clinic tour on an angled tablet (landscape) or a straight-on phone (portrait) |
 | https://drburke-droid.github.io/VSL/sites/cvc1998/ | Our 1998 site, re-created |

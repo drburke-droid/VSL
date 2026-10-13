@@ -73,6 +73,12 @@ staircase/                  The Staircase in Your Glasses: blog article on why p
                             can put figures between its own text. Built from the same lens and staircase models as progressive-lens/
 embed/staircase-post.html   Squarespace snippet: the whole article, for the blog post
 embed/staircase-fig2..5.html Squarespace snippets: one figure each, for calgaryvisioncentre.com/lenses
+eye-risk/                   Eye Health Risk Check: a 7-step patient questionnaire (one HTML file, no libraries) that gives a
+                            risk level for glaucoma, AMD, diabetic retinopathy, cataract, retinal detachment, keratoconus and
+                            dry eye, flags same-day symptoms, and suggests when to book. Age baseline x published relative
+                            risks, capped; OHTS-EGPS and AREDS replace the estimate when exam numbers are entered. #embed
+                            hides its title. Console: __eyerisk.set({...}); __eyerisk.results() to test a profile
+embed/eye-risk.html         Squarespace snippet for it (replaces the old inline #eyeRiskCalc calculator)
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)
