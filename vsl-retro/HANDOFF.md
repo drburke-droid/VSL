@@ -31,7 +31,10 @@ Mobile (`max-width: 760px`): stacked; retro frame 328/613; tour frame 708/1418 (
 Mobile also shows "Then" / "Now" as plain `<h2>` labels above the two devices (hidden on desktop).
 They are in the page, not in a frame, so they take the Squarespace site's own H2 style.
 The heading ("Technology has come a long way since 1998." / grey "So has eye care.") is
-also in the embed, as one `<h2>` in the site's H2 font; the snippet sets its size and colours.
+also in the embed, in the site's H2 font; the snippet sets its size and colours. On desktop
+line 1 spans both columns and line 2 sits in the tablet's column, right-aligned, just above the
+tablet's tilted top edge (`margin-top: -0.25em`, worked out from today.html's screen corners).
+Line 2 is its own `aria-hidden` h2; screen readers get it from a hidden span in line 1.
 The grey line rises in 0.8 s after the heading scrolls into view (CSS animation, released by
 the small script at the end); it no longer comes from a Squarespace text block.
 
