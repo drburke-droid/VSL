@@ -30,6 +30,13 @@ monitor `width: 90%; margin-bottom: 4%`, tablet `width: 88%; margin-bottom: 10%`
 Mobile (`max-width: 760px`): stacked; retro frame 328/613; tour frame 708/1418 (phone), `width: 90%; max-width: 420px`.
 Mobile also shows "Then" / "Now" as plain `<h2>` labels above the two devices (hidden on desktop).
 They are in the page, not in a frame, so they take the Squarespace site's own H2 style.
+The heading ("Technology has come a long way since 1998." / grey "So has eye care.") is
+also in the embed, in the site's H2 font; the snippet sets its size and colours. On desktop
+line 1 spans both columns and line 2 sits in the tablet's column, right-aligned, just above the
+tablet's tilted top edge (`margin-top: -0.25em`, worked out from today.html's screen corners).
+Line 2 is its own `aria-hidden` h2; screen readers get it from a hidden span in line 1.
+The grey line rises in 0.8 s after the heading scrolls into view (CSS animation, released by
+the small script at the end); it no longer comes from a Squarespace text block.
 
 Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show immediately.
 
@@ -76,9 +83,8 @@ Frame URLs carry `?v=N`. Bump N in the Squarespace block when a change must show
    Owner was told to delete it; not yet confirmed fixed. Diagnose with `document.elementFromPoint`
    at the frame's centre on the live page.
 2. **Real-device test of the phone scene** (touch drag on iPhone) has not been done.
-3. Copy the owner is using on the page (Squarespace, not in this repo): heading along the lines of
-   "Computers have come a long way since 1998. So has eye care." and a paragraph beginning
-   "The screen above shows the web as it looked in 1998…".
+3. Copy the owner is using on the page (Squarespace, not in this repo): a paragraph beginning
+   "The screen above shows the web as it looked in 1998…". The heading is now in the embed.
 4. The Wayback Machine is a third party; if a capture degrades, re-screen and swap it in `js/home.json`.
 
 ## Working habits that paid off

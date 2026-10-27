@@ -1,4 +1,7 @@
 <div class="vsl-pair">
+  <h2 class="vsl-head">Technology has come a long way<br>
+    since 1998.<span class="vsl-sr"> So has eye care.</span></h2>
+  <h2 class="vsl-head vsl-head-2" aria-hidden="true">So has eye care.</h2>
   <h2 class="vsl-label">Then</h2>
   <div class="vsl-then">
     <iframe
@@ -30,9 +33,69 @@
   width: 100%;
   background: #fff;
 }
+/* heading: plain h2s, so they take the site's H2
+   font; size, spacing and colours are set here.
+   Line 1 spans both columns; line 2 sits in the
+   tablet's column, just above its tilted top edge
+   (the -0.25em is measured from today.html). */
+.vsl-head {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0 0 clamp(4px, 1.5vw, 24px);
+  padding: 0;
+  color: #111;
+  font-size: clamp(2.1rem, 5.4vw, 5.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  text-align: left;
+}
+.vsl-head-2 {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  justify-self: end;
+  position: relative;
+  z-index: 1;
+  margin: -0.25em 2% 0 0;
+  color: #6b6b6b;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.vsl-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* line 2 starts hidden and rises in once the
+   heading is on screen (the script adds .vsl-in) */
+.vsl-head-2 {
+  animation: vsl-rise 1s cubic-bezier(.2,.7,.2,1)
+    0.8s both paused;
+}
+.vsl-in .vsl-head-2 {
+  animation-play-state: running;
+}
+@keyframes vsl-rise {
+  from { opacity: 0; transform: translateY(0.3em); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes vsl-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vsl-head-2 {
+    animation-name: vsl-fade;
+  }
+}
 .vsl-then {
   position: relative;
   aspect-ratio: 738 / 720;
+  grid-column: 1;
+  grid-row: 2;
   width: 90%;
   justify-self: start;
   margin-bottom: 4%;
@@ -40,6 +103,8 @@
 .vsl-now {
   position: relative;
   aspect-ratio: 1130 / 940;
+  grid-column: 2;
+  grid-row: 2;
   width: 88%;
   justify-self: end;
   margin-bottom: 10%;
@@ -58,6 +123,23 @@
 @media (max-width: 760px) {
   .vsl-pair {
     grid-template-columns: 1fr;
+  }
+  .vsl-pair > * {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .vsl-head {
+    margin: 0;
+    font-size: clamp(1.9rem, 8.4vw, 2.6rem);
+    line-height: 1.08;
+  }
+  /* pull line 2 up under line 1 (cancels the
+     24px row gap) */
+  .vsl-head-2 {
+    margin: calc(0.1em - 24px) 0 8px;
+  }
+  .vsl-head br {
+    display: none;
   }
   /* plain h2: takes the site's own H2 font */
   .vsl-label {
@@ -87,3 +169,18 @@
   padding-bottom: 0 !important;
 }
 </style>
+<script>
+(function () {
+  var pair = document.querySelector('.vsl-pair');
+  var h = pair && pair.querySelector('.vsl-head');
+  if (!h) return;
+  function show() { pair.classList.add('vsl-in'); }
+  if (!('IntersectionObserver' in window)) return show();
+  var io = new IntersectionObserver(function (es) {
+    if (!es[0].isIntersecting) return;
+    show();
+    io.disconnect();
+  }, { threshold: 0.5 });
+  io.observe(h);
+})();
+</script>
