@@ -1,4 +1,9 @@
 <div class="vsl-pair">
+  <h2 class="vsl-head">
+    <span class="vsl-head-1">Technology has come a long way<br>
+      since 1998.</span>
+    <span class="vsl-head-2">So has eye care.</span>
+  </h2>
   <h2 class="vsl-label">Then</h2>
   <div class="vsl-then">
     <iframe
@@ -30,6 +35,53 @@
   width: 100%;
   background: #fff;
 }
+/* heading: plain h2, so it takes the site's H2 font;
+   size, spacing and colours are set here */
+.vsl-head {
+  grid-column: 1 / -1;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 clamp(4px, 1.5vw, 24px);
+  padding: 0;
+  font-size: clamp(2.1rem, 5.4vw, 5.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  text-align: left;
+}
+.vsl-head span {
+  display: block;
+}
+.vsl-head-1 {
+  color: #111;
+}
+.vsl-head-2 {
+  color: #6b6b6b;
+  text-align: right;
+  margin-top: 0.12em;
+}
+/* the second line starts hidden and rises in
+   once the heading is on screen (the script
+   adds .vsl-in) */
+.vsl-head-2 {
+  animation: vsl-rise 1s cubic-bezier(.2,.7,.2,1)
+    0.8s both paused;
+}
+.vsl-in .vsl-head-2 {
+  animation-play-state: running;
+}
+@keyframes vsl-rise {
+  from { opacity: 0; transform: translateY(0.3em); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes vsl-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vsl-head-2 {
+    animation-name: vsl-fade;
+  }
+}
 .vsl-then {
   position: relative;
   aspect-ratio: 738 / 720;
@@ -59,6 +111,15 @@
   .vsl-pair {
     grid-template-columns: 1fr;
   }
+  .vsl-head {
+    width: auto;
+    margin-bottom: 8px;
+    font-size: clamp(1.9rem, 8.4vw, 2.6rem);
+    line-height: 1.08;
+  }
+  .vsl-head br {
+    display: none;
+  }
   /* plain h2: takes the site's own H2 font */
   .vsl-label {
     display: block;
@@ -87,3 +148,17 @@
   padding-bottom: 0 !important;
 }
 </style>
+<script>
+(function () {
+  var h = document.querySelector('.vsl-head');
+  if (!h) return;
+  function show() { h.classList.add('vsl-in'); }
+  if (!('IntersectionObserver' in window)) return show();
+  var io = new IntersectionObserver(function (es) {
+    if (!es[0].isIntersecting) return;
+    show();
+    io.disconnect();
+  }, { threshold: 0.5 });
+  io.observe(h);
+})();
+</script>
