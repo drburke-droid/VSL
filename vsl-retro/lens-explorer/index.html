@@ -310,7 +310,7 @@ if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.ad
     <article>
       <h2>Typical online price ($–$$$$)</h2>
       <p>Compares each lens with others on the same replacement schedule, by cost per day of wear when bought online in Canada. $ is well below typical for its schedule, $$ about typical, $$$ above and $$$$ well above.</p>
-      <p>Prices vary a lot between stores, sales and rebates, so treat this as a rough guide. Prices at our clinic may differ.</p>
+      <p>Ultra One Day uses the price in our own online store; the others use regular prices at a major online retailer. Prices vary a lot between stores, sales and rebates, so treat this as a rough guide.</p>
     </article>
     <article>
       <h2>Keep in mind</h2>
@@ -321,7 +321,7 @@ if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.ad
   <footer class="lx-foot">
     <p><strong>Calgary Vision Centre.</strong> For general information only; not a substitute for an eye exam or contact lens fitting.</p>
     <p>Values are each manufacturer’s published figures for a −3.00 D spherical lens, checked November 2026. Sources: Bausch + Lomb <a href="https://ecp.bauschcontactlenses.com/siteassets/pdf/bausch-lomb-portfolio-parameters.pdf" target="_blank" rel="noopener">parameter guide</a> and <a href="https://ecp.bauschcontactlenses.com/products/ultra-monthly/" target="_blank" rel="noopener">ULTRA page</a>; Alcon product pages for <a href="https://www.myalcon.com/professional/contact-lenses/daily/precision1" target="_blank" rel="noopener">Precision1</a>, <a href="https://www.myalcon.com/ca/professional/contact-lenses/weekly/precision7/" target="_blank" rel="noopener">Precision7</a>, <a href="https://www.myalcon.com/professional/contact-lenses/monthly/total30" target="_blank" rel="noopener">Total30</a> and <a href="https://www.myalcon.com/professional/contact-lenses/monthly/air-optix-night-day-aqua/" target="_blank" rel="noopener">Air Optix Night &amp; Day Aqua</a>; Johnson &amp; Johnson <a href="https://shop.acuvue.com/pub/media/ACUVUE-Technical-Specification-Guide-05-27-25.pdf" target="_blank" rel="noopener">ACUVUE technical specification guide</a>; CooperVision <a href="https://coopervision.com/sites/coopervision.com/files/media-document/coopervision-product-reference-guide-052026_6.pdf" target="_blank" rel="noopener">product reference guide</a>.</p>
-    <p>Price tiers use regular (pre-sale) online prices in Canadian dollars at <a href="https://www.clearly.ca/en-ca/contact-lenses" target="_blank" rel="noopener">Clearly.ca</a>, November 2026, converted to cost per day of wear. Ultra One Day is priced from <a href="https://www.fyidoctors.com/collections/ultra" target="_blank" rel="noopener">FYidoctors.com</a>; Avaira Vitality and Proclear are estimates because Clearly.ca doesn’t sell them; SofLens 38 isn’t compared.</p>
+    <p>Price tiers use regular (pre-sale) online prices in Canadian dollars at <a href="https://www.clearly.ca/en-ca/contact-lenses" target="_blank" rel="noopener">Clearly.ca</a>, November 2026, converted to cost per day of wear. Ultra One Day uses our <a href="https://calgaryvisioncentre.ottooptics.io/reorder/product/view/?prodid=000199" target="_blank" rel="noopener">online store</a>’s price ($90 for a box of 90); Avaira Vitality and Proclear are estimates because Clearly.ca doesn’t sell them; SofLens 38 isn’t compared.</p>
     <p>Infection risk research: Stapleton et al., <a href="https://pubmed.ncbi.nlm.nih.gov/18538404/" target="_blank" rel="noopener">Ophthalmology 2008</a> (incidence by lens type and wear); Stapleton &amp; Carnt, <a href="https://www.nature.com/articles/eye2011288" target="_blank" rel="noopener">Eye 2012</a> (moderate/severe infection with daily disposables vs. frequent-replacement lenses); Carnt et al., <a href="https://doi.org/10.1016/j.ophtha.2022.08.002" target="_blank" rel="noopener">Ophthalmology 2022</a> (Acanthamoeba risk with reusable vs. daily disposable lenses); Chalmers et al., <a href="https://pubmed.ncbi.nlm.nih.gov/25574042/" target="_blank" rel="noopener">IOVS 2015</a> (inflammatory events with daily disposables vs. reusable lenses).</p>
     <p>Brand names are trademarks of their respective owners. Ultra One Day is sold as INFUSE in the US.</p>
   </footer>
@@ -814,7 +814,7 @@ if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.ad
         '<div class="lx-tip-score">Overall score <b>' + overallNum(l) + '</b> · ' + overallText(l) + '</div>' +
         '<div class="lx-tip-meta">Infection &amp; inflammation risk: ' + riskHTML(l) + '</div>' +
         (l.risk === 1 ? '' : '<div class="lx-tip-meta">vs. daily disposables: serious infection ≈2×, Acanthamoeba ≈4×, inflammation ≈10×</div>') +
-        '<div class="lx-tip-meta">Typical online price: ' + costHTML(l) + '</div>' + btn + '</div>';
+        '<div class="lx-tip-meta">' + (l.ourPrice ? 'Our online store price: ' : 'Typical online price: ') + costHTML(l) + '</div>' + btn + '</div>';
     }).join('');
     if (pinned) html += '<button type="button" class="lx-tip-close" data-act="close" aria-label="Close">×</button>';
     else html += '<div class="lx-tip-hint">Click to compare</div>';
@@ -918,7 +918,7 @@ if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.ad
           (l.risk === 1 ? 'Lowest' : rp.text.charAt(0).toUpperCase() + rp.text.slice(1)) + '</span></li>';
       }).join('') + '</ul>' +
       (l.risk === 1 ? '' : '<p>Compared with daily disposables.</p>') + '</div>' +
-      '<div class="lx-metric"><div class="lx-metric-top"><span>Typical online price</span>' + costHTML(l) + '</div>' +
+      '<div class="lx-metric"><div class="lx-metric-top"><span>' + (l.ourPrice ? 'Our online store price' : 'Typical online price') + '</span>' + costHTML(l) + '</div>' +
       '<p>' + (l.cost ? costText(l).charAt(0).toUpperCase() + costText(l).slice(1) : 'No comparable online price') + '</p></div>' +
       (l.gradient ? '<p class="lx-note">*Core water content. The lens surface is ' + l.gradient + ' water.</p>' : '') +
       delta + '</article>';

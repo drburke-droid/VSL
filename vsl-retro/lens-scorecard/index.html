@@ -414,7 +414,7 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
       <ul class="keynotes">
         <li><span class="chip r1">Lowest</span><span>Daily disposables: a fresh lens every day, no case or solution.</span></li>
         <li><span class="chip r2">Medium</span><span>Reusable lenses: compared with dailies, serious infection about 2×, Acanthamoeba about 4×, inflammation about 10×.</span></li>
-        <li><span>Price: $–$$$$ compares lenses on the same schedule; the dollar figure is a typical online cost per eye per day (CAD).</span></li>
+        <li><span>Price: $–$$$$ compares lenses on the same schedule; the dollar figure is the cost per eye per day (CAD) at a major online retailer. † Ultra One Day: our online store’s price.</span></li>
         <li><span>* Water shown is the lens core; the surface layer is much wetter.</span></li>
       </ul>
     </footer>
@@ -437,11 +437,11 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
       </div>
       <div>
         <h3>Price</h3>
-        <p>Regular online prices in Canada, converted to cost per eye per day. $ is well below typical for the lens’s schedule, $$ about typical, $$$ above, $$$$ well above. Prices vary with stores, sales and rebates, and prices at our clinic and online store may differ.</p>
+        <p>Regular prices at a major Canadian online retailer, converted to cost per eye per day; Ultra One Day uses our own online store’s price ($90 for a box of 90). $ is well below typical for the lens’s schedule, $$ about typical, $$$ above, $$$$ well above. Prices vary with stores, sales and rebates.</p>
         <h3>Keep in mind</h3>
         <p>Comfort also depends on fit, the lens surface, your tears and how you care for your lenses, and manufacturers don’t all measure the same way, so treat small differences as a tie. A contact lens prescription names a specific lens, so switching needs a fitting. <a id="sb-explorer" href="https://drburke-droid.github.io/VSL/lens-explorer/" target="_blank" rel="noopener">See every lens on a chart ↗</a></p>
       </div>
-      <p class="src">Values are each manufacturer’s published figures for a −3.00 D spherical lens, checked November 2026 (Bausch + Lomb, Alcon, Johnson &amp; Johnson and CooperVision product guides). Prices: Clearly.ca regular prices, November 2026; Ultra One Day from FYidoctors.com; Avaira Vitality and Proclear estimated; SofLens 38 not compared. Infection research: Stapleton et al., <a href="https://pubmed.ncbi.nlm.nih.gov/18538404/" target="_blank" rel="noopener">Ophthalmology 2008</a>; Stapleton &amp; Carnt, <a href="https://www.nature.com/articles/eye2011288" target="_blank" rel="noopener">Eye 2012</a>; Carnt et al., <a href="https://doi.org/10.1016/j.ophtha.2022.08.002" target="_blank" rel="noopener">Ophthalmology 2022</a>; Chalmers et al., <a href="https://pubmed.ncbi.nlm.nih.gov/25574042/" target="_blank" rel="noopener">IOVS 2015</a>. Brand names are trademarks of their owners; Ultra One Day is sold as INFUSE in the US.</p>
+      <p class="src">Values are each manufacturer’s published figures for a −3.00 D spherical lens, checked November 2026 (Bausch + Lomb, Alcon, Johnson &amp; Johnson and CooperVision product guides). Prices: Clearly.ca regular prices, November 2026; Ultra One Day from <a href="https://calgaryvisioncentre.ottooptics.io/reorder/product/view/?prodid=000199" target="_blank" rel="noopener">our online store</a>; Avaira Vitality and Proclear estimated; SofLens 38 not compared. Infection research: Stapleton et al., <a href="https://pubmed.ncbi.nlm.nih.gov/18538404/" target="_blank" rel="noopener">Ophthalmology 2008</a>; Stapleton &amp; Carnt, <a href="https://www.nature.com/articles/eye2011288" target="_blank" rel="noopener">Eye 2012</a>; Carnt et al., <a href="https://doi.org/10.1016/j.ophtha.2022.08.002" target="_blank" rel="noopener">Ophthalmology 2022</a>; Chalmers et al., <a href="https://pubmed.ncbi.nlm.nih.gov/25574042/" target="_blank" rel="noopener">IOVS 2015</a>. Brand names are trademarks of their owners; Ultra One Day is sold as INFUSE in the US.</p>
     </div>
   </details>
   <p class="fine">Calgary Vision Centre. For general information only; not a substitute for an eye exam or contact lens fitting.</p>
@@ -628,7 +628,7 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
   function riskVal(l) { return l.risk === 1 ? { t: 'Lowest', b: 'New lens daily', c: 'r1' } : { t: 'Medium', b: 'Case + solution', c: 'r2' }; }
   function priceVal(l) {
     if (!l.cost) return { t: '—', b: 'No price', c: '' };
-    return { t: '$$$$'.slice(0, l.cost) + '<s>' + '$$$$'.slice(l.cost) + '</s>', b: money(l.day), c: '' };
+    return { t: '$$$$'.slice(0, l.cost) + '<s>' + '$$$$'.slice(l.cost) + '</s>', b: money(l.day) + (l.ourPrice ? '†' : ''), c: '' };
   }
   var BLANK = { t: '', b: '', c: '' };
   var POOLS = {
@@ -752,7 +752,7 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
         r.btn.setAttribute('aria-label', l.name + ', ' + l.brand + ', score ' + sc + '. Show details');
         r.btn.disabled = false;
         var txt = [String(i + 1), l.name + (l.gradient ? ' (core water; wetter surface)' : '') + ', ' + l.brand, SCHED_WORD[l.sched] + ', ' + typeWord(l).toLowerCase(),
-          fmtDkt(l.dkt) + ' Dk/t', l.water + '%', riskVal(l).t + ' risk', l.cost ? '$$$$'.slice(0, l.cost) + ', ' + money(l.day) + ' a day' : 'not compared', sc + ' out of 100'];
+          fmtDkt(l.dkt) + ' Dk/t', l.water + '%', riskVal(l).t + ' risk', l.cost ? '$$$$'.slice(0, l.cost) + ', ' + money(l.day) + ' a day' + (l.ourPrice ? ' (our online store price)' : '') : 'not compared', sc + ' out of 100'];
         r.srs.forEach(function (s, k) { s.textContent = txt[k]; });
       } else {
         r.off = true; r.tr.classList.add('off');
@@ -895,7 +895,8 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
       ? 'A fresh lens every day, with no case or solution to carry germs. Lowest on serious infection, Acanthamoeba and inflammation.'
       : 'Cleaned and stored in a case. Compared with daily disposables: serious infection about 2×, Acanthamoeba about 4×, inflammation about 10×.';
     var priceHtml = l.cost
-      ? '<div class="val">' + '$$$$'.slice(0, l.cost) + '<small>' + money(l.day) + ' per eye a day</small></div><p class="note"><span class="dot" data-l="' + lvPrice(l) + '"></span>' + TIER_WORD[l.cost] + ' for ' + classWord(l) + ' online</p>'
+      ? '<div class="val">' + '$$$$'.slice(0, l.cost) + '<small>' + money(l.day) + ' per eye a day</small></div><p class="note"><span class="dot" data-l="' + lvPrice(l) + '"></span>' +
+        (l.ourPrice ? 'Our online store: ' + esc(l.ourPrice) + '. ' + [null, 'Well below', 'About', 'Above', 'Well above'][l.cost] + ' the typical online price for ' + classWord(l) : TIER_WORD[l.cost] + ' for ' + classWord(l) + ' online') + '</p>'
       : '<div class="val">—</div><p class="note">Not compared: no current online price.</p>';
     var bars = [['Oxygen &amp; moisture', l.rOm, s.om], ['Infection safety', l.rSafety, s.safety], ['Price', l.rPrice, s.price]].map(function (b) {
       return '<div class="bar"><span>' + b[0] + ' · ' + Math.round(b[2] * 100) + '%</span><b>' + (b[1] === null ? '—' : Math.round(b[1])) + '</b><i><u style="width:' + (b[1] === null ? 0 : Math.round(b[1])) + '%"></u></i></div>';
