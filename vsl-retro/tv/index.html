@@ -15,19 +15,25 @@
   :root { --ink: #1A1A1F; --teal: #1F6B69; --muted: #5E5E68; --focus: #E2A72E;
     --steel: #3A4149; --steel-lo: #23282E; --wood: #DCAE78; --wood-lo: #BC8853;
     --osd: #7CFF8E; --vfd: #94D32C; --pen: #1C2C7A; --paper: #F4EEDD;
-    --tw: clamp(140px, 15.2vw, 182px); }                 /* width of one tape on the shelf */
+    --tw: clamp(140px, 15.2vw, 182px);
+    --top: 52px; --run: 1.3444; --sit: 38px; }     /* shelf: depth of the top face, its slant, how far things stand in from its back edge */                 /* width of one tape on the shelf */
   *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; background: transparent; }
+  html, body { margin: 0; background: transparent; overflow-x: hidden; }
   body { font-family: Poppins, system-ui, sans-serif; color: var(--ink); overflow-x: hidden; }
   button { font: inherit; color: inherit; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
   .scene { position: relative; max-width: 1180px; margin: 0 auto; padding: 8px 0 6px;
-    display: grid; grid-template-columns: minmax(0, 43fr) minmax(0, 57fr); align-items: end; }
+    display: grid; grid-template-columns: minmax(0, 48fr) minmax(0, 52fr); align-items: end; }
 
   /* ---- the set: screen under the photo, live clock and button hotspots over it ---- */
-  .setcol { padding: 0 4% 0 3%; }
-  .set { position: relative; width: 100%; aspect-ratio: 1312 / 1199; }
+  .setcol { padding: 0 24px 0 100px; }      /* room on the left for the board's far corner */
+  /* the set stands on the shelf's top face, not on its front edge: it overlaps the board by --sit */
+  .set { position: relative; z-index: 2; width: 100%; aspect-ratio: 1312 / 1199; margin-bottom: calc(-1 * var(--sit)); }
+  /* contact shadow: the bottom strip of the photo's own outline, in black, nudged down and blurred */
+  .setshadow { position: absolute; inset: 0; z-index: 0; pointer-events: none; transform: translate(.4%, 1.3%); filter: blur(5px); opacity: .6; }
+  .setshadow i { position: absolute; inset: 0; background: #1a0f06; clip-path: inset(91% 0 0 0);
+    -webkit-mask: url(tv.webp) 0 0 / 100% 100% no-repeat; mask: url(tv.webp) 0 0 / 100% 100% no-repeat; }
   .tvimg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 2; pointer-events: none; user-select: none; }
   /* the screen: a 4:3 box mapped onto the tube's four corners by a matrix3d set in fitScreen() */
   .screen { position: absolute; left: 0; top: 0; z-index: 1; transform-origin: 0 0; overflow: hidden; background: #000; container-type: inline-size; }
@@ -66,22 +72,40 @@
   .hot:focus-visible, .tape:focus-visible, .nav:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 
   /* ---- the shelf ---- */
-  .board { height: 18px; background: linear-gradient(var(--wood), var(--wood-lo));
+  /* The board is seen the way the photo sees the VCR: from the left and a little above. Its top face is a
+     parallelogram whose depth runs up and to the left along the VCR's own side edge (--run px left per px up,
+     measured on tv.webp: the VCR's bottom-left edge goes 121 left for 90 up), so the set and the tapes stand
+     on a surface instead of balancing on an edge. The left end of the board shows; the two boards tile. */
+  .board { position: relative; }
+  .btop { display: block; height: var(--top); transform-origin: 0 100%; transform: skewX(53.36deg);
+    background: repeating-linear-gradient(0deg, rgba(120, 70, 20, .035) 0 1px, transparent 1px 5px), linear-gradient(#E3BC88, #EDCB9C); }
+  .bfront { display: block; height: 18px; background: linear-gradient(var(--wood), var(--wood-lo));
     box-shadow: 0 6px 0 var(--steel), 0 7px 0 var(--steel-lo), 0 24px 18px -12px rgba(30, 25, 20, .38); }
+  .bside { display: none; position: absolute; top: 0; left: calc(-1 * var(--top) * var(--run)); width: calc(var(--top) * var(--run)); height: 25px;
+    transform-origin: 0 0; transform: skewY(36.64deg); background: linear-gradient(#A97945 0 18px, var(--steel-lo) 18px); }
   .setcol + .shelfcol { min-width: 0; }
-  .setcol .board { margin: 0 -4.5% 0 -3.5%; border-radius: 3px 0 0 3px; }
-  .shelfcol .board { border-radius: 0 3px 3px 0; }
-  .shelf { position: relative; }
-  .tapes { display: flex; align-items: flex-end; gap: 16px; overflow-x: auto; overflow-y: hidden; padding: 30px 26px 0 14px;
+  .setcol .board { margin: 0 -24px 0 -26px; }
+  .setcol .bside { display: block; }
+  .shelf { position: relative; z-index: 2; margin-bottom: calc(-1 * var(--sit) - 6px); }
+  .tapes { display: flex; align-items: flex-end; gap: 16px; overflow-x: auto; overflow-y: hidden; padding: 30px 84px 12px 18px;
+    /* tapes fade out before the board's slanted far end, so none hangs over it */
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 78px), transparent calc(100% - 10px)); mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 78px), transparent calc(100% - 10px));
     scroll-snap-type: x proximity; scroll-padding: 0 26px; scrollbar-width: none; overscroll-behavior-x: contain; }
   .tapes::-webkit-scrollbar { display: none; }
   .slot { position: relative; flex: 0 0 var(--tw); scroll-snap-align: start; }
+  .slot::before { content: ""; position: absolute; left: -5%; right: 1%; bottom: -6px; height: 13px; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(26, 15, 6, .6), transparent); filter: blur(1.5px); }
+  .slot[data-out]::before { opacity: 0; }
   .slot[data-out]::after { content: "IN THE VCR"; position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none;
     font-size: 11px; font-weight: 700; letter-spacing: .2em; color: var(--muted); }
   .tape { position: relative; display: block; width: 100%; aspect-ratio: 443 / 812; appearance: none; border: 0; padding: 0; margin: 0; cursor: pointer;
-    background: url(tape.webp) center / 100% 100% no-repeat; container-type: inline-size; text-align: left; border-radius: 4%;
-    transform-origin: 50% 100%; transform: rotate(var(--lean, 0deg)); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
+    background: none; container-type: inline-size; text-align: left; border-radius: 4%;
+    transform-origin: 50% 100%; transform: rotate(var(--lean, 0deg));
     transition: transform .28s cubic-bezier(.2, .7, .3, 1), filter .28s; -webkit-tap-highlight-color: transparent; }
+  /* the cassette itself, with its thickness: the same up-and-left direction as the shelf, so its left side and top show */
+  .tape::before { content: ""; position: absolute; inset: 0; z-index: -1; background: url(tape.webp) center / 100% 100% no-repeat;
+    filter: drop-shadow(-1.2px -.9px 0 #1d1d20) drop-shadow(-1.2px -.9px 0 #1a1a1d) drop-shadow(-1.2px -.9px 0 #18181a)
+            drop-shadow(-1.2px -.9px 0 #151517) drop-shadow(-1.2px -.9px 0 #131315) drop-shadow(-1.2px -.9px 0 #2b2b2f); }
   /* the sticker between the two reel windows: picture on top, title written underneath */
   .label { position: absolute; left: 16.9%; top: 33%; width: 66.8%; height: 29.4%; display: flex; flex-direction: column; overflow: hidden;
     background: var(--paper); border-radius: 1.2cqw; box-shadow: 0 0 0 .3cqw rgba(0, 0, 0, .35), 0 .6cqw 1cqw rgba(0, 0, 0, .5); transform: rotate(var(--tilt, 0deg)); }
@@ -94,14 +118,14 @@
   .stk-pick { background: #E2A72E; color: #2B1633; }
   .stk-new { background: #C8312B; color: #F5EEDF; }
   @media (hover: hover) {
-    .tape:hover { transform: translateY(-12px) rotate(0deg); filter: drop-shadow(0 14px 8px rgba(0, 0, 0, .35)) brightness(1.07); }
+    .tape:hover { transform: translateY(-12px) rotate(0deg); filter: brightness(1.08); }
   }
   .tape[aria-pressed="true"] { visibility: hidden; }
   .ghost { position: absolute; z-index: 20; pointer-events: none; transform-origin: center; }
   .nav { position: absolute; z-index: 5; top: 50%; width: 42px; height: 42px; margin-top: -21px; border-radius: 50%; border: 0; cursor: pointer;
     background: #fff; color: var(--ink); font-size: 20px; line-height: 42px; padding: 0; box-shadow: 0 2px 10px rgba(30, 25, 20, .3); transition: opacity .2s; }
   .nav.prev { left: 6px; }
-  .nav.next { right: 6px; }
+  .nav.next { right: 14px; }
   .nav[disabled] { opacity: 0; pointer-events: none; }
 
   .cap { grid-column: 1 / -1; margin: 34px auto 0; min-height: 3.6em; max-width: 860px; padding: 0 12px; text-align: center; font-size: 16px; line-height: 1.5; color: var(--muted); text-wrap: balance; }
@@ -117,9 +141,12 @@
     .scene { grid-template-columns: minmax(0, 1fr); }
     .setcol { padding: 0; }
     .set { width: 128%; margin-left: -28%; }
-    .setcol .board, .shelfcol .board { margin: 0; border-radius: 0; }
+    .setcol .board, .shelfcol .board { margin: 0; }
+    .btop { transform: none; }                 /* both boards run off both sides of the screen, so no end is ever seen */
+    .setcol .bside { display: none; }
     .shelfcol { margin-top: 18px; }
-    .tapes { padding: 26px 16px 0; gap: 14px; scroll-snap-type: x mandatory; scroll-padding: 0 16px; }
+    .setshadow { transform: translate(0, 1.3%); }
+    .tapes { padding: 26px 16px 12px; gap: 14px; -webkit-mask-image: none; mask-image: none; scroll-snap-type: x mandatory; scroll-padding: 0 16px; }
     .nav { display: none; }
     .cap { margin-top: 28px; min-height: 5.6em; font-size: 15px; }
   }
@@ -139,6 +166,7 @@
 <main class="scene" id="scene">
   <div class="setcol">
     <div class="set" id="set">
+      <div class="setshadow" aria-hidden="true"><i></i></div>
       <div class="screen" id="screen">
         <div class="blue" aria-hidden="true">
           <span class="ch">VIDEO 1</span>
@@ -154,7 +182,7 @@
       <svg class="clock" id="clock" viewBox="0 0 230 80" aria-hidden="true" focusable="false"></svg>
       <!-- button hotspots are added here by the script -->
     </div>
-    <div class="board" aria-hidden="true"></div>
+    <div class="board" aria-hidden="true"><i class="btop"></i><i class="bside"></i><i class="bfront"></i></div>
   </div>
 
   <div class="shelfcol">
@@ -163,7 +191,7 @@
       <div class="tapes" id="tapes" role="list" aria-label="Video tapes"></div>
       <button class="nav next" type="button" aria-label="More tapes" disabled>›</button>
     </div>
-    <div class="board" aria-hidden="true"></div>
+    <div class="board" aria-hidden="true"><i class="btop"></i><i class="bside"></i><i class="bfront"></i></div>
   </div>
 
   <p class="cap" id="cap" aria-live="polite"></p>
