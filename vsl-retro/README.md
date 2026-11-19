@@ -143,6 +143,12 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 - Buttons on the photo are hotspots: VCR EJECT/STOP eject, PLAY plays the first tape, REW/FF and the TV's CH
   buttons step through the tapes, TV power turns the tube off. All of them, the screen corners, the display and
   the cassette door are listed once in the `GEOMETRY` block of the script, in photo pixels.
+- The shelf is drawn from the photo's point of view (from the left and a little above), or the set looks as if it
+  hovers: the board has a top face, a parallelogram whose depth runs up and to the left along the VCR's own
+  bottom-left edge (121 px left per 90 up on `tv.webp`, `--run`), its left end shows, and the set and tapes stand
+  in from its back edge (`--sit`) with contact shadows. The set's shadow is the bottom strip of the photo's own
+  outline, blurred. Tapes get a few pixels of thickness in the same direction. On phones the boards run edge to
+  edge with a plain top face.
 - Tapes: `tape.webp` with a paper label over the middle (thumbnail from `i.ytimg.com`, title in handwriting). The
   most watched tape gets a STAFF PICK sticker, the most recent a NEW one. The shelf scrolls sideways.
 - The tape list: `scripts/update_videos.py` (repo root, standard library only) reads the channel's public feed and
