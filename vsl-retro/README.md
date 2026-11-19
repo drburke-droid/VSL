@@ -1,7 +1,7 @@
 # Visual Systems Lab — retro CRT front page
 
 A replacement for https://calgaryvisioncentre.com/lab: a photographed 1993 CRT whose
-tube shows a working Windows-95-style desktop. Each of the 15 lab tools is an icon on the
+tube shows a working Windows-95-style desktop. Each of the 16 lab tools is an icon on the
 teal desktop; windows drag, resize, minimize, maximize and close; the power
 button, screensaver and degauss are easter eggs.
 
@@ -9,7 +9,7 @@ Plain HTML/CSS/JS — no build step, no dependencies.
 
 ## Two pages, one codebase
 
-- `index.html` + `js/tools.json`: the Visual Systems Lab (15 tools) for /lab.
+- `index.html` + `js/tools.json`: the Visual Systems Lab (16 tools) for /lab.
 - `home.html` + `js/home.json`: the homepage version, framed as "we opened in 1998, so here
   is the web as it was that year". Every page is from 1998 (any other year ruins the joke). Twelve
   are Wayback captures, each checked by hand for a clean render: Google, AltaVista, Netscape, Winamp,
@@ -62,7 +62,7 @@ js/solitaire.js             Solitaire (Klondike, draw one; CVC mark on the card 
 js/extras.js                homepage 1998 extras, loaded on first use: Inbox (1998 e-mail, ends with a
                             note from the clinic), Recycle Bin (1998 junk + an old prescription), and the
                             once-per-visit dial-up dialog before the first 1998 page (modem sound on a button)
-js/tools.json               the 15 tools (title, URL, group, pixel icon) + 4 group windows + site links
+js/tools.json               the 16 tools (title, URL, group, pixel icon) + 4 group windows + site links
 home.html                   homepage entry point (see above)
 js/home.json                the 16 programs for home.html
 progressive-lens/           Building a Progressive Lens: a self-contained explainer page (one HTML file, three.js from cdnjs);
@@ -79,6 +79,12 @@ eye-risk/                   Eye Health Risk Check: a 7-step patient questionnair
                             risks, capped; OHTS-EGPS and AREDS replace the estimate when exam numbers are entered. #embed
                             hides its title. Console: __eyerisk.set({...}); __eyerisk.results() to test a profile
 embed/eye-risk.html         Squarespace snippet for it (replaces the old inline #eyeRiskCalc calculator)
+lens-explorer/              Contact Lens Explorer: 27 popular spherical lenses plotted by oxygen (Dk/t) and water content, up to
+                            three compared side by side, plus infection & inflammation risk by wear schedule and a rough online
+                            price tier, combined into an overall score with user-set weights (one HTML file, no libraries). Lens
+                            data, prices and evidence sit in the LENSES / RISK arrays in its script; sources in its footer.
+                            #embed hides its title
+embed/lens-explorer.html    Squarespace snippet for it (iframe sized by postMessage, like embed/eye-risk.html)
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)

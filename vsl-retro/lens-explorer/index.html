@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contact Lens Explorer: Oxygen vs. Moisture | Calgary Vision Centre</title>
+<meta name="description" content="Compare 27 popular contact lenses on oxygen, water content, infection and inflammation risk, and typical online price, then weigh what matters most to you.">
+<meta name="author" content="Dr Robert Burke, Calgary Vision Centre">
+<script>
+/* #embed (the Squarespace snippet, embed/lens-explorer.html): the host page supplies the title */
+if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.add('embed');
+</script>
+<style>
+/* Everything is scoped under .lx so it can be pasted into an existing page.
+   Data (lenses, prices, risk evidence) lives in the LENSES / RISK arrays in the script below;
+   sources are listed in the page footer. No libraries; everything runs in the browser. */
+.embed .lx-eyebrow,.embed .lx h1{display:none}
+.embed body{background:transparent!important}
+.lx{--ink:#0F1E2E;--ink2:#4A5868;--muted:#5F6B78;--line:#E3E8EE;--edge:#C9D1DA;--focus:#1C5CAB;
+  color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);background:#F4F7FA;line-height:1.5;max-width:1200px;margin:0 auto;
+  padding:clamp(16px,3vw,40px);border-radius:16px;box-sizing:border-box}
+.lx *,.lx *::before,.lx *::after{box-sizing:border-box}
+.lx button{font:inherit;cursor:pointer}
+.lx :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.lx-head{margin-bottom:20px}
+.lx-eyebrow{margin:0;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--focus)}
+.lx h1{font-size:clamp(26px,3.6vw,40px);line-height:1.1;margin:6px 0 10px;letter-spacing:-.02em;font-weight:800}
+.lx-lede{margin:0;max-width:780px;font-size:17px;color:var(--ink2)}
+.lx-panel{background:#fff;border:1px solid rgba(15,30,46,.08);border-radius:16px}
+
+.lx-pickers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:16px;margin-bottom:12px}
+@media (max-width:760px){.lx-pickers{grid-template-columns:1fr}}
+.lx-slot label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:6px}
+.lx-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+  background:var(--c);color:#fff;font-size:12px;font-weight:800;flex:none;line-height:1}
+.lx-row{display:flex;gap:8px}
+.lx select{flex:1;min-width:0;height:44px;border:1px solid var(--edge);border-radius:10px;padding:0 10px;
+  font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+.lx-clear{height:44px;padding:0 12px;border:1px solid var(--edge);background:#fff;border-radius:10px;color:var(--ink2);font-size:14px}
+.lx-clear:disabled{opacity:.45;cursor:default}
+
+.lx-filters{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:0 0 12px}
+.lx-seg{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.lx-seg-label{font-size:13px;font-weight:700;color:var(--ink2);margin-right:2px}
+.lx-seg button{min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--edge);background:#fff;color:var(--ink);font-size:14px}
+.lx-seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.lx-count{font-size:13px;color:var(--muted);margin-left:auto}
+
+.lx-chart{padding:12px 12px 14px}
+.lx-chart-box{position:relative}
+.lx-chart-box svg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none}
+.lx-pt{outline:none;cursor:pointer}
+.lx-pt .lx-ring{opacity:0}
+.lx-pt:focus-visible .lx-ring{opacity:1}
+.lx-tip{position:absolute;z-index:5;width:max-content;min-width:200px;max-width:290px;background:#fff;
+  border:1px solid rgba(15,30,46,.14);border-radius:12px;box-shadow:0 8px 24px rgba(15,30,46,.16);
+  padding:12px 14px;font-size:14px;pointer-events:none}
+.lx-tip[hidden]{display:none}
+.lx-tip.is-pinned{pointer-events:auto;padding-right:40px}
+.lx-tip-item+.lx-tip-item{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.lx-tip-name{font-weight:700;display:flex;gap:6px;align-items:center;line-height:1.3}
+.lx-tip-meta{color:var(--muted);font-size:13px;line-height:1.35;margin-top:2px}
+.lx-tip-vals{display:flex;gap:14px;margin-top:4px;font-variant-numeric:tabular-nums}
+.lx-tip-item button{margin-top:8px;min-height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--ink);
+  background:var(--ink);color:#fff;font-size:13px;font-weight:600}
+.lx-tip-item button[data-act="remove"]{background:#fff;color:var(--ink)}
+.lx-tip-close{position:absolute;top:6px;right:6px;width:32px;height:32px;border:0;background:transparent;
+  font-size:22px;line-height:1;color:var(--ink2);border-radius:8px}
+.lx-tip-hint{margin-top:6px;font-size:12px;color:var(--muted)}
+.lx-legend{display:flex;flex-wrap:wrap;gap:8px 20px;padding:10px 6px 0;font-size:13px;color:var(--ink2)}
+.lx-legend span{display:inline-flex;align-items:center;gap:8px}
+
+.lx-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+.lx-card{background:#fff;border:1px solid rgba(15,30,46,.08);border-top:5px solid var(--c);border-radius:16px;padding:18px}
+.lx-card header{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}
+.lx-card .lx-badge{width:28px;height:28px;font-size:14px;margin-top:2px}
+.lx-card h3{margin:0;font-size:19px;line-height:1.2}
+.lx-card-slot{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lx-card-meta{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
+.lx-x{margin-left:auto;width:36px;height:36px;border-radius:8px;border:0;background:transparent;font-size:22px;line-height:1;color:var(--ink2);flex:none}
+.lx-x:hover{background:#F1F4F7}
+.lx-score{display:flex;align-items:center;gap:14px;margin:12px 0 4px;padding:12px 14px;border-radius:12px;background:#F4F7FA}
+.lx-score-num{font-size:40px;line-height:1;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lx-score-num small{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:2px}
+.lx-score-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lx-score-rank{font-size:14px;color:var(--ink2);line-height:1.4;margin-top:2px}
+.lx-score-rank b{color:var(--ink)}
+.lx-tip-score{font-size:13px;color:var(--ink2);margin-top:4px}
+.lx-weights{padding:16px 18px;margin:16px 0 0}
+.lx-w-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.lx-w-head h2{margin:0;font-size:18px}
+.lx-w-head p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.lx-w-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;margin-top:12px}
+@media (max-width:760px){.lx-w-grid{grid-template-columns:1fr}}
+.lx-w{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+.lx-w span{display:flex;justify-content:space-between;gap:8px}
+.lx-w b{font-variant-numeric:tabular-nums}
+.lx-w input{width:100%;accent-color:#1C5CAB;height:28px}
+.lx-break{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.lx-break li{display:grid;grid-template-columns:minmax(0,1fr) 70px 30px;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.lx-break .lx-mini{height:6px;background:#E3E8EE;border-radius:3px;overflow:hidden}
+.lx-break .lx-mini i{display:block;height:100%;background:var(--ink2)}
+.lx-break b{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+.lx-break small{grid-column:1/-1;margin-top:-4px;font-size:12px;color:var(--muted)}
+.lx-metric{margin-top:14px}
+.lx-metric-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;color:var(--ink2)}
+.lx-metric-top b{font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+.lx-metric-top small{font-size:13px;color:var(--muted);font-weight:600}
+.lx-bar{height:10px;background:#EEF1F5;border-radius:0 4px 4px 0;margin:6px 0 4px}
+.lx-bar i{display:block;height:100%;background:var(--c);border-radius:0 4px 4px 0}
+.lx-metric p{margin:0;font-size:13px;color:var(--muted)}
+.lx-band{font-style:normal;font-size:12px;font-weight:700;color:var(--ink);padding:1px 7px;border-radius:999px;white-space:nowrap}
+.lx-note{font-size:13px;color:var(--ink2);margin:12px 0 0}
+.lx-delta{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2)}
+.lx-delta b{color:var(--ink);font-variant-numeric:tabular-nums}
+.lx-empty{border:1.5px dashed var(--edge);border-radius:16px;padding:18px;color:var(--ink2);font-size:15px;display:flex;align-items:center}
+
+.lx-cost{font-weight:800;letter-spacing:.06em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lx-cost b{color:var(--ink);font-weight:800}
+.lx-cost i{font-style:normal;color:#C9D1DA}
+.lx-metric-top .lx-cost{font-size:20px}
+.lx-cost-na{color:var(--muted);font-size:13px}
+.lx-tablewrap{margin:16px 0}
+.lx-table-head{padding:16px 18px 6px}
+.lx-table-head h2{margin:0;font-size:20px}
+.lx-table-head p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.lx-key{list-style:none;margin:10px 0 2px;padding:0;display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--ink2)}
+.lx-key li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.lx-key b{color:var(--ink)}
+.lx-key i{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(15,30,46,.12);margin-left:4px}
+.lx td.lx-heat{border-bottom:2px solid #fff}
+.lx td.lx-overall b{font-size:17px}
+.lx td.lx-overall span{display:block;font-size:11px;color:var(--ink2);font-weight:600}
+.lx td.lx-part{font-size:13px;font-weight:600;white-space:nowrap}
+.lx tbody th{min-width:210px}
+.lx-tname{display:flex;align-items:center;gap:6px;font-weight:700}
+.lx-tmeta{font-size:12px;font-weight:400;color:var(--muted);margin-top:1px}
+.lx-chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:700;line-height:1.4;white-space:nowrap}
+.lx-metric-top .lx-chip{font-size:14px}
+.lx-chip-sm{font-size:12px;padding:2px 8px}
+.lx-parts{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.lx-parts li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.lx-chart-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:4px 6px 10px}
+.lx-chart-hint{font-size:13px;color:var(--muted)}
+.lx-legend-title{font-weight:700;color:var(--ink)}
+.lx-legend-break{flex-basis:100%;height:0}
+.lx-scroll{overflow-x:auto;padding:0 8px 12px}
+.lx table{width:100%;border-collapse:collapse;font-size:14px;min-width:1020px}
+.lx th,.lx td{padding:9px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+.lx thead th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:normal;vertical-align:bottom;line-height:1.3}
+.lx thead button{border:0;background:none;padding:4px 0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;font-weight:700}
+.lx th.num,.lx td.num{text-align:right;font-variant-numeric:tabular-nums}
+.lx tbody th{font-weight:600}
+.lx tbody th .lx-badge{flex:none}
+.lx tr.is-sel{background:#F5F8FC}
+.lx-tbtn{min-height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--edge);background:#fff;font-size:13px;color:var(--ink)}
+
+.lx-explain{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+.lx-explain article{background:#fff;border:1px solid rgba(15,30,46,.08);border-radius:16px;padding:18px}
+.lx-explain h2{font-size:17px;margin:0 0 6px}
+.lx-explain p{margin:0 0 8px;font-size:15px;color:var(--ink2)}
+.lx-explain p:last-child{margin-bottom:0}
+.lx-foot{font-size:13px;color:var(--muted);border-top:1px solid rgba(15,30,46,.12);padding-top:14px}
+.lx-foot p{margin:0 0 8px}
+.lx-foot a{color:var(--focus)}
+.lx-foot strong{color:var(--ink)}
+</style>
+</head>
+<body style="margin:0;background:#F4F7FA">
+
+<div class="lx" id="lx">
+  <header class="lx-head">
+    <p class="lx-eyebrow">Contact lens explorer</p>
+    <h1>Oxygen vs. moisture: where does your lens sit?</h1>
+    <p class="lx-lede">Pick your contact lens to see it on the chart, then add up to two more to compare. Higher up means more oxygen gets through to your eye. Further right means more water in the lens. Each lens also gets an overall score that weighs oxygen and moisture, infection risk and price, and you can choose what matters most to you. The chart shows 27 popular spherical lenses, using each manufacturer’s published numbers, with each lens’s risk of infection and inflammation and a rough guide to what it costs online.</p>
+  </header>
+
+  <section class="lx-panel lx-pickers" aria-label="Choose lenses to compare">
+    <div class="lx-slot">
+      <label for="lx-sel-0"><span class="lx-badge" style="--c:#2563EB">A</span>Your lens</label>
+      <div class="lx-row"><select id="lx-sel-0"></select><button type="button" class="lx-clear" data-clear="0" aria-label="Clear lens A">Clear</button></div>
+    </div>
+    <div class="lx-slot">
+      <label for="lx-sel-1"><span class="lx-badge" style="--c:#8B3FD6">B</span>Compare with</label>
+      <div class="lx-row"><select id="lx-sel-1"></select><button type="button" class="lx-clear" data-clear="1" aria-label="Clear lens B">Clear</button></div>
+    </div>
+    <div class="lx-slot">
+      <label for="lx-sel-2"><span class="lx-badge" style="--c:#0E7490">C</span>And with</label>
+      <div class="lx-row"><select id="lx-sel-2"></select><button type="button" class="lx-clear" data-clear="2" aria-label="Clear lens C">Clear</button></div>
+    </div>
+  </section>
+
+  <div class="lx-filters">
+    <div class="lx-seg" role="group" aria-label="Filter by replacement schedule">
+      <span class="lx-seg-label">Replacement</span>
+      <button type="button" data-f="sched" data-v="all" aria-pressed="true">All</button>
+      <button type="button" data-f="sched" data-v="Daily" aria-pressed="false">Daily</button>
+      <button type="button" data-f="sched" data-v="week" aria-pressed="false">1–2 week</button>
+      <button type="button" data-f="sched" data-v="Monthly" aria-pressed="false">Monthly</button>
+    </div>
+    <div class="lx-seg" role="group" aria-label="Filter by lens material">
+      <span class="lx-seg-label">Material</span>
+      <button type="button" data-f="type" data-v="all" aria-pressed="true">All</button>
+      <button type="button" data-f="type" data-v="SiHy" aria-pressed="false">Silicone hydrogel</button>
+      <button type="button" data-f="type" data-v="Hydrogel" aria-pressed="false">Hydrogel</button>
+    </div>
+    <span class="lx-count" id="lx-count" aria-live="polite"></span>
+  </div>
+
+  <div class="lx-panel lx-chart">
+    <div class="lx-chart-head">
+      <div class="lx-seg" role="group" aria-label="Colour the chart points by">
+        <span class="lx-seg-label">Colour points by</span>
+        <button type="button" data-color="risk" aria-pressed="true">Infection &amp; inflammation risk</button>
+        <button type="button" data-color="cost" aria-pressed="false">Price</button>
+        <button type="button" data-color="none" aria-pressed="false">None</button>
+      </div>
+      <span class="lx-chart-hint">Hover or tap a point for details. Click it to compare.</span>
+    </div>
+    <div class="lx-chart-box" id="lx-chart-box">
+      <svg id="lx-svg" role="group" aria-label="Chart of oxygen transmissibility against water content. Each lens is a focusable point."></svg>
+      <div class="lx-tip" id="lx-tip" hidden></div>
+    </div>
+    <div class="lx-legend" id="lx-legend" aria-hidden="true"></div>
+  </div>
+
+  <section class="lx-panel lx-weights" aria-labelledby="lx-w-title">
+    <div class="lx-w-head">
+      <div>
+        <h2 id="lx-w-title">Overall score: what matters most to you?</h2>
+        <p>The overall score blends three ratings. Slide to change how much each one counts; the cards and scorecard update as you go.</p>
+      </div>
+      <button type="button" class="lx-clear" id="lx-w-reset">Reset</button>
+    </div>
+    <div class="lx-w-grid">
+      <label class="lx-w"><span>Oxygen &amp; moisture <b data-wpct="om"></b></span><input type="range" min="0" max="10" step="1" data-w="om"></label>
+      <label class="lx-w"><span>Infection &amp; inflammation safety <b data-wpct="safety"></b></span><input type="range" min="0" max="10" step="1" data-w="safety"></label>
+      <label class="lx-w"><span>Price <b data-wpct="price"></b></span><input type="range" min="0" max="10" step="1" data-w="price"></label>
+    </div>
+  </section>
+
+  <section class="lx-compare" id="lx-compare" aria-live="polite" aria-label="Lens comparison"></section>
+
+  <section class="lx-panel lx-tablewrap" id="lx-tablewrap" aria-labelledby="lx-table-title">
+    <div class="lx-table-head">
+      <h2 id="lx-table-title">Lens scorecard</h2>
+      <p id="lx-table-summary">Greener is better in every column. Click a column heading to sort.</p>
+      <ul class="lx-key">
+        <li><b>Oxygen (Dk/t):</b> <i style="background:#D3EEDC"></i>125+ <i style="background:#E6F1CC"></i>87–124 <i style="background:#FBE8BC"></i>35–86 <i style="background:#F9DCB8"></i>under 35</li>
+        <li><b>Water:</b> <i style="background:#D3EEDC"></i>50%+ (a “high water” lens) <i style="background:#FBE8BC"></i>40–49% <i style="background:#F9DCB8"></i>under 40%</li>
+        <li><b>Overall:</b> <i style="background:#D3EEDC"></i>80+ <i style="background:#E6F1CC"></i>70–79 <i style="background:#FBE8BC"></i>55–69 <i style="background:#F9DCB8"></i>under 55</li>
+        <li><b>Oxygen &amp; moisture rating:</b> <i style="background:#D3EEDC"></i>75+ <i style="background:#E6F1CC"></i>50–74 <i style="background:#FBE8BC"></i>25–49 <i style="background:#F9DCB8"></i>under 25</li>
+      </ul>
+    </div>
+    <div class="lx-scroll">
+      <table>
+        <caption style="position:absolute;left:-9999px">Lens scorecard: overall score, oxygen and moisture rating, oxygen, water, infection and inflammation risk (overall, serious infection, Acanthamoeba, inflammation) and price for each lens</caption>
+        <thead>
+          <tr>
+            <th scope="col" data-sortcol="name"><button type="button" data-sort="name">Lens</button></th>
+            <th scope="col" class="num" data-sortcol="overall"><button type="button" data-sort="overall">Overall score</button></th>
+            <th scope="col" class="num" data-sortcol="rOm"><button type="button" data-sort="rOm">Oxygen &amp; moisture rating</button></th>
+            <th scope="col" class="num" data-sortcol="dkt"><button type="button" data-sort="dkt">Oxygen (Dk/t)</button></th>
+            <th scope="col" class="num" data-sortcol="water"><button type="button" data-sort="water">Water</button></th>
+            <th scope="col" data-sortcol="risk" class="lx-th-group"><button type="button" data-sort="risk">Overall risk</button></th>
+            <th scope="col" data-sortcol="rSevere"><button type="button" data-sort="rSevere">Serious infection</button></th>
+            <th scope="col" data-sortcol="rAk"><button type="button" data-sort="rAk">Acanthamoeba</button></th>
+            <th scope="col" data-sortcol="rCie"><button type="button" data-sort="rCie">Inflammation</button></th>
+            <th scope="col" data-sortcol="cost"><button type="button" data-sort="cost">Price</button></th>
+            <th scope="col"><span style="position:absolute;left:-9999px">Compare</span></th>
+          </tr>
+        </thead>
+        <tbody id="lx-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="lx-explain" aria-label="What the numbers mean">
+    <article>
+      <h2>Overall score</h2>
+      <p>Blends three ratings, each from 0 to 100 against the 27 lenses here:</p>
+      <p><strong>Oxygen &amp; moisture:</strong> how close the lens sits to the chart’s top-right corner. The closest lens scores 100 and the farthest 0. The dotted curves join points equally close to the corner.<br>
+      <strong>Infection &amp; inflammation safety:</strong> 100 for daily disposables (lowest risk) and 50 for reusable lenses (medium risk).<br>
+      <strong>Price:</strong> cost per day of wear compared across all lenses, from 100 for the cheapest to 0 for the most expensive. Daily disposables cost more per day than reusable lenses, so they rate lower here even when their $ rating is typical for daily lenses.</p>
+      <p>By default, eye health counts for 80% (oxygen &amp; moisture 40%, safety 40%) and price for 20%. Use the sliders to set your own priorities.</p>
+    </article>
+    <article>
+      <h2>Infection &amp; inflammation risk</h2>
+      <p>Contact lens infections are rare, but they can damage vision. The rating combines three risks, each compared between daily disposables and reusable lenses worn during the day:</p>
+      <p><strong>Serious infection:</strong> about 2× higher with reusable lenses (1.1 vs. 0.5 moderate-to-severe infections per 10,000 wearers a year).<br>
+      <strong>Acanthamoeba infection:</strong> about 4× higher. This rare infection is hard to treat and is linked to lens cases and water.<br>
+      <strong>Inflammatory reactions</strong> (red, sore eyes with spots on the cornea): about 10× higher.</p>
+      <p>Daily disposables are lowest on all three, because there’s no storage case or solution to carry germs, so they rate Lowest. Reusable lenses rate Medium; research hasn’t shown a difference between 1-week, 2-week and monthly lenses. Sleeping in any lens raises the risk the most, roughly tenfold. Milder infections happen at similar rates with all lenses, so good habits still matter.</p>
+    </article>
+    <article>
+      <h2>Oxygen (Dk/t)</h2>
+      <p>The cornea, the clear front of your eye, gets most of its oxygen straight from the air. Dk/t measures how easily oxygen passes through a lens of a typical prescription (−3.00). A higher number lets more oxygen through.</p>
+      <p>The scorecard colours use research benchmarks: about 35 Dk/t keeps the cornea supplied while your eyes are open, and 87 to 125 is the level researchers set for when the eyes are closed, the toughest case.</p>
+    </article>
+    <article>
+      <h2>Water content</h2>
+      <p>The share of the lens that is water, by weight. Water helps keep a lens soft and flexible on the eye. Lenses at 50% or more are classed as “high water” lenses, which is where the scorecard turns green.</p>
+      <p>* Dailies Total1, Precision1 and Total30 have a lower-water core under a much wetter surface layer. The chart plots the core value.</p>
+    </article>
+    <article>
+      <h2>Why most lenses trade one for the other</h2>
+      <p>Older-style hydrogel lenses carry oxygen through their water, so even very watery ones let through far less oxygen than silicone hydrogels. Silicone hydrogels carry oxygen through silicone, which usually means less water.</p>
+    </article>
+    <article>
+      <h2>Typical online price ($–$$$$)</h2>
+      <p>Compares each lens with others on the same replacement schedule, by cost per day of wear when bought online in Canada. $ is well below typical for its schedule, $$ about typical, $$$ above and $$$$ well above.</p>
+      <p>Prices vary a lot between stores, sales and rebates, so treat this as a rough guide. Prices at our clinic may differ.</p>
+    </article>
+    <article>
+      <h2>Keep in mind</h2>
+      <p>Comfort also depends on how a lens fits, its surface, how often you replace it, your tears and how you care for your lenses. Manufacturers don’t all measure the same way, so treat small differences as a tie. Your optometrist can help you weigh what matters for your eyes.</p>
+    </article>
+  </section>
+
+  <footer class="lx-foot">
+    <p><strong>Calgary Vision Centre.</strong> For general information only; not a substitute for an eye exam or contact lens fitting.</p>
+    <p>Values are each manufacturer’s published figures for a −3.00 D spherical lens, checked November 2026. Sources: Bausch + Lomb <a href="https://ecp.bauschcontactlenses.com/siteassets/pdf/bausch-lomb-portfolio-parameters.pdf" target="_blank" rel="noopener">parameter guide</a> and <a href="https://ecp.bauschcontactlenses.com/products/ultra-monthly/" target="_blank" rel="noopener">ULTRA page</a>; Alcon product pages for <a href="https://www.myalcon.com/professional/contact-lenses/daily/precision1" target="_blank" rel="noopener">Precision1</a>, <a href="https://www.myalcon.com/ca/professional/contact-lenses/weekly/precision7/" target="_blank" rel="noopener">Precision7</a>, <a href="https://www.myalcon.com/professional/contact-lenses/monthly/total30" target="_blank" rel="noopener">Total30</a> and <a href="https://www.myalcon.com/professional/contact-lenses/monthly/air-optix-night-day-aqua/" target="_blank" rel="noopener">Air Optix Night &amp; Day Aqua</a>; Johnson &amp; Johnson <a href="https://shop.acuvue.com/pub/media/ACUVUE-Technical-Specification-Guide-05-27-25.pdf" target="_blank" rel="noopener">ACUVUE technical specification guide</a>; CooperVision <a href="https://coopervision.com/sites/coopervision.com/files/media-document/coopervision-product-reference-guide-052026_6.pdf" target="_blank" rel="noopener">product reference guide</a>.</p>
+    <p>Price tiers use regular (pre-sale) online prices in Canadian dollars at <a href="https://www.clearly.ca/en-ca/contact-lenses" target="_blank" rel="noopener">Clearly.ca</a>, November 2026, converted to cost per day of wear. Ultra One Day is priced from <a href="https://www.fyidoctors.com/collections/ultra" target="_blank" rel="noopener">FYidoctors.com</a>; Avaira Vitality and Proclear are estimates because Clearly.ca doesn’t sell them; SofLens 38 isn’t compared.</p>
+    <p>Infection risk research: Stapleton et al., <a href="https://pubmed.ncbi.nlm.nih.gov/18538404/" target="_blank" rel="noopener">Ophthalmology 2008</a> (incidence by lens type and wear); Stapleton &amp; Carnt, <a href="https://www.nature.com/articles/eye2011288" target="_blank" rel="noopener">Eye 2012</a> (moderate/severe infection with daily disposables vs. frequent-replacement lenses); Carnt et al., <a href="https://doi.org/10.1016/j.ophtha.2022.08.002" target="_blank" rel="noopener">Ophthalmology 2022</a> (Acanthamoeba risk with reusable vs. daily disposable lenses); Chalmers et al., <a href="https://pubmed.ncbi.nlm.nih.gov/25574042/" target="_blank" rel="noopener">IOVS 2015</a> (inflammatory events with daily disposables vs. reusable lenses).</p>
+    <p>Brand names are trademarks of their respective owners. Ultra One Day is sold as INFUSE in the US.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Lens data: manufacturer-published Dk/t at -3.00 D and water content (%) ----
+  // To add or remove a lens, edit this list. "gradient" marks water-gradient lenses (core value plotted).
+  // "cost" is a rough online price tier within the lens's replacement class (1 = $ ... 4 = $$$$; null = not compared).
+  // Basis: cost per day of wear per eye (CAD), regular pre-sale box prices at Clearly.ca, November 2026
+  // (Ultra One Day from FYidoctors.com; Avaira Vitality and Proclear estimated, as Clearly.ca doesn't sell them).
+  // Tier = ratio to the median of the class: $ < 0.90, $$ 0.90-1.15, $$$ 1.15-1.35, $$$$ >= 1.35.
+  // "day" is that cost per day of wear (CAD, one eye); the overall score compares it across all lenses.
+  // Daily (median $1.22/day): AquaComfort Plus 0.78, Biotrue 0.92, Proclear 1 day 0.99, Moist 1.03, SofLens DD 1.13,
+  //   clariti 1.16, Precision1 1.22, Ultra One Day 1.26, Oasys 1-Day 1.29, Total1 1.32, MyDay 1.50, Oasys MAX 1.82, MyDay Energys 2.02
+  // 1-2 week (median $0.47/day): Avaira Vitality ~0.43, Acuvue Oasys 0.43, Acuvue 2 0.51, Precision7 0.63
+  // Monthly (median $0.40/day): Air Optix plus HydraGlyde 0.25, Biofinity 0.35, Proclear ~0.39, Ultra 0.39, Vita 0.40,
+  //   Biofinity Energys 0.44, Total30 0.49, PureVision2 0.56, Air Optix Night & Day Aqua 0.58
+  var LENSES = [
+    { id: 'ultra1d',     name: 'Ultra One Day',              brand: 'Bausch + Lomb',     sched: 'Daily',   type: 'SiHy',     dkt: 134,  water: 55, cost: 2, day: 1.26, aka: 'Sold as INFUSE in the US' },
+    { id: 'total1',      name: 'Dailies Total1',             brand: 'Alcon',             sched: 'Daily',   type: 'SiHy',     dkt: 156,  water: 33, cost: 2, day: 1.32, gradient: 'over 80%' },
+    { id: 'oasys1d',     name: 'Acuvue Oasys 1-Day',         brand: 'Johnson & Johnson', sched: 'Daily',   type: 'SiHy',     dkt: 121,  water: 38, cost: 2, day: 1.29 },
+    { id: 'oasysmax',    name: 'Acuvue Oasys MAX 1-Day',     brand: 'Johnson & Johnson', sched: 'Daily',   type: 'SiHy',     dkt: 121,  water: 38, cost: 4, day: 1.82 },
+    { id: 'precision1',  name: 'Precision1',                 brand: 'Alcon',             sched: 'Daily',   type: 'SiHy',     dkt: 100,  water: 51, cost: 2, day: 1.22, gradient: 'over 80%' },
+    { id: 'myday',       name: 'MyDay',                      brand: 'CooperVision',      sched: 'Daily',   type: 'SiHy',     dkt: 100,  water: 54, cost: 3, day: 1.5 },
+    { id: 'mydayen',     name: 'MyDay Energys',              brand: 'CooperVision',      sched: 'Daily',   type: 'SiHy',     dkt: 100,  water: 54, cost: 4, day: 2.02 },
+    { id: 'clariti',     name: 'clariti 1 day',              brand: 'CooperVision',      sched: 'Daily',   type: 'SiHy',     dkt: 86,   water: 56, cost: 2, day: 1.16 },
+    { id: 'biotrue',     name: 'Biotrue ONEday',             brand: 'Bausch + Lomb',     sched: 'Daily',   type: 'Hydrogel', dkt: 42,   water: 78, cost: 1, day: 0.92 },
+    { id: 'aqcplus',     name: 'Dailies AquaComfort Plus',   brand: 'Alcon',             sched: 'Daily',   type: 'Hydrogel', dkt: 26,   water: 69, cost: 1, day: 0.78 },
+    { id: 'moist',       name: '1-Day Acuvue Moist',         brand: 'Johnson & Johnson', sched: 'Daily',   type: 'Hydrogel', dkt: 25.5, water: 58, cost: 1, day: 1.03 },
+    { id: 'proclear1d',  name: 'Proclear 1 day',             brand: 'CooperVision',      sched: 'Daily',   type: 'Hydrogel', dkt: 28,   water: 60, cost: 1, day: 0.99 },
+    { id: 'soflensdd',   name: 'SofLens Daily Disposable',   brand: 'Bausch + Lomb',     sched: 'Daily',   type: 'Hydrogel', dkt: 24,   water: 59, cost: 2, day: 1.13 },
+    { id: 'precision7',  name: 'Precision7',                 brand: 'Alcon',             sched: '1-week',  type: 'SiHy',     dkt: 149,  water: 55, cost: 3, day: 0.63 },
+    { id: 'oasys2w',     name: 'Acuvue Oasys (2-week)',      brand: 'Johnson & Johnson', sched: '2-week',  type: 'SiHy',     dkt: 147,  water: 38, cost: 2, day: 0.43 },
+    { id: 'avaira',      name: 'Avaira Vitality',            brand: 'CooperVision',      sched: '2-week',  type: 'SiHy',     dkt: 112,  water: 55, cost: 2, day: 0.43 },
+    { id: 'acuvue2',     name: 'Acuvue 2',                   brand: 'Johnson & Johnson', sched: '2-week',  type: 'Hydrogel', dkt: 25.5, water: 58, cost: 2, day: 0.51 },
+    { id: 'soflens38',   name: 'SofLens 38',                 brand: 'Bausch + Lomb',     sched: '2-week',  type: 'Hydrogel', dkt: 24.3, water: 38, cost: null, day: null },
+    { id: 'biofinity',   name: 'Biofinity',                  brand: 'CooperVision',      sched: 'Monthly', type: 'SiHy',     dkt: 171,  water: 48, cost: 1, day: 0.35 },
+    { id: 'biofinityen', name: 'Biofinity Energys',          brand: 'CooperVision',      sched: 'Monthly', type: 'SiHy',     dkt: 171,  water: 48, cost: 2, day: 0.44 },
+    { id: 'aoplus',      name: 'Air Optix plus HydraGlyde',  brand: 'Alcon',             sched: 'Monthly', type: 'SiHy',     dkt: 138,  water: 33, cost: 1, day: 0.25 },
+    { id: 'aond',        name: 'Air Optix Night & Day Aqua', brand: 'Alcon',             sched: 'Monthly', type: 'SiHy',     dkt: 175,  water: 24, cost: 4, day: 0.58 },
+    { id: 'total30',     name: 'Total30',                    brand: 'Alcon',             sched: 'Monthly', type: 'SiHy',     dkt: 154,  water: 55, cost: 3, day: 0.49, gradient: 'nearly 100%' },
+    { id: 'ultra',       name: 'Ultra (monthly)',            brand: 'Bausch + Lomb',     sched: 'Monthly', type: 'SiHy',     dkt: 163,  water: 46, cost: 2, day: 0.39 },
+    { id: 'pv2',         name: 'PureVision2',                brand: 'Bausch + Lomb',     sched: 'Monthly', type: 'SiHy',     dkt: 130,  water: 36, cost: 4, day: 0.56 },
+    { id: 'vita',        name: 'Acuvue Vita',                brand: 'Johnson & Johnson', sched: 'Monthly', type: 'SiHy',     dkt: 147,  water: 41, cost: 2, day: 0.4 },
+    { id: 'proclear',    name: 'Proclear',                   brand: 'CooperVision',      sched: 'Monthly', type: 'Hydrogel', dkt: 36,   water: 62, cost: 2, day: 0.39 }
+  ];
+
+  var SLOT_COLORS = ['#2563EB', '#8B3FD6', '#0E7490'];
+  var SLOT_LETTERS = ['A', 'B', 'C'];
+  var SLOT_NAMES = ['Your lens', 'Compare with', 'And with'];
+  var SCHED_ORDER = { 'Daily': 0, '1-week': 1, '2-week': 2, 'Monthly': 3 };
+  var X = { min: 15, max: 85 };   // water content %
+  var Y = { min: 0, max: 200 };   // Dk/t
+
+  var byId = {};
+  LENSES.forEach(function (l) { byId[l.id] = l; });
+  var GROUPS = {};
+  LENSES.forEach(function (l) {
+    var k = l.dkt + '|' + l.water;
+    if (!GROUPS[k]) GROUPS[k] = { key: k, dkt: l.dkt, water: l.water, members: [] };
+    GROUPS[k].members.push(l);
+  });
+
+  var W_DEFAULT_INIT = { om: 4, safety: 4, price: 2 };
+  // ---- Up-and-right score ----
+  // How close a lens sits to the chart's top-right corner (most oxygen and most water shown):
+  // 100 = the corner, 0 = the bottom-left corner. Oxygen and water count equally, as drawn on the chart.
+  function classOf(l) { return l.sched === 'Daily' ? 'Daily' : l.sched === 'Monthly' ? 'Monthly' : 'Week'; }
+  LENSES.forEach(function (l) {
+    var x = (l.water - X.min) / (X.max - X.min), y = (l.dkt - Y.min) / (Y.max - Y.min);
+    l.score = 100 * (1 - Math.hypot(1 - x, 1 - y) / Math.SQRT2);
+  });
+  LENSES.forEach(function (l) {
+    var same = LENSES.filter(function (o) { return classOf(o) === classOf(l); });
+    l.classCount = same.length;
+    l.classRank = 1 + same.filter(function (o) { return o.score > l.score + 1e-9; }).length;
+    l.classTied = same.some(function (o) { return o !== l && Math.abs(o.score - l.score) < 1e-9; });
+    l.rank = 1 + LENSES.filter(function (o) { return o.score > l.score + 1e-9; }).length;
+  });
+  function scoreNum(l) { return Math.round(l.score); }
+
+  // ---- Infection & inflammation risk, set by how the lens is replaced (worn during the day) ----
+  // Three parts, each as risk for reusable lenses relative to daily disposables (sources in the page footer):
+  //   Serious infection (moderate/severe microbial keratitis): 1.1 vs 0.5 per 10,000 wearers a year -> ~2x
+  //   Acanthamoeba keratitis: odds ratio 3.84 for reusable soft vs daily disposable              -> ~4x
+  //   Inflammatory reactions (corneal infiltrative events): ~3-4% vs 0-0.4% a year                -> ~10x
+  // Overall: Lowest = lowest on all three (daily disposables); Medium = reusable lenses worn during the day.
+  // No study separates 1-week, 2-week and monthly lenses. Sleeping in any lens raises the risk about
+  // tenfold, so "Highest" describes overnight wear rather than any lens on this list.
+  var RISK = [null,
+    { word: 'Lowest',  why: 'Fresh lens every day, with no case or solution', point: '#2E9E5B', bg: '#D3EEDC', ink: '#14532D' },
+    { word: 'Medium',  why: 'Reused lens, cleaned and stored in a case',     point: '#E0A10A', bg: '#FBE8BC', ink: '#6B4407' },
+    { word: 'Highest', why: 'Any lens slept in overnight',                  point: '#D64545', bg: '#F7D5D0', ink: '#7F1D1D' }];
+  var RISK_PARTS = [
+    { key: 'rSevere', label: 'Serious infection',      short: 'Serious infection', rel: 2.2, text: 'about 2× higher', bg: '#FBE8BC', ink: '#6B4407' },
+    { key: 'rAk',     label: 'Acanthamoeba infection', short: 'Acanthamoeba',      rel: 3.8, text: 'about 4× higher', bg: '#F9DCB8', ink: '#7A3E0B' },
+    { key: 'rCie',    label: 'Inflammatory reactions', short: 'Inflammation',      rel: 10,  text: 'about 10× higher', bg: '#F7D5D0', ink: '#7F1D1D' }];
+  LENSES.forEach(function (l) {
+    l.risk = l.sched === 'Daily' ? 1 : 2;
+    RISK_PARTS.forEach(function (rp) { l[rp.key] = l.risk === 1 ? 1 : rp.rel; });
+  });
+  function partCell(l, rp) {
+    return l.risk === 1
+      ? { text: 'Lowest', bg: RISK[1].bg, ink: RISK[1].ink }
+      : { text: rp.text.replace('about ', '≈'), bg: rp.bg, ink: rp.ink };
+  }
+  function riskHTML(l) {
+    var r = RISK[l.risk];
+    return '<span class="lx-chip" style="background:' + r.bg + ';color:' + r.ink + '">' + r.word + '</span>';
+  }
+  var PRICE_POINT = [null, '#2E9E5B', '#8DBF3F', '#E0A10A', '#D64545'];
+  var PRICE_BG = [null, '#D3EEDC', '#E6F1CC', '#FBE8BC', '#F7D5D0'];
+  function pointColor(l) {
+    if (state.colorBy === 'risk') return RISK[l.risk].point;
+    if (state.colorBy === 'cost') return l.cost ? PRICE_POINT[l.cost] : '#B8C0C9';
+    return '#6B7785';
+  }
+  // Scorecard cell colours use fixed, recognised cut-offs, so a colour means the same thing in every row
+  // (not a sliding scale stretched between whichever lenses happen to be highest and lowest).
+  //   Oxygen: 125+ Dk/t (Harvitt & Bonanno's level for no oxygen shortage even with eyes closed),
+  //           87+ (Holden & Mertz's overnight level), 35+ (Harvitt & Bonanno's open-eye level), under 35.
+  //   Water:  50%+ is a "high water" lens in the standard (FDA) classification; 40-49%; under 40%.
+  //   Score:  60+, 50-59, 40-49, under 40.
+  var TINT = ['#D3EEDC', '#E6F1CC', '#FBE8BC', '#F9DCB8'];   // green, light green, yellow, orange
+  var BANDS = {
+    dkt:   [[125, 0, 'Very high'], [87, 1, 'High'], [35, 2, 'Moderate'], [-1, 3, 'Low']],
+    water: [[50, 0, 'High water'], [40, 2, 'Mid water'], [-1, 3, 'Low water']],
+    score: [[60, 0, ''], [50, 1, ''], [40, 2, ''], [-1, 3, '']]
+  };
+  function band(k, v) {
+    var b = BANDS[k];
+    for (var i = 0; i < b.length; i++) if (v >= b[i][0]) return { bg: TINT[b[i][1]], word: b[i][2] };
+  }
+  function heat(k, v) { return band(k, v).bg; }
+  // ---- Overall score: oxygen & moisture, infection & inflammation safety, and price, each rated 0-100 ----
+  //   Oxygen & moisture: closeness to the chart's top-right corner, rescaled so the closest lens here = 100, farthest = 0
+  //   Safety: Lowest risk (daily disposable) = 100, Medium (reusable, worn during the day) = 50, Highest (slept in) = 0
+  //   Price: cost per day of wear across all lenses, cheapest = 100, most expensive = 0 (in proportion)
+  // The overall score is the weighted average; visitors can change the weights. Default: 40 / 40 / 20.
+  var W_DEFAULT = W_DEFAULT_INIT;
+  var sMin = Math.min.apply(null, LENSES.map(function (l) { return l.score; }));
+  var sMax = Math.max.apply(null, LENSES.map(function (l) { return l.score; }));
+  var days = LENSES.filter(function (l) { return l.day; }).map(function (l) { return l.day; });
+  var dMin = Math.min.apply(null, days), dMax = Math.max.apply(null, days);
+  LENSES.forEach(function (l) {
+    l.rOm = (l.score - sMin) / (sMax - sMin) * 100;
+    l.rSafety = l.risk === 1 ? 100 : 50;
+    l.rPrice = l.day ? (dMax - l.day) / (dMax - dMin) * 100 : null;
+  });
+  function weights() {
+    var w = state.w, t = w.om + w.safety + w.price;
+    return t ? { om: w.om / t, safety: w.safety / t, price: w.price / t } : { om: 1 / 3, safety: 1 / 3, price: 1 / 3 };
+  }
+  function computeOverall() {
+    var w = weights();
+    LENSES.forEach(function (l) {
+      var num = w.om * l.rOm + w.safety * l.rSafety, den = w.om + w.safety;
+      if (l.rPrice !== null) { num += w.price * l.rPrice; den += w.price; }
+      l.overall = den ? num / den : 0;
+    });
+    LENSES.forEach(function (l) {
+      var same = LENSES.filter(function (o) { return classOf(o) === classOf(l); });
+      l.oRank = 1 + LENSES.filter(function (o) { return o.overall > l.overall + 1e-9; }).length;
+      l.oClassRank = 1 + same.filter(function (o) { return o.overall > l.overall + 1e-9; }).length;
+      l.oClassTied = same.some(function (o) { return o !== l && Math.abs(o.overall - l.overall) < 1e-9; });
+      l.oTied = LENSES.some(function (o) { return o !== l && Math.abs(o.overall - l.overall) < 1e-9; });
+    });
+  }
+  function overallNum(l) { return Math.round(l.overall); }
+  function rankText(l) { return '#' + l.oClassRank + ' of ' + l.classCount + ' ' + classWord(l) + (l.oClassTied ? ' (tied)' : ''); }
+  function overallText(l) { return '#' + l.oRank + ' of ' + LENSES.length + ' overall' + (l.oTied ? ' (tied)' : ''); }
+  function ratingBg(v) { return v >= 75 ? TINT[0] : v >= 50 ? TINT[1] : v >= 25 ? TINT[2] : TINT[3]; }
+  function overallBg(v) { return v >= 80 ? TINT[0] : v >= 70 ? TINT[1] : v >= 55 ? TINT[2] : TINT[3]; }
+
+  var state = { slots: [null, null, null], sched: 'all', type: 'all', sort: { key: 'overall', dir: -1 }, w: { om: W_DEFAULT_INIT.om, safety: W_DEFAULT_INIT.safety, price: W_DEFAULT_INIT.price }, colorBy: 'risk', pinned: null, hoverKey: null };
+  var root = document.getElementById('lx');
+  var svg = document.getElementById('lx-svg');
+  var box = document.getElementById('lx-chart-box');
+  var tip = document.getElementById('lx-tip');
+  var cmp = document.getElementById('lx-compare');
+  var tbody = document.getElementById('lx-tbody');
+  var geom = { W: 0, H: 0, pts: [] };
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function fmt(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+  function signed(n) { return n > 0 ? '+' + fmt(n) : n < 0 ? '−' + fmt(-n) : '±0'; }
+  function typeLabel(l) { return l.type === 'SiHy' ? 'Silicone hydrogel' : 'Hydrogel'; }
+  function schedLabel(l) {
+    return l.sched === 'Daily' ? 'Daily disposable' : l.sched === '1-week' ? '1-week replacement' : l.sched === '2-week' ? '2-week replacement' : 'Monthly replacement';
+  }
+  function schedShort(l) { return l.sched === 'Daily' ? 'Daily' : l.sched; }
+  var COST_WORDS = ['well below typical', 'about typical', 'above typical', 'well above typical'];
+  function classWord(l) { return l.sched === 'Daily' ? 'daily lenses' : l.sched === 'Monthly' ? 'monthly lenses' : '1–2 week lenses'; }
+  function costText(l) { return l.cost ? COST_WORDS[l.cost - 1] + ' for ' + classWord(l) : 'Not compared'; }
+  function costHTML(l) {
+    if (!l.cost) return '<span class="lx-cost-na">Not compared</span>';
+    return '<span class="lx-cost" role="img" aria-label="Price tier ' + l.cost + ' of 4, ' + costText(l) + '"><b>' +
+      new Array(l.cost + 1).join('$') + '</b><i>' + new Array(5 - l.cost).join('$') + '</i></span>';
+  }
+  function slotOf(id) { return state.slots.indexOf(id); }
+  function badge(i, size) {
+    return '<span class="lx-badge" style="--c:' + SLOT_COLORS[i] + (size ? ';width:' + size + 'px;height:' + size + 'px' : '') + '">' + SLOT_LETTERS[i] + '</span>';
+  }
+  function matches(l) {
+    var s = state.sched === 'all' || (state.sched === 'week' ? (l.sched === '1-week' || l.sched === '2-week') : l.sched === state.sched);
+    var t = state.type === 'all' || l.type === state.type;
+    return s && t;
+  }
+
+  // ---- Selection ----
+  function setSlot(i, id) {
+    if (id) { var j = slotOf(id); if (j !== -1 && j !== i) state.slots[j] = null; }
+    state.slots[i] = id || null;
+    update();
+  }
+  function addLens(id) {
+    if (slotOf(id) !== -1) return;
+    var i = state.slots.indexOf(null);
+    if (i === -1) i = 2;
+    state.slots[i] = id;
+    update();
+  }
+  function removeLens(id) {
+    var i = slotOf(id);
+    if (i !== -1) { state.slots[i] = null; update(); }
+  }
+  function addLabel() {
+    var free = state.slots.indexOf(null);
+    return free === -1 ? 'Replace lens C' : free === 0 ? 'Set as your lens' : 'Add to comparison';
+  }
+
+  // ---- Pickers ----
+  var brands = LENSES.map(function (l) { return l.brand; }).filter(function (b, i, a) { return a.indexOf(b) === i; }).sort();
+  function buildSelects() {
+    for (var i = 0; i < 3; i++) {
+      (function (i) {
+        var sel = document.getElementById('lx-sel-' + i);
+        var html = '<option value="">' + (i === 0 ? 'Choose your lens…' : 'Choose a lens to compare…') + '</option>';
+        brands.forEach(function (b) {
+          html += '<optgroup label="' + esc(b) + '">';
+          LENSES.filter(function (l) { return l.brand === b; })
+            .sort(function (a, c) { return a.name.localeCompare(c.name); })
+            .forEach(function (l) { html += '<option value="' + l.id + '">' + esc(l.name) + '</option>'; });
+          html += '</optgroup>';
+        });
+        sel.innerHTML = html;
+        sel.addEventListener('change', function () { unpin(); setSlot(i, sel.value); });
+      })(i);
+    }
+    root.querySelectorAll('[data-clear]').forEach(function (b) {
+      b.addEventListener('click', function () { unpin(); setSlot(+b.getAttribute('data-clear'), null); });
+    });
+  }
+  function syncSelects() {
+    for (var i = 0; i < 3; i++) {
+      var sel = document.getElementById('lx-sel-' + i);
+      sel.value = state.slots[i] || '';
+      Array.prototype.forEach.call(sel.options, function (op) {
+        if (!op.value) return;
+        var s = slotOf(op.value);
+        op.disabled = s !== -1 && s !== i;
+      });
+      root.querySelector('[data-clear="' + i + '"]').disabled = !state.slots[i];
+    }
+  }
+
+  // ---- Filters ----
+  root.querySelectorAll('.lx-seg button[data-f]').forEach(function (b) {
+    b.addEventListener('click', function () { state[b.getAttribute('data-f')] = b.getAttribute('data-v'); unpin(); update(); });
+  });
+  root.querySelectorAll('.lx-seg button[data-color]').forEach(function (b) {
+    b.addEventListener('click', function () { state.colorBy = b.getAttribute('data-color'); unpin(); update(); });
+  });
+  function syncFilters() {
+    root.querySelectorAll('.lx-seg button[data-f]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(state[b.getAttribute('data-f')] === b.getAttribute('data-v')));
+    });
+    root.querySelectorAll('.lx-seg button[data-color]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(state.colorBy === b.getAttribute('data-color')));
+    });
+    renderLegend();
+    var n = LENSES.filter(matches).length;
+    document.getElementById('lx-count').textContent = 'Showing ' + n + ' of ' + LENSES.length + ' lenses';
+  }
+
+  // ---- Chart ----
+  function draw() {
+    var W = Math.max(300, Math.round(box.clientWidth));
+    var narrow = W < 640;
+    var H = narrow ? Math.round(Math.max(360, W * 1.0)) : Math.round(Math.min(620, Math.max(430, W * 0.56)));
+    var m = { l: narrow ? 50 : 66, r: 12, t: 12, b: narrow ? 56 : 60 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    function px(v) { return m.l + (v - X.min) / (X.max - X.min) * pw; }
+    function py(v) { return m.t + ph - (v - Y.min) / (Y.max - Y.min) * ph; }
+    var s = '';
+
+    s += '<defs><linearGradient id="lx-grad" x1="0" y1="1" x2="1" y2="0">' +
+      '<stop offset="0" stop-color="#F6EADB"></stop><stop offset="0.5" stop-color="#F7F8F9"></stop><stop offset="1" stop-color="#DAE9FA"></stop>' +
+      '</linearGradient></defs>';
+    s += '<rect x="' + m.l + '" y="' + m.t + '" width="' + pw + '" height="' + ph + '" rx="8" fill="url(#lx-grad)"></rect>';
+
+    var xs = narrow ? [20, 40, 60, 80] : [20, 30, 40, 50, 60, 70, 80];
+    var ystep = ph < 330 ? 50 : 25, ys = [];
+    for (var v = 0; v <= Y.max; v += ystep) ys.push(v);
+    s += '<g stroke="rgba(15,30,46,0.07)" stroke-width="1" aria-hidden="true">';
+    xs.forEach(function (v) { s += '<line x1="' + px(v) + '" x2="' + px(v) + '" y1="' + m.t + '" y2="' + (m.t + ph) + '"></line>'; });
+    ys.forEach(function (v) { s += '<line x1="' + m.l + '" x2="' + (m.l + pw) + '" y1="' + py(v) + '" y2="' + py(v) + '"></line>'; });
+    s += '</g>';
+    // Equal-score curves: every point on a curve is the same distance from the top-right corner
+    var cx = m.l + pw, cy = m.t, contourLabels = [];
+    [50, 75].forEach(function (sc) {
+      var r = (1 - sc / 100) * Math.SQRT2, rx = r * pw, ry = r * ph;
+      s += '<path aria-hidden="true" d="M ' + (cx - rx) + ' ' + cy + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + cx + ' ' + (cy + ry) +
+        '" fill="none" stroke="#1C5CAB" stroke-opacity="0.45" stroke-width="1.5" stroke-dasharray="2 5" stroke-linecap="round"></path>';
+      // (unlabelled: the legend explains the curves)
+    });
+    s += '<g font-size="' + (narrow ? 11 : 12) + '" font-weight="700" fill="#1C5CAB" aria-hidden="true">';
+    contourLabels.forEach(function (c) {
+      s += '<text x="' + c.x + '" y="' + c.y + '" text-anchor="end" stroke="#fff" stroke-width="3" stroke-opacity="0.8" paint-order="stroke">' + c.text + '</text>';
+    });
+    s += '</g>';
+
+    var tf = narrow ? 11 : 12;
+    s += '<g font-size="' + tf + '" fill="#5F6B78" aria-hidden="true" style="font-variant-numeric:tabular-nums">';
+    xs.forEach(function (v) { s += '<text x="' + px(v) + '" y="' + (m.t + ph + 18) + '" text-anchor="middle">' + v + '%</text>'; });
+    ys.forEach(function (v) { s += '<text x="' + (m.l - 8) + '" y="' + (py(v) + 4) + '" text-anchor="end">' + v + '</text>'; });
+    s += '</g>';
+    var af = narrow ? 12 : 13;
+    s += '<text aria-hidden="true" x="' + (m.l + pw / 2) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="' + af + '" font-weight="700" fill="#4A5868">Water content (%) · more moist →</text>';
+    s += '<text aria-hidden="true" transform="translate(' + (narrow ? 14 : 18) + ' ' + (m.t + ph / 2) + ') rotate(-90)" text-anchor="middle" font-size="' + af + '" font-weight="700" fill="#4A5868">Oxygen to the eye (Dk/t) · more breathable →</text>';
+
+    var q = narrow
+      ? ['Breathable, drier', 'Moist + breathable ↗', '↙ Drier, less breathable', 'Moist, less breathable']
+      : ['More breathable, but drier', 'More moist & more breathable ↗', '↙ Drier & less breathable', 'More moist, but less breathable'];
+    var qf = narrow ? 11 : 13;
+    s += '<g font-size="' + qf + '" font-weight="700" aria-hidden="true">' +
+      '<text x="' + (m.l + 10) + '" y="' + (m.t + qf + 8) + '" fill="#5F6B78">' + esc(q[0]) + '</text>' +
+      '<text x="' + (m.l + pw - 10) + '" y="' + (m.t + qf + 8) + '" text-anchor="end" fill="#1C5CAB">' + esc(q[1]) + '</text>' +
+      '<text x="' + (m.l + 10) + '" y="' + (m.t + ph - 10) + '" fill="#8A5A2B">' + esc(q[2]) + '</text>' +
+      '<text x="' + (m.l + pw - 10) + '" y="' + (m.t + ph - 10) + '" text-anchor="end" fill="#5F6B78">' + esc(q[3]) + '</text></g>';
+
+    var pts = [];
+    Object.keys(GROUPS).forEach(function (k) {
+      var g = GROUPS[k];
+      var vis = g.members.filter(function (l) { return matches(l) || slotOf(l.id) !== -1; });
+      if (!vis.length) return;
+      var sel = vis.map(function (l) { return slotOf(l.id); }).filter(function (i) { return i !== -1; }).sort();
+      pts.push({ key: k, x: px(g.water), y: py(g.dkt), vis: vis, sel: sel });
+    });
+    geom = { W: W, H: H, pts: pts };
+
+    // Highlighted lenses stay at their true positions. Each gets its own lettered label,
+    // nudged clear of other labels and points, with a leader line when it has to move.
+    var R = narrow ? 7 : 8, lf = narrow ? 12 : 13, BR = narrow ? 9 : 10;
+    pts.forEach(function (p) { p.dx = p.x; p.dy = p.y; });
+    var placed = [], soft = [];
+    pts.forEach(function (p) {
+      if (p.sel.length) placed.push({ x1: p.x - R - 5, x2: p.x + R + 5, y1: p.y - R - 5, y2: p.y + R + 5 });
+      else soft.push({ x1: p.x - 8, x2: p.x + 8, y1: p.y - 8, y2: p.y + 8 });
+    });
+    var qw = function (t) { return t.length * qf * 0.6; };
+    placed.push({ x1: m.l + 10, x2: m.l + 10 + qw(q[0]), y1: m.t + 8, y2: m.t + qf + 12 });
+    placed.push({ x1: m.l + pw - 10 - qw(q[1]), x2: m.l + pw - 10, y1: m.t + 8, y2: m.t + qf + 12 });
+    placed.push({ x1: m.l + 10, x2: m.l + 10 + qw(q[2]), y1: m.t + ph - 10 - qf - 2, y2: m.t + ph - 6 });
+    placed.push({ x1: m.l + pw - 10 - qw(q[3]), x2: m.l + pw - 10, y1: m.t + ph - 10 - qf - 2, y2: m.t + ph - 6 });
+    contourLabels.forEach(function (c) { placed.push({ x1: c.x - 64, x2: c.x, y1: c.y - 13, y2: c.y + 3 }); });
+    function overlaps(r, list) { return list.some(function (o) { return !(r.x2 < o.x1 || r.x1 > o.x2 || r.y2 < o.y1 || r.y1 > o.y2); }); }
+
+    var items = [];
+    pts.forEach(function (p) { p.vis.forEach(function (l) { var i = slotOf(l.id); if (i !== -1) items.push({ p: p, l: l, i: i }); }); });
+    items.sort(function (a, b) { return a.i - b.i; });
+    var leaders = '', labels = '';
+    items.forEach(function (it) {
+      var p = it.p, name = it.l.name;
+      var w = BR * 2 + 6 + name.length * lf * 0.58 + 4;
+      var gap = R + 8;
+      var sides = (p.x + gap + w <= W - 4) ? ['r', 'l'] : ['l', 'r'];
+      var offs = [0, -24, 24, -48, 48, -72, 72, -96, 96, -120, 120];
+      function rect(side, cy) {
+        var x1 = side === 'r' ? p.x + gap : p.x - gap - w;
+        // Long names on small screens: slide the label sideways to stay inside the plot
+        x1 = Math.max(m.l + 4, Math.min(m.l + pw - 4 - w, x1));
+        return { x1: x1, x2: x1 + w, y1: cy - BR - 2, y2: cy + BR + 2, side: side, cy: cy };
+      }
+      function inBounds(r) { return r.y1 > m.t && r.y2 < m.t + ph; }
+      var chosen = null;
+      [placed.concat(soft), placed].some(function (obs) {
+        for (var i = 0; i < offs.length; i++) {
+          for (var j = 0; j < sides.length; j++) {
+            var r = rect(sides[j], p.y + offs[i]);
+            if (inBounds(r) && !overlaps(r, obs)) { chosen = r; return true; }
+          }
+        }
+        return false;
+      });
+      if (!chosen) chosen = rect(sides[0], p.y);
+      placed.push(chosen);
+      var c = SLOT_COLORS[it.i], bx = chosen.x1 + BR, by = chosen.cy;
+      var beside = chosen.cy === p.y && (chosen.x1 >= p.x + R || chosen.x2 <= p.x - R);
+      if (!beside) {
+        var lx = Math.max(chosen.x1 + 8, Math.min(chosen.x2 - 8, p.x));
+        var ly = p.y > by ? by + BR + 2 : by - BR - 2;
+        if (lx === p.x || Math.abs(p.y - by) > BR) {
+          leaders += '<line aria-hidden="true" x1="' + p.x + '" y1="' + p.y + '" x2="' + lx + '" y2="' + ly + '" stroke="' + c + '" stroke-width="1.5"></line>';
+        } else {
+          leaders += '<line aria-hidden="true" x1="' + p.x + '" y1="' + p.y + '" x2="' + (p.x < chosen.x1 ? chosen.x1 : chosen.x2) + '" y2="' + by + '" stroke="' + c + '" stroke-width="1.5"></line>';
+        }
+      }
+      labels += '<g aria-hidden="true">' +
+        '<rect x="' + (chosen.x1 - 3) + '" y="' + (by - BR - 3) + '" width="' + (w + 6) + '" height="' + (2 * BR + 6) + '" rx="' + (BR + 3) + '" fill="#fff" fill-opacity="0.94"></rect>' +
+        '<circle cx="' + bx + '" cy="' + by + '" r="' + BR + '" fill="' + c + '"></circle>' +
+        '<text x="' + bx + '" y="' + (by + 4) + '" text-anchor="middle" font-size="' + (BR + 1) + '" font-weight="800" fill="#fff">' + SLOT_LETTERS[it.i] + '</text>' +
+        '<text x="' + (bx + BR + 6) + '" y="' + (by + lf * 0.35) + '" font-size="' + lf + '" font-weight="700" fill="#0F1E2E">' + esc(name) + '</text></g>';
+    });
+
+    s += leaders;
+    pts.filter(function (p) { return !p.sel.length; }).forEach(function (p) { s += dot(p, R); });
+    pts.filter(function (p) { return p.sel.length; }).forEach(function (p) { s += dot(p, R); });
+    s += labels;
+
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.innerHTML = s;
+
+    svg.querySelectorAll('.lx-pt').forEach(function (el) {
+      var key = el.getAttribute('data-key');
+      el.addEventListener('focus', function () { if (!state.pinned) showTip(ptByKey(key), false); });
+      el.addEventListener('blur', function () { if (!state.pinned) hideTip(); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          pin(ptByKey(key));
+          var b = tip.querySelector('.lx-tip-item button');
+          if (b) b.focus();
+        }
+      });
+    });
+  }
+
+  // A circle in one colour, or split down the middle when two lenses share a point but differ
+  function marker(cx, cy, r, colors, hollow) {
+    if (colors.length === 1) {
+      return hollow
+        ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff" stroke="' + colors[0] + '" stroke-width="2.5"></circle>'
+        : '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + colors[0] + '" stroke="#fff" stroke-width="1.5"></circle>';
+    }
+    var top = cx + ' ' + (cy - r), bot = cx + ' ' + (cy + r), a = ' A ' + r + ' ' + r + ' 0 0 ';
+    if (hollow) {
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fff"></circle>' +
+        '<path d="M ' + top + a + '0 ' + bot + '" fill="none" stroke="' + colors[0] + '" stroke-width="2.5"></path>' +
+        '<path d="M ' + top + a + '1 ' + bot + '" fill="none" stroke="' + colors[1] + '" stroke-width="2.5"></path>';
+    }
+    return '<path d="M ' + top + a + '0 ' + bot + ' Z" fill="' + colors[0] + '"></path>' +
+      '<path d="M ' + top + a + '1 ' + bot + ' Z" fill="' + colors[1] + '"></path>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#fff" stroke-width="1.5"></circle>';
+  }
+  function dot(p, R) {
+    var label = p.vis.map(function (l) {
+      return l.name + ', ' + fmt(l.dkt) + ' Dk/t, ' + l.water + '% water, ' + RISK[l.risk].word.toLowerCase() + ' infection and inflammation risk';
+    }).join('; ');
+    var cx = p.sel.length ? p.dx : p.x, cy = p.sel.length ? p.dy : p.y;
+    var colors = p.vis.map(pointColor).filter(function (c, i, arr) { return arr.indexOf(c) === i; }).slice(0, 2);
+    var hollow = p.vis[0].type !== 'SiHy';
+    var g = '<circle class="lx-ring" cx="' + cx + '" cy="' + cy + '" r="' + (p.sel.length ? R + 11 : 12) + '" fill="none" stroke="#1C5CAB" stroke-width="2.5"></circle>';
+    if (p.sel.length) {
+      var c0 = SLOT_COLORS[p.sel[0]];
+      g += p.sel.length > 1
+        ? '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R + 7.5) + '" fill="none" stroke="' + SLOT_COLORS[p.sel[1]] + '" stroke-width="3"></circle>'
+        : '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R + 8) + '" fill="' + c0 + '" fill-opacity="0.16"></circle>';
+      g += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R + 4) + '" fill="#fff" stroke="' + c0 + '" stroke-width="3"></circle>';
+      g += marker(cx, cy, R, colors, false);
+    } else {
+      g += marker(p.x, p.y, hollow ? 6 : 6.5, colors, hollow);
+      if (p.vis.length > 1) g += '<circle cx="' + p.x + '" cy="' + p.y + '" r="10.5" fill="none" stroke="#6B7785" stroke-width="1" stroke-opacity="0.6"></circle>';
+    }
+    return '<g class="lx-pt" tabindex="0" role="button" data-key="' + p.key + '" aria-label="' + esc(label) + '. Press Enter for options.">' + g + '</g>';
+  }
+
+  // Legend follows the "Colour points by" choice
+  function sw(color, hollow) {
+    return '<svg width="16" height="16" viewBox="0 0 16 16">' + (hollow
+      ? '<circle cx="8" cy="8" r="5.5" fill="#fff" stroke="' + color + '" stroke-width="2.5"></circle>'
+      : '<circle cx="8" cy="8" r="6" fill="' + color + '"></circle>') + '</svg>';
+  }
+  function renderLegend() {
+    var html = '';
+    if (state.colorBy === 'risk') {
+      html += '<span class="lx-legend-title">Infection &amp; inflammation risk:</span>' +
+        '<span>' + sw(RISK[1].point) + 'Lowest (daily disposable)</span>' +
+        '<span>' + sw(RISK[2].point) + 'Medium (reusable, worn during the day)</span>' +
+        '<span>' + sw(RISK[3].point) + 'Highest (any lens slept in)</span>';
+    } else if (state.colorBy === 'cost') {
+      html += '<span class="lx-legend-title">Typical online price, vs. same schedule:</span>';
+      ['$ well below', '$$ about typical', '$$$ above', '$$$$ well above'].forEach(function (t, i) { html += '<span>' + sw(PRICE_POINT[i + 1]) + t + '</span>'; });
+      html += '<span>' + sw('#B8C0C9') + 'Not compared</span>';
+    }
+    html += '<span class="lx-legend-break"></span>' +
+      '<span>' + sw('#6B7785') + 'Silicone hydrogel</span>' +
+      '<span>' + sw('#6B7785', true) + 'Hydrogel (older-style material)</span>' +
+      '<span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="6" fill="#6B7785"></circle><circle cx="11" cy="11" r="10" fill="none" stroke="#6B7785" stroke-width="1" stroke-opacity=".6"></circle></svg>Two lenses with identical numbers</span>' +
+      '<span><svg width="26" height="12" viewBox="0 0 26 12"><path d="M1 11 Q 12 1 25 1" fill="none" stroke="#1C5CAB" stroke-opacity=".6" stroke-width="1.5" stroke-dasharray="2 4" stroke-linecap="round"></path></svg>Equally close to the top-right corner</span>';
+    document.getElementById('lx-legend').innerHTML = html;
+  }
+
+  function ptByKey(k) { for (var i = 0; i < geom.pts.length; i++) if (geom.pts[i].key === k) return geom.pts[i]; return null; }
+  function focusPt(k) { var el = svg.querySelector('.lx-pt[data-key="' + k + '"]'); if (el) el.focus(); }
+
+  // ---- Tooltip / popover ----
+  function tipHTML(p, pinned) {
+    var html = p.vis.map(function (l) {
+      var s = slotOf(l.id), btn = '';
+      if (pinned) {
+        btn = s !== -1
+          ? '<button type="button" data-act="remove" data-id="' + l.id + '">Remove from comparison</button>'
+          : '<button type="button" data-act="add" data-id="' + l.id + '">' + addLabel() + '</button>';
+      }
+      return '<div class="lx-tip-item"><div class="lx-tip-name">' + (s !== -1 ? badge(s, 20) : '') + esc(l.name) + (l.gradient ? '*' : '') + '</div>' +
+        '<div class="lx-tip-meta">' + esc(l.brand) + ' · ' + schedLabel(l) + ' · ' + typeLabel(l) + '</div>' +
+        '<div class="lx-tip-vals"><span><b>' + fmt(l.dkt) + '</b> Dk/t</span><span><b>' + l.water + '%</b> water</span></div>' +
+        (l.gradient ? '<div class="lx-tip-meta">*Core water; surface is ' + l.gradient + ' water</div>' : '') +
+        '<div class="lx-tip-score">Overall score <b>' + overallNum(l) + '</b> · ' + overallText(l) + '</div>' +
+        '<div class="lx-tip-meta">Infection &amp; inflammation risk: ' + riskHTML(l) + '</div>' +
+        (l.risk === 1 ? '' : '<div class="lx-tip-meta">vs. daily disposables: serious infection ≈2×, Acanthamoeba ≈4×, inflammation ≈10×</div>') +
+        '<div class="lx-tip-meta">Typical online price: ' + costHTML(l) + '</div>' + btn + '</div>';
+    }).join('');
+    if (pinned) html += '<button type="button" class="lx-tip-close" data-act="close" aria-label="Close">×</button>';
+    else html += '<div class="lx-tip-hint">Click to compare</div>';
+    return html;
+  }
+  function placeTip(p) {
+    var r = svg.getBoundingClientRect();
+    var sc = r.width / geom.W;
+    var x = (p.sel.length ? p.dx : p.x) * sc, y = (p.sel.length ? p.dy : p.y) * sc;
+    var tw = tip.offsetWidth, th = tip.offsetHeight, bw = box.clientWidth;
+    var left = x + 18, top = y - th / 2;
+    if (left + tw > bw - 4) left = x - 18 - tw;
+    if (left < 4) {
+      // Not enough room on either side (narrow screens): centre it under the point instead.
+      left = Math.max(4, Math.min(bw - tw - 4, x - tw / 2));
+      top = y + 20;
+    }
+    top = Math.max(4, top);
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+  function showTip(p, pinned) {
+    if (!p) return;
+    tip.innerHTML = tipHTML(p, pinned);
+    tip.classList.toggle('is-pinned', pinned);
+    tip.hidden = false;
+    placeTip(p);
+    state.hoverKey = p.key;
+  }
+  function hideTip() { if (state.pinned) return; tip.hidden = true; state.hoverKey = null; }
+  function pin(p) { if (!p) return; state.pinned = p.key; showTip(p, true); }
+  function unpin() { state.pinned = null; state.hoverKey = null; tip.hidden = true; tip.classList.remove('is-pinned'); }
+
+  function nearest(e, maxd) {
+    var r = svg.getBoundingClientRect();
+    if (!r.width) return null;
+    var sc = geom.W / r.width;
+    var mx = (e.clientX - r.left) * sc, my = (e.clientY - r.top) * sc;
+    var best = null, bd = Infinity;
+    geom.pts.forEach(function (p) {
+      var d = Math.hypot(p.x - mx, p.y - my);
+      if (p.sel.length) d = Math.min(d, Math.hypot(p.dx - mx, p.dy - my));
+      if (d < bd) { bd = d; best = p; }
+    });
+    return bd <= maxd ? best : null;
+  }
+
+  svg.addEventListener('pointermove', function (e) {
+    if (state.pinned || e.pointerType === 'touch') return;
+    var p = nearest(e, 22);
+    if (p) { if (state.hoverKey !== p.key) showTip(p, false); svg.style.cursor = 'pointer'; }
+    else { hideTip(); svg.style.cursor = 'default'; }
+  });
+  svg.addEventListener('pointerleave', function () { hideTip(); });
+  svg.addEventListener('click', function (e) {
+    var p = nearest(e, 28);
+    if (p) pin(p); else unpin();
+    e.stopPropagation();
+  });
+  tip.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    e.stopPropagation();
+    var act = b.getAttribute('data-act'), k = state.pinned, viaKeyboard = e.detail === 0;
+    unpin();
+    if (act === 'add') addLens(b.getAttribute('data-id'));
+    if (act === 'remove') removeLens(b.getAttribute('data-id'));
+    if (viaKeyboard && k) focusPt(k);
+  });
+  root.addEventListener('click', function (e) {
+    if (state.pinned && !tip.contains(e.target) && !svg.contains(e.target)) unpin();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && state.pinned) { var k = state.pinned; unpin(); focusPt(k); }
+  });
+
+  // ---- Comparison cards ----
+  function card(l, i, ref) {
+    var delta = ref && ref.id !== l.id
+      ? '<div class="lx-delta">Compared with ' + esc(ref.name) + ': overall <b>' + signed(overallNum(l) - overallNum(ref)) + '</b>, oxygen <b>' +
+        signed(l.dkt - ref.dkt) + ' Dk/t</b>, water <b>' + signed(l.water - ref.water) + (Math.abs(l.water - ref.water) === 1 ? ' point' : ' points') + '</b></div>'
+      : '';
+    return '<article class="lx-card" style="--c:' + SLOT_COLORS[i] + '">' +
+      '<header>' + badge(i) + '<div><div class="lx-card-slot">' + SLOT_NAMES[i] + '</div><h3>' + esc(l.name) + '</h3>' +
+      '<div class="lx-card-meta">' + esc(l.brand) + ' · ' + schedLabel(l) + ' · ' + typeLabel(l) + (l.aka ? '<br>' + esc(l.aka) : '') + '</div></div>' +
+      '<button type="button" class="lx-x" data-remove="' + l.id + '" aria-label="Remove ' + esc(l.name) + '">×</button></header>' +
+      '<div class="lx-score" style="background:' + overallBg(l.overall) + '"><div class="lx-score-num">' + overallNum(l) + '<small>/100</small></div>' +
+      '<div><div class="lx-score-label">Overall score</div><div class="lx-score-rank"><b>' + overallText(l) + '</b><br>' + rankText(l) + '</div></div></div>' +
+      breakdown(l) +
+      '<div class="lx-metric"><div class="lx-metric-top"><span>Oxygen to the eye · <em class="lx-band" style="background:' + band('dkt', l.dkt).bg + '">' + band('dkt', l.dkt).word + '</em></span><b>' + fmt(l.dkt) + ' <small>Dk/t</small></b></div>' +
+      '<div class="lx-bar"><i style="width:' + (l.dkt / Y.max * 100).toFixed(1) + '%"></i></div>' +
+      '</div>' +
+      '<div class="lx-metric"><div class="lx-metric-top"><span>Water content' + (l.gradient ? '*' : '') + ' · <em class="lx-band" style="background:' + band('water', l.water).bg + '">' + band('water', l.water).word + '</em></span><b>' + l.water + '<small>%</small></b></div>' +
+      '<div class="lx-bar"><i style="width:' + l.water + '%"></i></div>' +
+      '</div>' +
+      '<div class="lx-metric"><div class="lx-metric-top"><span>Infection &amp; inflammation risk</span>' + riskHTML(l) + '</div>' +
+      '<p>' + RISK[l.risk].why + '</p>' +
+      '<ul class="lx-parts">' + RISK_PARTS.map(function (rp) {
+        var c = partCell(l, rp);
+        return '<li><span>' + rp.label + '</span><span class="lx-chip lx-chip-sm" style="background:' + c.bg + ';color:' + c.ink + '">' +
+          (l.risk === 1 ? 'Lowest' : rp.text.charAt(0).toUpperCase() + rp.text.slice(1)) + '</span></li>';
+      }).join('') + '</ul>' +
+      (l.risk === 1 ? '' : '<p>Compared with daily disposables.</p>') + '</div>' +
+      '<div class="lx-metric"><div class="lx-metric-top"><span>Typical online price</span>' + costHTML(l) + '</div>' +
+      '<p>' + (l.cost ? costText(l).charAt(0).toUpperCase() + costText(l).slice(1) : 'No comparable online price') + '</p></div>' +
+      (l.gradient ? '<p class="lx-note">*Core water content. The lens surface is ' + l.gradient + ' water.</p>' : '') +
+      delta + '</article>';
+  }
+  function breakdown(l) {
+    var w = weights();
+    var rows = [
+      ['Oxygen &amp; moisture', l.rOm, w.om, ''],
+      ['Infection &amp; inflammation safety', l.rSafety, w.safety, ''],
+      ['Price per day, vs. all lenses', l.rPrice, w.price, l.rPrice === null ? 'No comparable price, so not counted' : '']];
+    return '<ul class="lx-break" aria-label="How the overall score is made up">' + rows.map(function (r) {
+      var v = r[1] === null ? null : Math.round(r[1]);
+      return '<li><span>' + r[0] + ' <em style="font-style:normal;color:var(--muted)">(' + Math.round(r[2] * 100) + '%)</em></span>' +
+        '<span class="lx-mini"><i style="width:' + (v === null ? 0 : v) + '%"></i></span><b>' + (v === null ? '–' : v) + '</b>' +
+        (r[3] ? '<small>' + r[3] + '</small>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+  function renderCompare() {
+    var sel = [];
+    state.slots.forEach(function (id, i) { if (id) sel.push({ l: byId[id], i: i }); });
+    if (!sel.length) {
+      cmp.innerHTML = '<div class="lx-empty">Choose your lens above, or click any point on the chart, to see its numbers here. You can compare up to three lenses side by side.</div>';
+      return;
+    }
+    var ref = sel[0].l;
+    var html = sel.map(function (s) { return card(s.l, s.i, ref); }).join('');
+    if (sel.length < 3) html += '<div class="lx-empty">Add ' + (sel.length === 1 ? 'another lens' : 'one more lens') + ' to compare, using the menus above or by clicking a point on the chart.</div>';
+    cmp.innerHTML = html;
+  }
+  cmp.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-remove]');
+    if (b) removeLens(b.getAttribute('data-remove'));
+  });
+
+  // ---- Table ----
+  function renderTable() {
+    var k = state.sort.key, d = state.sort.dir;
+    var rows = LENSES.filter(matches).slice().sort(function (a, b) {
+      if (k === 'cost' && (!a.cost || !b.cost) && a.cost !== b.cost) return a.cost ? -1 : 1; // unpriced lenses last
+      var va = k === 'sched' ? SCHED_ORDER[a.sched] : a[k], vb = k === 'sched' ? SCHED_ORDER[b.sched] : b[k];
+      var c = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+      return c * d || b.overall - a.overall || a.name.localeCompare(b.name); // ties: higher overall score first
+    });
+    tbody.innerHTML = rows.map(function (l) {
+      var s = slotOf(l.id);
+      return '<tr class="' + (s !== -1 ? 'is-sel' : '') + '"><th scope="row"><div class="lx-tname">' + (s !== -1 ? badge(s, 20) : '') + esc(l.name) + (l.gradient ? '*' : '') + '</div>' +
+        '<div class="lx-tmeta">' + esc(l.brand) + ' · ' + schedShort(l) + ' · ' + typeLabel(l) + '</div></th>' +
+        '<td class="num lx-heat lx-overall" style="background:' + overallBg(l.overall) + '"><b>' + overallNum(l) + '</b><span>#' + l.oRank + (l.oTied ? '=' : '') + ' of ' + LENSES.length + '</span></td>' +
+        '<td class="num lx-heat" style="background:' + ratingBg(l.rOm) + '">' + Math.round(l.rOm) + '</td>' +
+        '<td class="num lx-heat" style="background:' + heat('dkt', l.dkt) + '">' + fmt(l.dkt) + '</td>' +
+        '<td class="num lx-heat" style="background:' + heat('water', l.water) + '">' + l.water + '%</td>' +
+        '<td class="lx-heat" style="background:' + RISK[l.risk].bg + ';color:' + RISK[l.risk].ink + ';font-weight:700">' + RISK[l.risk].word + '</td>' +
+        RISK_PARTS.map(function (rp) {
+          var c = partCell(l, rp);
+          return '<td class="lx-heat lx-part" style="background:' + c.bg + ';color:' + c.ink + '">' + c.text + '</td>';
+        }).join('') +
+        '<td class="lx-heat" style="background:' + (l.cost ? PRICE_BG[l.cost] : '#F1F3F6') + '">' + costHTML(l) + '</td>' +
+        '<td><button type="button" class="lx-tbtn" data-toggle="' + l.id + '">' + (s !== -1 ? 'Remove' : 'Compare') + '</button></td></tr>';
+    }).join('');
+    root.querySelectorAll('[data-sortcol]').forEach(function (th) {
+      var key = th.getAttribute('data-sortcol');
+      th.setAttribute('aria-sort', key === k ? (d === 1 ? 'ascending' : 'descending') : 'none');
+      var btn = th.querySelector('button');
+      btn.textContent = btn.textContent.replace(/ [▲▼]$/, '') + (key === k ? (d === 1 ? ' ▲' : ' ▼') : '');
+    });
+    document.getElementById('lx-table-summary').textContent = 'Greener is better in every column. Click a column heading to sort. Showing ' + rows.length + ' of ' + LENSES.length + ' lenses.';
+  }
+  tbody.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-toggle]');
+    if (!b) return;
+    var id = b.getAttribute('data-toggle');
+    if (slotOf(id) !== -1) removeLens(id); else addLens(id);
+  });
+  root.querySelectorAll('[data-sort]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var key = b.getAttribute('data-sort');
+      if (state.sort.key === key) state.sort.dir *= -1;
+      else state.sort = { key: key, dir: (key === 'dkt' || key === 'water' || key === 'score' || key === 'overall' || key === 'rOm') ? -1 : 1 };
+      renderTable();
+    });
+  });
+
+  // ---- Weights ----
+  function syncWeights() {
+    var w = weights();
+    root.querySelectorAll('[data-w]').forEach(function (inp) { inp.value = state.w[inp.getAttribute('data-w')]; });
+    root.querySelectorAll('[data-wpct]').forEach(function (b) { b.textContent = Math.round(w[b.getAttribute('data-wpct')] * 100) + '%'; });
+  }
+  root.querySelectorAll('[data-w]').forEach(function (inp) {
+    inp.addEventListener('input', function () {
+      state.w[inp.getAttribute('data-w')] = +inp.value;
+      computeOverall(); syncWeights(); renderCompare(); renderTable(); if (state.pinned) unpin();
+    });
+  });
+  document.getElementById('lx-w-reset').addEventListener('click', function () {
+    state.w = { om: W_DEFAULT.om, safety: W_DEFAULT.safety, price: W_DEFAULT.price };
+    computeOverall(); syncWeights(); renderCompare(); renderTable();
+  });
+
+  // ---- Update loop ----
+  function update() {
+    computeOverall();
+    syncWeights();
+    syncSelects();
+    syncFilters();
+    draw();
+    renderCompare();
+    renderTable();
+  }
+
+  buildSelects();
+  update();
+
+  var lastW = box.clientWidth, raf = 0;
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (box.clientWidth === lastW) return;
+      lastW = box.clientWidth;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () { unpin(); draw(); });
+    }).observe(box);
+  }
+
+  // In a frame (the clinic page), report height so the host sizes the frame (see embed/lens-explorer.html)
+  if (window.parent !== window) {
+    var lastH = 0;
+    var report = function () {
+      var h = Math.ceil(document.getElementById('lx').getBoundingClientRect().height);
+      if (h === lastH) return;
+      lastH = h;
+      try { window.parent.postMessage({ lensx: 'height', height: h }, '*'); } catch (e) {}
+    };
+    if (window.ResizeObserver) new ResizeObserver(report).observe(document.getElementById('lx'));
+    window.addEventListener('load', report);
+    report();
+  }
+})();
+</script>
+</body>
+</html>
