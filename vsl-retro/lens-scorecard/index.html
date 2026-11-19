@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lens Scorecard | Calgary Vision Centre</title>
+<meta name="description" content="27 popular contact lenses on a departures board: oxygen, water, infection risk, price and an overall score you can weight yourself.">
+<meta name="author" content="Dr Robert Burke, Calgary Vision Centre">
+<script>
+/* #embed (embed/lens-scorecard.html): transparent page for a Squarespace Code Block.
+   Other hash options: lens=<id> lights that lens's row, wear=daily|week|monthly,
+   type=sihy|hydrogel, sort=overall|name|sched|dkt|water|risk|price. E.g. #embed&lens=ultra1d */
+if (/(^|[#&])embed\b/.test(location.hash)) document.documentElement.classList.add('embed');
+</script>
+<link rel="preload" href="fonts/barlow-condensed-bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-condensed-semibold.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* A split-flap departures board. Data comes from ../lens-explorer/lens-data.js (shared with the explorer).
+   Flaps: each cell has a static top and bottom half plus two "leaves" that fold during a change.
+   Barlow Condensed (SIL OFL, fonts/OFL.txt), subset to Latin. No libraries. */
+@font-face{font-family:"Board";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-semibold.woff2) format("woff2")}
+@font-face{font-family:"Board";font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-bold.woff2) format("woff2")}
+:root{
+  --face:"Board","Arial Narrow","Roboto Condensed",Arial,sans-serif;
+  --text:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --ink:#F2EEE3; --ink-dim:#5B5E64; --gold:#FFD25C; --plate:#A8A396;
+  --l0:#35D47D; --l1:#B9E24C; --l2:#FFB534; --l3:#FF5B3D;
+  --cw:30px; --ch:44px; --cf:31px; --gap:3px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#E7E4DC;font:15px/1.5 var(--text);color:#1E2226;-webkit-font-smoothing:antialiased}
+.embed body{background:transparent}
+[hidden]{display:none!important}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sb{max-width:1180px;margin:0 auto;padding:clamp(10px,2.5vw,32px)}
+.embed .sb{padding:6px 2px 10px}
+:focus-visible{outline:3px solid #FFC52E;outline-offset:2px}
+
+/* ---------- housing ---------- */
+.board{position:relative;border-radius:14px;padding:18px 18px 14px;color:var(--ink);
+  background:
+    radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,.06),transparent 60%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 2px,rgba(0,0,0,.02) 2px 4px),
+    linear-gradient(#26292e,#1b1d21);
+  box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 -2px 0 rgba(0,0,0,.5) inset,0 0 0 1px #0a0b0c,
+    0 18px 36px -10px rgba(20,22,26,.55),0 4px 8px rgba(20,22,26,.25)}
+.screw{position:absolute;width:11px;height:11px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#9aa0a7,#4b5056 60%,#2a2d31);
+  box-shadow:0 1px 0 rgba(255,255,255,.15),inset 0 0 0 1px rgba(0,0,0,.6)}
+.screw::after{content:"";position:absolute;left:2px;right:2px;top:5px;height:1px;background:#23262a;transform:rotate(var(--r,35deg))}
+.screw.tl{top:6px;left:6px}.screw.tr{top:6px;right:6px;--r:-20deg}.screw.bl{bottom:6px;left:6px;--r:70deg}.screw.br{bottom:6px;right:6px;--r:10deg}
+
+/* ---------- header: lit sign, subtitle, clock ---------- */
+.b-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 4px 14px}
+.sign{display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:6px;color:#141414;
+  background:linear-gradient(#FFD957,#F6B91C);
+  box-shadow:0 0 0 2px #0c0d0e,0 0 22px rgba(255,200,40,.28),inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.15)}
+.sign svg{width:34px;height:34px;flex:none;display:block}
+.sign h1{margin:0;font:700 clamp(24px,3.4vw,34px)/1 var(--face);letter-spacing:.06em;text-transform:uppercase}
+.b-sub{margin:0;flex:1 1 220px;font:600 15px/1.25 var(--face);letter-spacing:.1em;text-transform:uppercase;color:var(--plate)}
+.clock{display:flex;align-items:center;gap:2px}
+.clock .colon{font:700 26px/1 var(--face);color:var(--gold);padding:0 1px;animation:blink 2s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+.clock .f{--cw:22px;--ch:34px;--cf:25px}
+
+/* ---------- control console ---------- */
+.console{display:grid;grid-template-columns:auto auto 1fr auto;gap:12px 22px;align-items:end;margin:0 0 14px;padding:12px 16px 14px;border-radius:9px;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px),
+    linear-gradient(#41454b,#2e3136);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.5),0 0 0 1px #0b0c0d,0 3px 6px rgba(0,0,0,.35)}
+.engrave{display:block;margin:0 0 6px;font:600 12px/1 var(--face);letter-spacing:.16em;text-transform:uppercase;color:#B9BEC4;text-shadow:0 -1px 0 rgba(0,0,0,.7)}
+.keys{display:flex;gap:6px;flex-wrap:wrap;padding:5px;border-radius:7px;background:#16181b;box-shadow:inset 0 2px 4px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.08)}
+.key{position:relative;min-height:38px;padding:14px 12px 5px;border:1px solid #0c0d0f;border-radius:5px;cursor:pointer;
+  font:600 14px/1 var(--face);letter-spacing:.08em;text-transform:uppercase;color:#D9D5CA;
+  background:linear-gradient(#53575e,#383b40);box-shadow:0 3px 0 #0b0c0d,inset 0 1px 0 rgba(255,255,255,.2);transition:transform .06s,box-shadow .06s}
+.key::before{content:"";position:absolute;top:5px;left:50%;width:16px;height:4px;margin-left:-8px;border-radius:2px;background:#2b1d05;box-shadow:inset 0 0 0 1px #000}
+.key:hover{color:#fff}
+.key[aria-pressed="true"]{transform:translateY(3px);color:#fff;box-shadow:0 0 0 #0b0c0d,inset 0 2px 5px rgba(0,0,0,.55);background:linear-gradient(#45494f,#33363b)}
+.key[aria-pressed="true"]::before{background:#FFB000;box-shadow:0 0 7px 1px rgba(255,176,0,.85),inset 0 0 0 1px #7a4b00}
+.c-sort{display:none}
+.c-sort select{height:40px;min-width:170px;padding:0 10px;border-radius:5px;border:1px solid #0c0d0f;color:#F2EEE3;background:#1b1d20;
+  font:600 16px/1 var(--face);letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 2px 4px rgba(0,0,0,.6)}
+.c-sound{justify-self:end}
+.toggle{position:relative;width:62px;height:30px;border-radius:15px;border:1px solid #0b0c0d;cursor:pointer;
+  background:#16181b;box-shadow:inset 0 2px 4px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.08)}
+.toggle::before{content:"";position:absolute;top:3px;left:3px;width:24px;height:22px;border-radius:11px;transition:left .15s;
+  background:linear-gradient(#e7eaee,#9aa0a7);box-shadow:0 2px 3px rgba(0,0,0,.6),inset 0 1px 0 #fff}
+.toggle::after{content:"";position:absolute;top:11px;right:9px;width:7px;height:7px;border-radius:50%;background:#2b1d05;box-shadow:inset 0 0 0 1px #000}
+.toggle[aria-checked="true"]::before{left:33px}
+.toggle[aria-checked="true"]::after{right:auto;left:10px;background:#35D47D;box-shadow:0 0 6px 1px rgba(53,212,125,.8)}
+
+.mix-toggle{display:none}
+.c-mix{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 22px;padding-top:12px;border-top:1px solid rgba(0,0,0,.45);box-shadow:0 -1px 0 rgba(255,255,255,.07)}
+.c-mix > .engrave{flex-basis:100%;margin:0}
+.fader{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;flex:1 1 200px;min-width:180px}
+.fader label{grid-column:1/-1;font:600 14px/1.2 var(--face);letter-spacing:.06em;text-transform:uppercase;color:#E3DFD4;margin-bottom:2px}
+.fd{-webkit-appearance:none;appearance:none;width:100%;height:32px;margin:0;background:transparent;cursor:pointer}
+.fd::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:#0b0c0d;box-shadow:inset 0 1px 2px #000,0 1px 0 rgba(255,255,255,.1)}
+.fd::-moz-range-track{height:6px;border-radius:3px;background:#0b0c0d;box-shadow:inset 0 1px 2px #000,0 1px 0 rgba(255,255,255,.1)}
+.fd::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:30px;margin-top:-12px;border-radius:3px;border:1px solid #0b0c0d;
+  background:linear-gradient(90deg,#7c8188,#e9ecef 30%,#c4c8cd 46%,#2a2c30 47%,#2a2c30 53%,#c4c8cd 54%,#e1e4e8 70%,#7c8188);box-shadow:0 3px 4px rgba(0,0,0,.6)}
+.fd::-moz-range-thumb{width:20px;height:30px;border-radius:3px;border:1px solid #0b0c0d;
+  background:linear-gradient(90deg,#7c8188,#e9ecef 30%,#c4c8cd 46%,#2a2c30 47%,#2a2c30 53%,#c4c8cd 54%,#e1e4e8 70%,#7c8188);box-shadow:0 3px 4px rgba(0,0,0,.6)}
+.fd:focus-visible{outline:none}
+.fd:focus-visible::-webkit-slider-thumb{outline:3px solid #FFC52E;outline-offset:2px}
+.fd:focus-visible::-moz-range-thumb{outline:3px solid #FFC52E;outline-offset:2px}
+.led{min-width:54px;padding:4px 7px 3px;border-radius:4px;text-align:right;font:700 20px/1 var(--face);letter-spacing:.04em;color:#FFB547;
+  background:#170d02;box-shadow:inset 0 1px 4px #000,0 1px 0 rgba(255,255,255,.08);text-shadow:0 0 6px rgba(255,170,40,.75)}
+.pbtn{min-height:38px;padding:0 16px;border:1px solid #0c0d0f;border-radius:5px;cursor:pointer;font:600 14px/1 var(--face);letter-spacing:.1em;text-transform:uppercase;
+  color:#D9D5CA;background:linear-gradient(#53575e,#383b40);box-shadow:0 3px 0 #0b0c0d,inset 0 1px 0 rgba(255,255,255,.2)}
+.pbtn:active{transform:translateY(3px);box-shadow:inset 0 2px 5px rgba(0,0,0,.55)}
+
+/* ---------- the flap rows ---------- */
+table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout:fixed}
+.rows col.c-pos{width:calc(var(--cw)*2 + var(--gap) + 22px)}
+.rows col.c-wear{width:calc(var(--cw)*5 + 6px)}
+.rows col.c-o2{width:calc(var(--cw)*3 + var(--gap)*2 + 34px)}
+.rows col.c-water{width:calc(var(--cw)*2 + var(--gap) + 52px)}
+.rows col.c-risk{width:calc(var(--cw)*4.4 + 12px)}
+.rows col.c-price{width:calc(var(--cw)*3 + 36px)}
+.rows col.c-score{width:calc(var(--cw)*2 + var(--gap) + 40px)}
+.rows thead th{padding:0 6px 3px;text-align:left;vertical-align:bottom}
+.rows th button{position:relative;display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:3px 4px;margin:0 -4px;border:0;border-radius:3px;background:none;cursor:pointer;
+  font:600 13px/1.05 var(--face);letter-spacing:.14em;text-transform:uppercase;color:var(--plate);text-align:left}
+.rows th button small{font-size:11px;letter-spacing:.1em;color:#7F7B70}
+.rows th button:hover{color:#fff}
+.rows th[aria-sort] button{color:var(--gold)}
+.rows th[aria-sort] button::after{position:absolute;left:100%;top:4px;margin-left:2px;font-size:10px;letter-spacing:0}
+.rows th[aria-sort="descending"] button::after{content:"▼"}
+.rows th[aria-sort="ascending"] button::after{content:"▲"}
+.rows tbody td{position:relative;padding:5px 6px;vertical-align:middle;background:#0e0f11;
+  box-shadow:inset 0 2px 3px rgba(0,0,0,.75),inset 0 -1px 0 rgba(255,255,255,.05)}
+.rows tbody td:first-child{border-radius:6px 0 0 6px}
+.rows tbody td:last-child{border-radius:0 6px 6px 0}
+.rows tbody tr.row{cursor:pointer}
+.rows tbody tr.row:hover td{background:#16181b}
+.rows tbody tr.row.open td{background:#1a1c20}
+.rows tbody tr.row.off{cursor:default}
+.rows tbody tr.row.off:hover td{background:#0e0f11}
+.rows tr.mine td:first-child{box-shadow:inset 4px 0 0 #FFC52E,inset 0 2px 3px rgba(0,0,0,.75),inset 10px 0 14px -6px rgba(255,197,46,.35)}
+.rows tr.mine .c-lens .f{--fi:var(--gold)}
+.grp{display:flex;align-items:center;gap:var(--gap)}
+.grp .unit{font:700 calc(var(--cf)*.62)/1 var(--face);color:#8D897E;margin-left:2px}
+.lamp{display:inline-block;width:13px;height:13px;margin-left:10px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#4a4d52,#191a1c 70%);box-shadow:inset 0 0 0 1px #000,0 1px 0 rgba(255,255,255,.07);transition:background .35s,box-shadow .35s}
+.lamp[data-l="0"]{background:radial-gradient(circle at 35% 30%,#e3ffef,var(--l0) 45%,#0f7a3e);box-shadow:inset 0 0 0 1px #052b16,0 0 9px 2px rgba(53,212,125,.55)}
+.lamp[data-l="1"]{background:radial-gradient(circle at 35% 30%,#f6ffd9,var(--l1) 45%,#5f7d12);box-shadow:inset 0 0 0 1px #2a3605,0 0 9px 2px rgba(185,226,76,.5)}
+.lamp[data-l="2"]{background:radial-gradient(circle at 35% 30%,#fff3d9,var(--l2) 45%,#9a5c00);box-shadow:inset 0 0 0 1px #3d2400,0 0 9px 2px rgba(255,181,52,.55)}
+.lamp[data-l="3"]{background:radial-gradient(circle at 35% 30%,#ffe2da,var(--l3) 45%,#9b1f0a);box-shadow:inset 0 0 0 1px #3f0b02,0 0 9px 2px rgba(255,91,61,.55)}
+.row-open{position:absolute;inset:0;width:100%;border:0;margin:0;padding:0;background:none;cursor:pointer;border-radius:6px 0 0 6px;z-index:4}
+.mini{display:none}
+
+/* ---------- a flap ---------- */
+.f{--fi:var(--ink);position:relative;display:inline-block;flex:none;width:var(--cw);height:var(--ch);perspective:300px;border-radius:4px;color:var(--fi);
+  box-shadow:0 1px 2px rgba(0,0,0,.8)}
+.f .h{position:absolute;left:0;right:0;height:50%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.f .h.t{top:0;border-radius:4px 4px 0 0;background:linear-gradient(#303338,#25272b)}
+.f .h.b{bottom:0;border-radius:0 0 4px 4px;background:linear-gradient(#212327,#1a1b1e)}
+.f .h > i{position:absolute;left:0;right:0;height:200%;display:flex;align-items:center;justify-content:center;font:700 var(--cf)/1 var(--face);font-style:normal;font-variant-numeric:tabular-nums}
+.f .h.t > i{top:0}
+.f .h.b > i{bottom:0}
+.f .lf{visibility:hidden;z-index:2}
+.f .lf.t{transform-origin:50% 100%}
+.f .lf.b{transform-origin:50% 0}
+.f::after{content:"";position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;z-index:3;background:#060607;box-shadow:0 1px 0 rgba(255,255,255,.05)}
+.f::before{content:"";position:absolute;top:calc(50% - 3px);left:-1px;right:-1px;height:6px;z-index:3;
+  background:linear-gradient(90deg,#55585e 0 2px,transparent 2px calc(100% - 2px),#55585e calc(100% - 2px))}
+.f.gold{--fi:var(--gold)}
+
+/* module flaps: two lines of text, one on each half */
+.f.m{width:100%}
+.f.m .h > i{height:100%;justify-content:flex-start;padding:0 8px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:clip;font-variant-numeric:normal}
+.f.m .h.t > i{align-items:flex-end;padding-bottom:2px;font:700 calc(var(--ch)*.4)/1 var(--face);letter-spacing:.04em;text-transform:uppercase}
+.f.m .h.b > i{align-items:flex-start;padding-top:4px;font:600 calc(var(--ch)*.28)/1 var(--face);letter-spacing:.09em;text-transform:uppercase;color:#A5A195}
+/* long names shrink to fit the flap: --k is the name's width in ems, set in lensVal() */
+.f.m{container-type:inline-size}
+.f.m .h.t > i .nm{font-weight:inherit;font-size:min(100%,calc((100cqi - 18px) / var(--k,1)))}
+.f.m .h.b .wr{display:none}
+.f.m .h.t.r1,.f.m .h.b.r1{background:linear-gradient(#1f7a4b,#176139)}
+.f.m .h.b.r1{background:linear-gradient(#155a35,#114b2c)}
+.f.m .h.t.r2,.f.m .h.b.r2{background:linear-gradient(#a8701a,#8e5d14)}
+.f.m .h.b.r2{background:linear-gradient(#835511,#6f480e)}
+.f.m .h.r1 > i,.f.m .h.r2 > i{color:#FFF8E8}
+.f.m .h.b.r1 > i,.f.m .h.b.r2 > i{color:rgba(255,248,232,.82)}
+.f.m .h > i s{text-decoration:none;color:var(--ink-dim)}
+.c-price .f.m .h.t > i{letter-spacing:.12em}
+
+/* ---------- board foot: lamp key ---------- */
+.b-foot{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start;margin:10px 4px 2px;padding-top:12px;border-top:1px solid rgba(0,0,0,.6);box-shadow:0 -1px 0 rgba(255,255,255,.05)}
+.keyplate{display:grid;grid-template-columns:auto repeat(4,minmax(54px,auto));gap:5px 10px;align-items:center;font:600 13px/1.1 var(--face);letter-spacing:.06em;color:#CFCABD;text-transform:uppercase}
+.keyplate b{font-weight:600;color:var(--plate);letter-spacing:.14em}
+.keyplate .lamp{margin:0 auto}
+.keyplate span{text-align:center}
+.keyplate .hint{grid-column:2/-1;display:flex;justify-content:space-between;color:#7F7B70;font-size:11px;letter-spacing:.12em}
+.keynotes{flex:1 1 280px;margin:0;padding:0;list-style:none;font:600 13px/1.35 var(--face);letter-spacing:.04em;color:#B4AFA2}
+.keynotes li{margin:0 0 6px;display:flex;gap:8px;align-items:baseline}
+.keynotes .chip{flex:none;padding:3px 7px 2px;border-radius:3px;font-weight:700;letter-spacing:.08em;color:#FFF8E8;text-transform:uppercase}
+.chip.r1{background:#1f7a4b}.chip.r2{background:#a8701a}
+
+/* ---------- boarding pass ---------- */
+.pass-tr td{padding:0 0 8px!important;background:none!important;box-shadow:none!important}
+.slot{height:7px;margin:0 18px;border-radius:0 0 6px 6px;background:#050506;box-shadow:inset 0 2px 3px #000}
+.pass{position:relative;display:grid;grid-template-columns:1fr 250px;margin:-3px 26px 0;color:#1C1F23;font-family:var(--text);
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.45));transform-origin:50% 0;animation:print .55s cubic-bezier(.2,.8,.25,1) both}
+@keyframes print{from{clip-path:inset(0 0 100% 0);transform:translateY(-14px)}to{clip-path:inset(0 0 -40px 0);transform:none}}
+.pass-main,.pass-stub{position:relative;background:
+  radial-gradient(circle at 20% 10%,rgba(255,255,255,.7),transparent 40%),
+  repeating-linear-gradient(0deg,rgba(0,0,0,.012) 0 1px,transparent 1px 3px),#FBF8F0}
+.pass-main{border-radius:0 0 0 10px;padding:0 0 16px;
+  -webkit-mask:radial-gradient(circle 10px at 100% 0,#0000 98%,#000) top right/100% 51% no-repeat,radial-gradient(circle 10px at 100% 100%,#0000 98%,#000) bottom right/100% 51% no-repeat;
+  mask:radial-gradient(circle 10px at 100% 0,#0000 98%,#000) top right/100% 51% no-repeat,radial-gradient(circle 10px at 100% 100%,#0000 98%,#000) bottom right/100% 51% no-repeat}
+.pass-stub{border-radius:0 0 10px 0;padding:0 18px 16px;border-left:2px dashed #C9C2B2;
+  -webkit-mask:radial-gradient(circle 10px at 0 0,#0000 98%,#000) top left/100% 51% no-repeat,radial-gradient(circle 10px at 0 100%,#0000 98%,#000) bottom left/100% 51% no-repeat;
+  mask:radial-gradient(circle 10px at 0 0,#0000 98%,#000) top left/100% 51% no-repeat,radial-gradient(circle 10px at 0 100%,#0000 98%,#000) bottom left/100% 51% no-repeat}
+.pass-band{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 20px 9px;background:linear-gradient(#FFD957,#F6B91C);color:#141414;
+  font:700 15px/1 var(--face);letter-spacing:.18em;text-transform:uppercase}
+.pass-band svg{width:22px;height:22px;flex:none}
+.pass-band .x{margin-left:auto;width:30px;height:30px;border:0;border-radius:50%;background:rgba(0,0,0,.1);color:#141414;font:700 20px/1 var(--text);cursor:pointer}
+.pass-band .x:hover{background:rgba(0,0,0,.2)}
+.pass-stub .pass-band{margin:0 -18px 14px;padding-left:18px}
+.pf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 22px;padding:0 20px}
+.fld{min-width:0}
+.fld.w2{grid-column:span 2}.fld.w4{grid-column:1/-1}
+.fld dt,.lbl{margin:0 0 3px;font:600 11px/1 var(--face);letter-spacing:.18em;text-transform:uppercase;color:#857E6E}
+.fld dd{margin:0}
+.big{font:700 30px/1.02 var(--face);letter-spacing:.02em;text-transform:uppercase;color:#121417}
+.val{font:700 22px/1.1 var(--face);letter-spacing:.03em;color:#121417}
+.val small{font-size:15px;color:#4B4F55;margin-left:3px}
+.note{margin:3px 0 0;font-size:13.5px;line-height:1.4;color:#4B4F55}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.dot[data-l="0"]{background:#1FA85C}.dot[data-l="1"]{background:#8DBF2C}.dot[data-l="2"]{background:#E59A0C}.dot[data-l="3"]{background:#E0442A}
+.risk-tag{display:inline-block;padding:3px 9px 2px;border-radius:3px;font:700 17px/1.1 var(--face);letter-spacing:.08em;text-transform:uppercase;color:#FFF8E8}
+.risk-tag.r1{background:#1f7a4b}.risk-tag.r2{background:#a8701a}
+.score-big{display:flex;align-items:baseline;gap:8px;font:700 64px/.9 var(--face);color:#121417}
+.score-big small{font:600 18px/1 var(--face);color:#857E6E;letter-spacing:.06em}
+.ranks{margin:6px 0 12px;font:600 15px/1.35 var(--face);letter-spacing:.04em;color:#3A3E44}
+.bars{display:grid;gap:7px;margin:0 0 14px}
+.bar{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font:600 13px/1.1 var(--face);letter-spacing:.06em;text-transform:uppercase;color:#4B4F55}
+.bar b{font-weight:700;color:#121417}
+.bar i{grid-column:1/-1;height:6px;border-radius:3px;background:#E3DDCF;overflow:hidden}
+.bar i u{display:block;height:100%;background:#2B2F35;border-radius:3px}
+.barcode{display:block;width:100%;height:40px;margin:0 0 12px}
+.cta{display:flex;flex-direction:column;gap:8px}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:6px 14px;border-radius:6px;text-decoration:none;
+  font:700 16px/1 var(--face);letter-spacing:.12em;text-transform:uppercase}
+.btn.go{color:#141414;background:linear-gradient(#FFD957,#F6B91C);box-shadow:0 2px 0 #9a7208,inset 0 1px 0 rgba(255,255,255,.6)}
+.btn.go:hover{filter:brightness(1.05)}
+.btn.alt{color:#1C1F23;background:transparent;box-shadow:inset 0 0 0 2px #1C1F23}
+.btn.alt:hover{background:rgba(0,0,0,.05)}
+.cta small{font-size:12.5px;line-height:1.35;color:#6A6559}
+.pass a.inline{color:#7A4D00}
+
+/* ---------- below the board ---------- */
+.about{margin:14px 2px 0;border-radius:10px;background:#F7F4EC;box-shadow:0 0 0 1px #D6D0C2}
+.embed .about{background:#FBF9F4}
+.about summary{cursor:pointer;padding:12px 16px;font:700 16px/1.2 var(--face);letter-spacing:.12em;text-transform:uppercase;color:#2A2E33;list-style:none}
+.about summary::-webkit-details-marker{display:none}
+.about summary::before{content:"▸";display:inline-block;width:16px;transition:transform .15s}
+.about[open] summary::before{transform:rotate(90deg)}
+.about-body{padding:0 18px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 28px;font-size:14px;line-height:1.5;color:#33373C}
+.about-body h3{margin:12px 0 4px;font:700 15px/1.2 var(--face);letter-spacing:.1em;text-transform:uppercase;color:#1E2226}
+.about-body p{margin:0 0 6px}
+.about-body .src{grid-column:1/-1;font-size:12.5px;color:#5C6066;border-top:1px solid #DED8CA;padding-top:10px;margin-top:8px}
+.about a{color:#7A4D00}
+.fine{margin:10px 4px 0;font-size:12.5px;line-height:1.45;color:#5C6066}
+
+/* ---------- smaller screens ---------- */
+@media (max-width:1140px){
+  :root{--cw:24px;--ch:40px;--cf:26px;--gap:2px}
+  .rows col.c-wear,.rows .c-wear{display:none}
+  .f.m .h.b .wr{display:inline}
+  .console{grid-template-columns:auto auto 1fr}
+  .c-sound{grid-column:3}
+}
+@media (max-width:880px){
+  :root{--cw:21px;--ch:38px;--cf:23px}
+  .board{padding:14px 10px 12px;border-radius:12px}
+  .b-head{gap:10px;margin-bottom:12px}
+  .sign{padding:6px 12px 6px 8px}
+  .sign svg{width:28px;height:28px}
+  .clock{margin-left:auto}
+  .clock .f{--cw:18px;--ch:28px;--cf:20px}
+  .clock .colon{font-size:20px}
+  .console{grid-template-columns:1fr auto;padding:10px 12px 12px;gap:10px 12px}
+  .c-wear-g,.c-type-g{grid-column:1/-1}
+  .c-sort{display:block}
+  .c-sound{grid-column:2;justify-self:end}
+  .mix-toggle{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:0 12px;border:1px solid #0c0d0f;border-radius:5px;cursor:pointer;
+    font:600 14px/1 var(--face);letter-spacing:.1em;text-transform:uppercase;color:#E3DFD4;background:linear-gradient(#4a4e55,#35383d);box-shadow:0 3px 0 #0b0c0d,inset 0 1px 0 rgba(255,255,255,.18)}
+  .mix-toggle span::before{content:"▸";display:inline-block;width:14px;transition:transform .15s}
+  .mix-toggle[aria-expanded="true"] span::before{transform:rotate(90deg)}
+  .mix-toggle b{font:700 16px/1 var(--face);color:#FFB547;text-shadow:0 0 6px rgba(255,170,40,.6)}
+  .console:not(.mix-open) .c-mix{display:none}
+  .c-mix > .engrave{display:none}
+  .key{min-height:36px;padding:13px 10px 5px;font-size:13px}
+  .rows col.c-o2,.rows col.c-water,.rows col.c-risk,.rows col.c-price,
+  .rows .c-o2,.rows .c-water,.rows .c-risk,.rows .c-price{display:none}
+  .rows col.c-pos{width:calc(var(--cw)*2 + var(--gap) + 14px)}
+  .rows col.c-score{width:calc(var(--cw)*2 + var(--gap) + 34px)}
+  .rows tbody td{padding:5px 4px}
+  .rows tbody td.c-lens{padding-right:2px}
+  .lamp{margin-left:7px}
+  .mini{display:flex;flex-wrap:wrap;gap:4px 10px;margin:6px 2px 1px;font:600 12px/1 var(--face);letter-spacing:.07em;text-transform:uppercase;color:#8D897E}
+  .mini span{display:inline-flex;align-items:center}
+  .mini .lamp{width:10px;height:10px;margin-left:5px}
+  .pass{grid-template-columns:1fr;margin:-3px 8px 0}
+  .pass-main{border-radius:0;-webkit-mask:none;mask:none;padding-bottom:12px}
+  .pass-stub{border-left:0;border-top:2px dashed #C9C2B2;border-radius:0 0 10px 10px;padding-top:14px;-webkit-mask:none;mask:none}
+  .pass-stub .pass-band{display:none}
+  .pass-band .wide{display:none}
+  .pf{grid-template-columns:1fr 1fr;gap:12px 16px;padding:0 14px}
+  .fld.w2{grid-column:1/-1}
+  .big{font-size:26px}
+  .keyplate{grid-template-columns:auto repeat(4,minmax(40px,auto));gap:5px 6px;font-size:12px}
+}
+@media (max-width:400px){
+  :root{--cw:19px;--ch:36px;--cf:21px}
+  .sign h1{font-size:22px}
+  .f.m .h.b > i{letter-spacing:.04em;padding-right:4px}
+}
+@media (prefers-reduced-motion:reduce){
+  .pass{animation:none}
+  .clock .colon{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="sb" id="sb">
+  <section class="board" aria-labelledby="sb-title">
+    <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+    <header class="b-head">
+      <div class="sign">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="5" fill="#141414"/><path d="M3.5 16c3.6-5.8 7.8-8.6 12.5-8.6S24.9 10.2 28.5 16c-3.6 5.8-7.8 8.6-12.5 8.6S7.1 21.8 3.5 16z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="16" cy="16" r="4.7" fill="#fff"/><circle cx="16" cy="16" r="2" fill="#141414"/><path d="M9.6 14.2a7 7 0 0 1 12.8 0" fill="none" stroke="#FFC52E" stroke-width="2" stroke-linecap="round"/></svg>
+        <h1 id="sb-title">Lens Scorecard</h1>
+      </div>
+      <p class="b-sub" id="sb-sub" aria-live="polite"></p>
+      <div class="clock" id="sb-clock" aria-hidden="true"></div>
+    </header>
+
+    <div class="console">
+      <div class="c-wear-g" role="group" aria-labelledby="lbl-wear">
+        <span class="engrave" id="lbl-wear">Wear</span>
+        <div class="keys">
+          <button type="button" class="key" data-f="sched" data-v="all">All</button>
+          <button type="button" class="key" data-f="sched" data-v="Daily">Daily</button>
+          <button type="button" class="key" data-f="sched" data-v="week">1–2 week</button>
+          <button type="button" class="key" data-f="sched" data-v="Monthly">Monthly</button>
+        </div>
+      </div>
+      <div class="c-type-g" role="group" aria-labelledby="lbl-type">
+        <span class="engrave" id="lbl-type">Material</span>
+        <div class="keys">
+          <button type="button" class="key" data-f="type" data-v="all">All</button>
+          <button type="button" class="key" data-f="type" data-v="SiHy">Silicone hydrogel</button>
+          <button type="button" class="key" data-f="type" data-v="Hydrogel">Hydrogel</button>
+        </div>
+      </div>
+      <div class="c-sort">
+        <label class="engrave" for="sb-sort">Sort by</label>
+        <select id="sb-sort">
+          <option value="overall">Score</option>
+          <option value="dkt">Oxygen</option>
+          <option value="water">Water</option>
+          <option value="risk">Infection risk</option>
+          <option value="price">Price</option>
+          <option value="sched">Wear</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
+      <div class="c-sound">
+        <span class="engrave" id="lbl-snd">Sound</span>
+        <button type="button" class="toggle" id="sb-sound" role="switch" aria-checked="false" aria-labelledby="lbl-snd"></button>
+      </div>
+      <button type="button" class="mix-toggle" id="sb-mix-toggle" aria-expanded="false" aria-controls="sb-mix"><span>What matters to you?</span><b id="sb-mix-sum"></b></button>
+      <div class="c-mix" id="sb-mix" role="group" aria-labelledby="lbl-mix">
+        <span class="engrave" id="lbl-mix">Score: what matters most to you?</span>
+        <div class="fader"><label for="w-om">Oxygen &amp; moisture</label><input class="fd" type="range" id="w-om" data-w="om" min="0" max="10" step="1"><output class="led" for="w-om" id="o-om"></output></div>
+        <div class="fader"><label for="w-safety">Infection safety</label><input class="fd" type="range" id="w-safety" data-w="safety" min="0" max="10" step="1"><output class="led" for="w-safety" id="o-safety"></output></div>
+        <div class="fader"><label for="w-price">Low price</label><input class="fd" type="range" id="w-price" data-w="price" min="0" max="10" step="1"><output class="led" for="w-price" id="o-price"></output></div>
+        <button type="button" class="pbtn" id="w-reset">Reset</button>
+      </div>
+    </div>
+
+    <table class="rows" id="sb-table">
+      <caption class="sr">Contact lens scorecard: position, lens, wear schedule, oxygen (Dk/t), water content, infection and inflammation risk, typical online price and overall score. Choose a lens for its details.</caption>
+      <colgroup><col class="c-pos"><col class="c-lens"><col class="c-wear"><col class="c-o2"><col class="c-water"><col class="c-risk"><col class="c-price"><col class="c-score"></colgroup>
+      <thead>
+        <tr>
+          <th scope="col" class="c-pos" data-sortcol="overall"><button type="button" data-sort="overall">#</button></th>
+          <th scope="col" class="c-lens" data-sortcol="name"><button type="button" data-sort="name">Lens</button></th>
+          <th scope="col" class="c-wear" data-sortcol="sched"><button type="button" data-sort="sched">Wear<small>Material</small></button></th>
+          <th scope="col" class="c-o2" data-sortcol="dkt"><button type="button" data-sort="dkt">Oxygen<small>Dk/t</small></button></th>
+          <th scope="col" class="c-water" data-sortcol="water"><button type="button" data-sort="water">Water<small>Content</small></button></th>
+          <th scope="col" class="c-risk" data-sortcol="risk"><button type="button" data-sort="risk">Infection<small>Risk</small></button></th>
+          <th scope="col" class="c-price" data-sortcol="price"><button type="button" data-sort="price">Price<small>Per eye, day</small></button></th>
+          <th scope="col" class="c-score" data-sortcol="overall"><button type="button" data-sort="overall">Score<small>/100</small></button></th>
+        </tr>
+      </thead>
+      <tbody id="sb-body"></tbody>
+    </table>
+
+    <footer class="b-foot">
+      <div class="keyplate" aria-label="What the lamps mean">
+        <span></span><i class="lamp" data-l="0"></i><i class="lamp" data-l="1"></i><i class="lamp" data-l="2"></i><i class="lamp" data-l="3"></i>
+        <b>Oxygen</b><span>125+</span><span>87–124</span><span>35–86</span><span>&lt;35</span>
+        <b>Water</b><span>50%+</span><span>—</span><span>40–49%</span><span>&lt;40%</span>
+        <b>Price</b><span>$</span><span>$$</span><span>$$$</span><span>$$$$</span>
+        <b>Score</b><span>80+</span><span>70–79</span><span>55–69</span><span>&lt;55</span>
+        <span class="hint"><span>◂ Better</span><span>Worse ▸</span></span>
+      </div>
+      <ul class="keynotes">
+        <li><span class="chip r1">Lowest</span><span>Daily disposables: a fresh lens every day, no case or solution.</span></li>
+        <li><span class="chip r2">Medium</span><span>Reusable lenses: compared with dailies, serious infection about 2×, Acanthamoeba about 4×, inflammation about 10×.</span></li>
+        <li><span>Price: $–$$$$ compares lenses on the same schedule; the dollar figure is a typical online cost per eye per day (CAD).</span></li>
+        <li><span>* Water shown is the lens core; the surface layer is much wetter.</span></li>
+      </ul>
+    </footer>
+  </section>
+
+  <details class="about" id="sb-about">
+    <summary>How the board works &amp; sources</summary>
+    <div class="about-body">
+      <div>
+        <h3>Score</h3>
+        <p>Each lens gets three ratings from 0 to 100 against the 27 lenses here. <b>Oxygen &amp; moisture:</b> how close the lens comes to the most oxygen and the most water on the board. <b>Infection safety:</b> 100 for daily disposables, 50 for reusable lenses. <b>Price:</b> cost per day of wear, from 100 for the cheapest to 0 for the most expensive. The score is their weighted average, 40 / 40 / 20 by default; the faders change the weights.</p>
+        <h3>Oxygen (Dk/t)</h3>
+        <p>How easily oxygen passes through a −3.00 lens to the clear front of the eye. About 35 keeps the cornea supplied with the eyes open; 87 to 125 is the level researchers set for closed eyes, the toughest case.</p>
+      </div>
+      <div>
+        <h3>Water</h3>
+        <p>The share of the lens that is water. 50% or more is a “high water” lens in the standard classification. Silicone hydrogels carry oxygen through silicone, so they usually hold less water than older hydrogels yet pass far more oxygen.</p>
+        <h3>Infection &amp; inflammation risk</h3>
+        <p>Infections are rare but can harm vision. Compared with daily disposables, reusable lenses worn during the day carry about 2× the risk of a serious infection, about 4× the risk of Acanthamoeba infection and about 10× the risk of an inflammatory reaction. No study separates 1-week, 2-week and monthly lenses. Sleeping in any lens raises the risk the most.</p>
+      </div>
+      <div>
+        <h3>Price</h3>
+        <p>Regular online prices in Canada, converted to cost per eye per day. $ is well below typical for the lens’s schedule, $$ about typical, $$$ above, $$$$ well above. Prices vary with stores, sales and rebates, and prices at our clinic and online store may differ.</p>
+        <h3>Keep in mind</h3>
+        <p>Comfort also depends on fit, the lens surface, your tears and how you care for your lenses, and manufacturers don’t all measure the same way, so treat small differences as a tie. A contact lens prescription names a specific lens, so switching needs a fitting. <a id="sb-explorer" href="https://drburke-droid.github.io/VSL/lens-explorer/" target="_blank" rel="noopener">See every lens on a chart ↗</a></p>
+      </div>
+      <p class="src">Values are each manufacturer’s published figures for a −3.00 D spherical lens, checked November 2026 (Bausch + Lomb, Alcon, Johnson &amp; Johnson and CooperVision product guides). Prices: Clearly.ca regular prices, November 2026; Ultra One Day from FYidoctors.com; Avaira Vitality and Proclear estimated; SofLens 38 not compared. Infection research: Stapleton et al., <a href="https://pubmed.ncbi.nlm.nih.gov/18538404/" target="_blank" rel="noopener">Ophthalmology 2008</a>; Stapleton &amp; Carnt, <a href="https://www.nature.com/articles/eye2011288" target="_blank" rel="noopener">Eye 2012</a>; Carnt et al., <a href="https://doi.org/10.1016/j.ophtha.2022.08.002" target="_blank" rel="noopener">Ophthalmology 2022</a>; Chalmers et al., <a href="https://pubmed.ncbi.nlm.nih.gov/25574042/" target="_blank" rel="noopener">IOVS 2015</a>. Brand names are trademarks of their owners; Ultra One Day is sold as INFUSE in the US.</p>
+    </div>
+  </details>
+  <p class="fine">Calgary Vision Centre. For general information only; not a substitute for an eye exam or contact lens fitting.</p>
+</div>
+
+<script src="../lens-explorer/lens-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var LENSES = (window.LENS_DATA || []).map(function (l) { return Object.assign({}, l); });
+  var STORE = window.LENS_STORE || { products: {} };
+  var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- scoring: the same rules as the Contact Lens Explorer ----------
+  var X = { min: 15, max: 85 }, Y = { min: 0, max: 200 };
+  var SCHED_ORDER = { 'Daily': 0, '1-week': 1, '2-week': 2, 'Monthly': 3 };
+  function classOf(l) { return l.sched === 'Daily' ? 'Daily' : l.sched === 'Monthly' ? 'Monthly' : 'Week'; }
+  function classWord(l) { return l.sched === 'Daily' ? 'daily lenses' : l.sched === 'Monthly' ? 'monthly lenses' : '1–2 week lenses'; }
+  LENSES.forEach(function (l) {
+    var x = (l.water - X.min) / (X.max - X.min), y = (l.dkt - Y.min) / (Y.max - Y.min);
+    l.score = 100 * (1 - Math.hypot(1 - x, 1 - y) / Math.SQRT2);
+    l.risk = l.sched === 'Daily' ? 1 : 2;
+  });
+  var sMin = Math.min.apply(null, LENSES.map(function (l) { return l.score; }));
+  var sMax = Math.max.apply(null, LENSES.map(function (l) { return l.score; }));
+  var days = LENSES.filter(function (l) { return l.day; }).map(function (l) { return l.day; });
+  var dMin = Math.min.apply(null, days), dMax = Math.max.apply(null, days);
+  LENSES.forEach(function (l) {
+    l.rOm = (l.score - sMin) / (sMax - sMin) * 100;
+    l.rSafety = l.risk === 1 ? 100 : 50;
+    l.rPrice = l.day ? (dMax - l.day) / (dMax - dMin) * 100 : null;
+    l.classCount = LENSES.filter(function (o) { return classOf(o) === classOf(l); }).length;
+  });
+  var W_DEFAULT = { om: 4, safety: 4, price: 2 };
+  var state = { w: Object.assign({}, W_DEFAULT), sched: 'all', type: 'all', sort: 'overall', dir: -1, open: null, mine: null, sound: false };
+  function shares() {
+    var w = state.w, t = w.om + w.safety + w.price;
+    return t ? { om: w.om / t, safety: w.safety / t, price: w.price / t } : { om: 1 / 3, safety: 1 / 3, price: 1 / 3 };
+  }
+  function computeOverall() {
+    var w = shares();
+    LENSES.forEach(function (l) {
+      var num = w.om * l.rOm + w.safety * l.rSafety, den = w.om + w.safety;
+      if (l.rPrice !== null) { num += w.price * l.rPrice; den += w.price; }
+      l.overall = den ? num / den : 0;
+    });
+    LENSES.forEach(function (l) {
+      var same = LENSES.filter(function (o) { return classOf(o) === classOf(l); });
+      l.oRank = 1 + LENSES.filter(function (o) { return o.overall > l.overall + 1e-9; }).length;
+      l.oClassRank = 1 + same.filter(function (o) { return o.overall > l.overall + 1e-9; }).length;
+      l.oTied = LENSES.some(function (o) { return o !== l && Math.abs(o.overall - l.overall) < 1e-9; });
+    });
+  }
+
+  // ---------- bands -> lamp level 0 (best) .. 3 ----------
+  function lvDkt(v) { return v >= 125 ? 0 : v >= 87 ? 1 : v >= 35 ? 2 : 3; }
+  function lvWater(v) { return v >= 50 ? 0 : v >= 40 ? 2 : 3; }
+  function lvScore(v) { return v >= 80 ? 0 : v >= 70 ? 1 : v >= 55 ? 2 : 3; }
+  function lvPrice(l) { return l.cost ? l.cost - 1 : null; }
+  var DKT_WORD = ['Very high: enough even with eyes closed', 'High: near the level set for closed eyes', 'Moderate: enough with eyes open', 'Low: below the open-eye level (35)'];
+  var WATER_WORD = ['High water (50% or more)', '', 'Mid water (40–49%)', 'Low water (under 40%)'];
+  var TIER_WORD = [null, 'well below typical', 'about typical', 'above typical', 'well above typical'];
+  var SCHED_WORD = { 'Daily': 'Daily disposable', '1-week': '1-week replacement', '2-week': '2-week replacement', 'Monthly': 'Monthly replacement' };
+  var SCHED_SHORT = { 'Daily': 'Daily', '1-week': '1-week', '2-week': '2-week', 'Monthly': 'Monthly' };
+  function typeWord(l) { return l.type === 'SiHy' ? 'Silicone hydrogel' : 'Hydrogel'; }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function fmtDkt(v) { return Number.isInteger(v) ? String(v) : v.toFixed(1); }
+  function money(v) { return '$' + v.toFixed(2); }
+
+  // ---------- sound: a soft clack per flap, only after the visitor turns it on ----------
+  var audio = null, noise = null, lastClick = 0;
+  function initAudio() {
+    if (audio) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audio = new AC();
+    var n = Math.floor(audio.sampleRate * 0.02);
+    noise = audio.createBuffer(1, n, audio.sampleRate);
+    var d = noise.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 6);
+  }
+  function clack() {
+    if (!state.sound || !audio) return;
+    var t = audio.currentTime;
+    if (t - lastClick < 0.011) return;
+    lastClick = t;
+    var src = audio.createBufferSource(), bp = audio.createBiquadFilter(), g = audio.createGain();
+    src.buffer = noise; bp.type = 'bandpass'; bp.frequency.value = 1400 + Math.random() * 1800; bp.Q.value = 1.4;
+    g.gain.value = 0.18 + Math.random() * 0.14;
+    src.connect(bp); bp.connect(g); g.connect(audio.destination); src.start(t);
+  }
+
+  // ---------- the flap engine ----------
+  var DRUM = ' 0123456789';
+  var STEP = 84, MAXSTEP = 5;
+  function mkFlap(kind, extra) {
+    var el = document.createElement('span');
+    el.className = 'f ' + (kind === 'm' ? 'm ' : '') + (extra || '');
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<span class="h t"><i></i></span><span class="h b"><i></i></span><span class="h t lf"><i></i></span><span class="h b lf"><i></i></span>';
+    var c = el.children;
+    return { el: el, kind: kind, st: c[0], sb: c[1], lt: c[2], lb: c[3], cur: { t: '', b: '', c: '' }, target: null, busy: false, extra: 0, pool: null };
+  }
+  function same(a, b) { return a.t === b.t && a.b === b.b && a.c === b.c; }
+  function paint(half, v, part, lf) {
+    half.className = 'h ' + (part === 't' ? 't' : 'b') + (lf ? ' lf' : '') + (v.c ? ' ' + v.c : '');
+    half.firstChild.innerHTML = v[part];
+  }
+  function show(cell, v) { paint(cell.st, v, 't'); paint(cell.sb, v, 'b'); cell.cur = v; }
+  function nextVal(cell) {
+    var t = cell.target;
+    if (cell.kind === 'c') {
+      var i = DRUM.indexOf(cell.cur.t), j = DRUM.indexOf(t.t);
+      if (i < 0 || j < 0 || i === j) return t;
+      var dist = (j - i + DRUM.length) % DRUM.length;
+      if (dist > MAXSTEP) i = (j - MAXSTEP + DRUM.length) % DRUM.length;
+      var k = (i + 1) % DRUM.length;
+      return k === j ? t : { t: DRUM[k], b: DRUM[k], c: t.c };
+    }
+    if (cell.extra > 0 && cell.pool && cell.pool.length > 2) {
+      cell.extra--;
+      var p;
+      do { p = cell.pool[Math.floor(Math.random() * cell.pool.length)]; } while (same(p, cell.cur) || same(p, t));
+      return p;
+    }
+    return t;
+  }
+  function flipOnce(cell, from, to, done) {
+    var d = STEP * (0.85 + Math.random() * 0.3);
+    paint(cell.st, to, 't');
+    paint(cell.lt, from, 't', true);
+    paint(cell.lb, to, 'b', true);
+    cell.lt.style.visibility = 'visible';
+    var a = cell.lt.animate([{ transform: 'rotateX(0deg)', filter: 'brightness(1)' }, { transform: 'rotateX(-90deg)', filter: 'brightness(.5)' }],
+      { duration: d / 2, easing: 'ease-in' });
+    a.onfinish = function () {
+      cell.lt.style.visibility = 'hidden';
+      cell.lb.style.visibility = 'visible';
+      clack();
+      var b = cell.lb.animate([{ transform: 'rotateX(90deg)', filter: 'brightness(1.5)' }, { transform: 'rotateX(-6deg)', offset: .8, filter: 'brightness(1)' }, { transform: 'rotateX(0deg)' }],
+        { duration: d / 2 + 14, easing: 'ease-out' });
+      b.onfinish = function () {
+        paint(cell.sb, to, 'b');
+        cell.lb.style.visibility = 'hidden';
+        cell.cur = to;
+        done();
+      };
+    };
+  }
+  function run(cell) {
+    if (same(cell.cur, cell.target)) { cell.busy = false; return; }
+    var to = nextVal(cell);
+    flipOnce(cell, cell.cur, to, function () { run(cell); });
+  }
+  function setFlap(cell, v, delay, instant) {
+    cell.target = v;
+    if (same(cell.cur, v)) return;
+    if (instant || REDUCED || !cell.el.animate) { show(cell, v); return; }
+    if (cell.kind === 'm') cell.extra = 1 + Math.floor(Math.random() * 2);
+    if (cell.busy) return;
+    cell.busy = true;
+    setTimeout(function () { run(cell); }, delay || 0);
+  }
+  function setChars(cells, str, delay, cls, instant) {
+    var s = String(str);
+    while (s.length < cells.length) s = ' ' + s;
+    cells.forEach(function (c, i) { setFlap(c, { t: s[i], b: s[i], c: cls || '' }, delay + i * 26, instant); });
+  }
+  function chars(n, extra) { var a = []; for (var i = 0; i < n; i++) a.push(mkFlap('c', extra)); return a; }
+  function grp(cells, tail) {
+    var g = document.createElement('span'); g.className = 'grp';
+    cells.forEach(function (c) { g.appendChild(c.el); });
+    if (tail) g.insertAdjacentHTML('beforeend', tail);
+    return g;
+  }
+
+  // ---------- module values ----------
+  function lensVal(l) {
+    var n = l.name.length + (l.gradient ? 1 : 0);
+    var nm = '<b class="nm" style="--k:' + (n * 0.47).toFixed(2) + '">' + esc(l.name) + (l.gradient ? '*' : '') + '</b>';
+    return { t: nm, b: '<span class="br">' + esc(l.brand) + '</span><span class="wr">\u00a0·\u00a0' + SCHED_SHORT[l.sched] + '</span>', c: '' };
+  }
+  function wearVal(l) { return { t: SCHED_SHORT[l.sched], b: typeWord(l), c: '' }; }
+  function riskVal(l) { return l.risk === 1 ? { t: 'Lowest', b: 'New lens daily', c: 'r1' } : { t: 'Medium', b: 'Case + solution', c: 'r2' }; }
+  function priceVal(l) {
+    if (!l.cost) return { t: '—', b: 'No price', c: '' };
+    return { t: '$$$$'.slice(0, l.cost) + '<s>' + '$$$$'.slice(l.cost) + '</s>', b: money(l.day), c: '' };
+  }
+  var BLANK = { t: '', b: '', c: '' };
+  var POOLS = {
+    lens: LENSES.map(lensVal), wear: LENSES.map(wearVal).filter(uniq), risk: [riskVal({ risk: 1 }), riskVal({ risk: 2 })],
+    price: LENSES.map(priceVal).filter(uniq)
+  };
+  function uniq(v, i, a) { return a.findIndex(function (o) { return same(o, v); }) === i; }
+
+  // ---------- build the rows ----------
+  var tbody = document.getElementById('sb-body');
+  var rows = [];
+  LENSES.forEach(function (_, i) {
+    var tr = document.createElement('tr'); tr.className = 'row';
+    var r = { tr: tr, lens: null, off: false };
+    r.pos = chars(2); r.o2 = chars(3); r.water = chars(2); r.score = chars(2, 'gold');
+    r.mLens = mkFlap('m'); r.mWear = mkFlap('m'); r.mRisk = mkFlap('m'); r.mPrice = mkFlap('m');
+    r.mLens.pool = POOLS.lens; r.mWear.pool = POOLS.wear; r.mRisk.pool = POOLS.risk; r.mPrice.pool = POOLS.price;
+    function td(cls) { var d = document.createElement('td'); d.className = cls; tr.appendChild(d); return d; }
+    var tPos = td('c-pos'); tPos.appendChild(grp(r.pos));
+    var tLens = td('c-lens');
+    r.btn = document.createElement('button'); r.btn.type = 'button'; r.btn.className = 'row-open'; r.btn.setAttribute('aria-expanded', 'false');
+    tLens.appendChild(r.btn);
+    tLens.appendChild(r.mLens.el);
+    tLens.insertAdjacentHTML('beforeend', '<span class="mini" aria-hidden="true"><span>O₂<i class="lamp"></i></span><span>Water<i class="lamp"></i></span><span>Risk<i class="lamp"></i></span><span>Price<i class="lamp"></i></span></span>');
+    r.miniLamps = tLens.querySelectorAll('.mini .lamp');
+    var tWear = td('c-wear'); tWear.appendChild(r.mWear.el);
+    var tO2 = td('c-o2'); tO2.appendChild(grp(r.o2, '<i class="lamp"></i>')); r.lO2 = tO2.querySelector('.lamp');
+    var tWater = td('c-water'); tWater.appendChild(grp(r.water, '<span class="unit">%</span><i class="lamp"></i>')); r.lWater = tWater.querySelector('.lamp');
+    var tRisk = td('c-risk'); tRisk.appendChild(r.mRisk.el);
+    var tPrice = td('c-price'); var pg = document.createElement('span'); pg.className = 'grp'; pg.appendChild(r.mPrice.el); pg.insertAdjacentHTML('beforeend', '<i class="lamp"></i>'); tPrice.appendChild(pg); r.lPrice = tPrice.querySelector('.lamp');
+    var tScore = td('c-score'); tScore.appendChild(grp(r.score, '<i class="lamp"></i>')); r.lScore = tScore.querySelector('.lamp');
+    r.cols = [r.pos, [r.mLens], [r.mWear], r.o2, r.water, [r.mRisk], [r.mPrice], r.score];
+    // screen readers get plain text in each cell
+    [tPos, tLens, tWear, tO2, tWater, tRisk, tPrice, tScore].forEach(function (cell) { var s = document.createElement('span'); s.className = 'sr'; cell.appendChild(s); });
+    r.srs = tr.querySelectorAll('td > .sr');
+    tr.addEventListener('click', function (e) { if (e.target.closest('.row-open')) return; if (r.lens) togglePass(r); });
+    r.btn.addEventListener('click', function () { if (r.lens) togglePass(r); });
+    tbody.appendChild(tr);
+    rows.push(r);
+  });
+  // flap sizes for the module columns: set the price module narrower than the others
+  rows.forEach(function (r) { r.mPrice.el.style.width = 'calc(var(--cw) * 3)'; });
+
+  function setLamp(el, lv, delay, instant) {
+    var apply = function () { if (lv === null || lv === undefined) el.removeAttribute('data-l'); else el.setAttribute('data-l', lv); };
+    if (instant || REDUCED) apply(); else setTimeout(apply, delay);
+  }
+
+  // ---------- filter + sort ----------
+  var SORTS = {
+    overall: { def: -1, v: function (l) { return l.overall; }, word: 'score' },
+    name: { def: 1, v: function (l) { return l.name.toLowerCase(); }, word: 'name' },
+    sched: { def: 1, v: function (l) { return SCHED_ORDER[l.sched]; }, word: 'wear schedule' },
+    dkt: { def: -1, v: function (l) { return l.dkt; }, word: 'oxygen' },
+    water: { def: -1, v: function (l) { return l.water; }, word: 'water content' },
+    risk: { def: 1, v: function (l) { return l.risk; }, word: 'infection risk' },
+    price: { def: 1, v: function (l) { return l.cost ? l.cost * 10 + l.day : null; }, word: 'price' }
+  };
+  function list() {
+    var s = SORTS[state.sort], dir = state.dir;
+    return LENSES.filter(function (l) {
+      var okS = state.sched === 'all' || (state.sched === 'week' ? classOf(l) === 'Week' : l.sched === state.sched);
+      var okT = state.type === 'all' || l.type === state.type;
+      return okS && okT;
+    }).sort(function (a, b) {
+      var va = s.v(a), vb = s.v(b);
+      if (va === null && vb !== null) return 1;
+      if (vb === null && va !== null) return -1;
+      if (va < vb) return -dir;
+      if (va > vb) return dir;
+      return (b.overall - a.overall) || a.name.localeCompare(b.name);
+    });
+  }
+  function subtitle(n) {
+    var words = [];
+    if (state.type === 'SiHy') words.push('silicone hydrogel');
+    if (state.type === 'Hydrogel') words.push('hydrogel');
+    if (state.sched === 'Daily') words.push('daily');
+    if (state.sched === 'week') words.push('1–2 week');
+    if (state.sched === 'Monthly') words.push('monthly');
+    var s = SORTS[state.sort], order;
+    if (state.sort === 'name') order = state.dir === 1 ? 'A to Z' : 'Z to A';
+    else if (state.sort === 'sched') order = state.dir === 1 ? 'daily first' : 'monthly first';
+    else if (state.sort === 'risk') order = state.dir === 1 ? 'lowest first' : 'highest first';
+    else if (state.sort === 'price') order = state.dir === 1 ? 'lowest first' : 'highest first';
+    else order = state.dir === -1 ? 'highest first' : 'lowest first';
+    return n + ' ' + (words.length ? words.join(' ') + ' ' : '') + 'contact lens' + (n === 1 ? '' : 'es') + ' · by ' + s.word + ', ' + order;
+  }
+
+  var hideTimers = [];
+  function render(opts) {
+    opts = opts || {};
+    var instant = !!opts.instant;
+    computeOverall();
+    var L = list();
+    document.getElementById('sb-sub').textContent = subtitle(L.length);
+    if (state.open && !opts.keepPass) closePass();
+    hideTimers.forEach(clearTimeout); hideTimers = [];
+    rows.forEach(function (r, i) {
+      var l = L[i] || null;
+      var rowDelay = instant ? 0 : i * 32 + Math.random() * 25;
+      r.lens = l;
+      r.tr.classList.toggle('mine', !!l && l.id === state.mine);
+      if (l) {
+        r.off = false; r.tr.hidden = false; r.tr.classList.remove('off');
+        var sc = Math.round(l.overall);
+        setChars(r.pos, i + 1, rowDelay, '', instant);
+        setFlap(r.mLens, lensVal(l), rowDelay + 40, instant);
+        setFlap(r.mWear, wearVal(l), rowDelay + 70, instant);
+        setChars(r.o2, Math.round(l.dkt), rowDelay + 100, '', instant);
+        setChars(r.water, l.water, rowDelay + 140, '', instant);
+        setFlap(r.mRisk, riskVal(l), rowDelay + 170, instant);
+        setFlap(r.mPrice, priceVal(l), rowDelay + 200, instant);
+        setChars(r.score, sc, rowDelay + 230, 'gold', instant);
+        var lamps = [lvDkt(l.dkt), lvWater(l.water), l.risk === 1 ? 0 : 2, lvPrice(l)];
+        setLamp(r.lO2, lamps[0], rowDelay + 520, instant);
+        setLamp(r.lWater, lamps[1], rowDelay + 560, instant);
+        setLamp(r.lPrice, lamps[3], rowDelay + 620, instant);
+        setLamp(r.lScore, lvScore(sc), rowDelay + 680, instant);
+        lamps.forEach(function (lv, k) { setLamp(r.miniLamps[k], lv, rowDelay + 560, instant); });
+        r.btn.setAttribute('aria-label', l.name + ', ' + l.brand + ', score ' + sc + '. Show details');
+        r.btn.disabled = false;
+        var txt = [String(i + 1), l.name + (l.gradient ? ' (core water; wetter surface)' : '') + ', ' + l.brand, SCHED_WORD[l.sched] + ', ' + typeWord(l).toLowerCase(),
+          fmtDkt(l.dkt) + ' Dk/t', l.water + '%', riskVal(l).t + ' risk', l.cost ? '$$$$'.slice(0, l.cost) + ', ' + money(l.day) + ' a day' : 'not compared', sc + ' out of 100'];
+        r.srs.forEach(function (s, k) { s.textContent = txt[k]; });
+      } else {
+        r.off = true; r.tr.classList.add('off');
+        r.btn.disabled = true; r.btn.removeAttribute('aria-label');
+        r.cols.forEach(function (col) { col.forEach(function (c) { setFlap(c, c.kind === 'c' ? { t: ' ', b: ' ', c: '' } : BLANK, rowDelay, instant); }); });
+        [r.lO2, r.lWater, r.lPrice, r.lScore].concat([].slice.call(r.miniLamps)).forEach(function (el) { setLamp(el, null, rowDelay, instant); });
+        r.srs.forEach(function (s) { s.textContent = ''; });
+        if (instant) r.tr.hidden = true;
+        else hideTimers.push(setTimeout(function () { if (r.off) r.tr.hidden = true; }, rowDelay + 900));
+      }
+    });
+    syncHeads();
+  }
+  // weights changing: update the score column in place (rows reorder when the fader is let go)
+  function rescore() {
+    computeOverall();
+    rows.forEach(function (r, i) {
+      if (!r.lens) return;
+      var sc = Math.round(r.lens.overall);
+      setChars(r.score, sc, i * 6, 'gold');
+      setLamp(r.lScore, lvScore(sc), 120);
+      r.btn.setAttribute('aria-label', r.lens.name + ', ' + r.lens.brand + ', score ' + sc + '. Show details');
+      r.srs[7].textContent = sc + ' out of 100';
+    });
+    if (state.open) fillPass(state.open, false);
+  }
+
+  // ---------- controls ----------
+  function syncHeads() {
+    document.querySelectorAll('.rows thead th').forEach(function (th) {
+      var k = th.getAttribute('data-sortcol');
+      var on = k === state.sort && !(k === 'overall' && th.classList.contains('c-pos'));
+      if (on) th.setAttribute('aria-sort', state.dir === 1 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort');
+    });
+    document.querySelectorAll('.key[data-f]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(state[b.getAttribute('data-f')] === b.getAttribute('data-v')));
+    });
+    document.getElementById('sb-sort').value = state.sort;
+  }
+  function setSort(k, toggle) {
+    if (toggle && state.sort === k) state.dir = -state.dir;
+    else { state.sort = k; state.dir = SORTS[k].def; }
+    render();
+  }
+  document.querySelectorAll('.rows thead button[data-sort]').forEach(function (b) {
+    b.addEventListener('click', function () { setSort(b.getAttribute('data-sort'), true); });
+  });
+  document.getElementById('sb-sort').addEventListener('change', function (e) { setSort(e.target.value, false); });
+  document.querySelectorAll('.key[data-f]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var f = b.getAttribute('data-f'), v = b.getAttribute('data-v');
+      if (state[f] === v) return;
+      state[f] = v; render();
+    });
+  });
+  var faders = document.querySelectorAll('.fd');
+  function syncWeights() {
+    var s = shares();
+    faders.forEach(function (inp) {
+      var k = inp.getAttribute('data-w');
+      inp.value = state.w[k];
+      document.getElementById('o-' + k).textContent = Math.round(s[k] * 100) + '%';
+      inp.setAttribute('aria-valuetext', Math.round(s[k] * 100) + '% of the score');
+    });
+    document.getElementById('sb-mix-sum').textContent = [s.om, s.safety, s.price].map(function (v) { return Math.round(v * 100); }).join(' / ');
+  }
+  faders.forEach(function (inp) {
+    inp.addEventListener('input', function () { state.w[inp.getAttribute('data-w')] = +inp.value; syncWeights(); rescore(); });
+    inp.addEventListener('change', function () { if (state.sort === 'overall') render({ keepPass: false }); });
+  });
+  document.getElementById('sb-mix-toggle').addEventListener('click', function (e) {
+    var open = e.currentTarget.getAttribute('aria-expanded') !== 'true';
+    e.currentTarget.setAttribute('aria-expanded', String(open));
+    document.querySelector('.console').classList.toggle('mix-open', open);
+  });
+  document.getElementById('w-reset').addEventListener('click', function () {
+    state.w = Object.assign({}, W_DEFAULT); syncWeights(); render();
+  });
+  document.getElementById('sb-sound').addEventListener('click', function (e) {
+    state.sound = !state.sound;
+    e.currentTarget.setAttribute('aria-checked', String(state.sound));
+    if (state.sound) { initAudio(); if (audio && audio.state === 'suspended') audio.resume(); render({ keepPass: true }); }
+  });
+
+  // ---------- boarding pass ----------
+  var PICTO = '<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="5" fill="#141414"/><path d="M3.5 16c3.6-5.8 7.8-8.6 12.5-8.6S24.9 10.2 28.5 16c-3.6 5.8-7.8 8.6-12.5 8.6S7.1 21.8 3.5 16z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><circle cx="16" cy="16" r="4.7" fill="#fff"/><circle cx="16" cy="16" r="2" fill="#141414"/><path d="M9.6 14.2a7 7 0 0 1 12.8 0" fill="none" stroke="#FFC52E" stroke-width="2" stroke-linecap="round"/></svg>';
+  function barcode(id) {
+    var seed = 0; for (var i = 0; i < id.length; i++) seed = (seed * 31 + id.charCodeAt(i)) >>> 0;
+    function rnd() { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296; }
+    var x = 0, out = '';
+    while (x < 196) { var w = 1 + Math.floor(rnd() * 3); out += '<rect x="' + x + '" y="0" width="' + w + '" height="40"/>'; x += w + 1 + Math.floor(rnd() * 3); }
+    return '<svg class="barcode" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true" fill="#1C1F23">' + out + '</svg>';
+  }
+  var passTr = null;
+  // the pass spans the visible columns only (hidden ones would still take width in a fixed table)
+  function spanPass() {
+    if (!passTr) return;
+    var n = [].filter.call(document.querySelectorAll('.rows thead th'), function (th) { return getComputedStyle(th).display !== 'none'; }).length;
+    passTr.firstChild.colSpan = n;
+  }
+  window.addEventListener('resize', spanPass);
+  function closePass() {
+    if (passTr) { passTr.remove(); passTr = null; }
+    rows.forEach(function (r) { r.tr.classList.remove('open'); r.btn.setAttribute('aria-expanded', 'false'); });
+    state.open = null;
+  }
+  function togglePass(r) {
+    var was = state.open === r.lens.id;
+    var focusBack = document.activeElement === r.btn;
+    closePass();
+    if (was) { if (focusBack) r.btn.focus(); return; }
+    state.open = r.lens.id;
+    r.tr.classList.add('open'); r.btn.setAttribute('aria-expanded', 'true');
+    passTr = document.createElement('tr'); passTr.className = 'pass-tr';
+    passTr.innerHTML = '<td><div class="slot"></div><div class="pass" role="region" id="sb-pass" tabindex="-1"></div></td>';
+    r.tr.after(passTr);
+    spanPass();
+    r.btn.setAttribute('aria-controls', 'sb-pass');
+    fillPass(state.open, true);
+    var p = document.getElementById('sb-pass');
+    p.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closePass(); r.btn.focus(); } });
+    if (!REDUCED && state.sound) { for (var k = 0; k < 14; k++) setTimeout(clack, k * 30); }
+    p.focus({ preventScroll: true });
+    // bring the pass into view: here, or (in a frame) ask the host page to scroll
+    var rowTop = r.tr.getBoundingClientRect().top;
+    if (window.parent !== window) {
+      try { window.parent.postMessage({ lensscore: 'reveal', top: Math.round(rowTop + window.pageYOffset) }, '*'); } catch (e) {}
+    } else if (rowTop > window.innerHeight * 0.45) {
+      window.scrollBy({ top: rowTop - 70, behavior: REDUCED ? 'auto' : 'smooth' });
+    }
+  }
+  function fillPass(id, first) {
+    var l = LENSES.filter(function (o) { return o.id === id; })[0];
+    var p = document.getElementById('sb-pass');
+    if (!l || !p) return;
+    var sc = Math.round(l.overall), s = shares();
+    var dl = lvDkt(l.dkt), wl = lvWater(l.water);
+    var prod = STORE.products && STORE.products[l.id];
+    var riskNote = l.risk === 1
+      ? 'A fresh lens every day, with no case or solution to carry germs. Lowest on serious infection, Acanthamoeba and inflammation.'
+      : 'Cleaned and stored in a case. Compared with daily disposables: serious infection about 2×, Acanthamoeba about 4×, inflammation about 10×.';
+    var priceHtml = l.cost
+      ? '<div class="val">' + '$$$$'.slice(0, l.cost) + '<small>' + money(l.day) + ' per eye a day</small></div><p class="note"><span class="dot" data-l="' + lvPrice(l) + '"></span>' + TIER_WORD[l.cost] + ' for ' + classWord(l) + ' online</p>'
+      : '<div class="val">—</div><p class="note">Not compared: no current online price.</p>';
+    var bars = [['Oxygen &amp; moisture', l.rOm, s.om], ['Infection safety', l.rSafety, s.safety], ['Price', l.rPrice, s.price]].map(function (b) {
+      return '<div class="bar"><span>' + b[0] + ' · ' + Math.round(b[2] * 100) + '%</span><b>' + (b[1] === null ? '—' : Math.round(b[1])) + '</b><i><u style="width:' + (b[1] === null ? 0 : Math.round(b[1])) + '%"></u></i></div>';
+    }).join('');
+    var cta = prod
+      ? '<a class="btn go" href="' + esc(STORE.product + prod) + '" target="_blank" rel="noopener">Order online ↗</a>' +
+        '<small>Already wear ' + esc(l.name) + '? Reorder from our online store and have it shipped to you.</small>' +
+        '<a class="btn alt" href="' + esc(STORE.book) + '" target="_blank" rel="noopener">Book a fitting ↗</a>'
+      : '<a class="btn go" href="' + esc(STORE.book) + '" target="_blank" rel="noopener">Book a fitting ↗</a>' +
+        '<small>A contact lens prescription names a specific lens, so trying ' + esc(l.name) + ' starts with a fitting.</small>' +
+        (STORE.shop ? '<a class="btn alt" href="' + esc(STORE.shop) + '" target="_blank" rel="noopener">Our online store ↗</a>' : '');
+    p.setAttribute('aria-label', 'Details for ' + l.name);
+    p.innerHTML =
+      '<div class="pass-main">' +
+        '<div class="pass-band">' + PICTO + '<span>Boarding pass<span class="wide"> · Lens scorecard</span></span><button type="button" class="x" aria-label="Close details">×</button></div>' +
+        '<dl class="pf">' +
+          '<div class="fld w2"><dt>Lens</dt><dd><div class="big">' + esc(l.name) + '</div><p class="note">' + esc(l.brand) + (l.aka ? ' · ' + esc(l.aka) : '') + '</p></dd></div>' +
+          '<div class="fld"><dt>Wear</dt><dd><div class="val">' + SCHED_SHORT[l.sched] + '</div><p class="note">' + SCHED_WORD[l.sched] + '</p></dd></div>' +
+          '<div class="fld"><dt>Material</dt><dd><div class="val">' + typeWord(l) + '</div></dd></div>' +
+          '<div class="fld"><dt>Oxygen</dt><dd><div class="val">' + fmtDkt(l.dkt) + '<small>Dk/t</small></div><p class="note"><span class="dot" data-l="' + dl + '"></span>' + DKT_WORD[dl] + '</p></dd></div>' +
+          '<div class="fld"><dt>Water</dt><dd><div class="val">' + l.water + '<small>%' + (l.gradient ? ' core' : '') + '</small></div><p class="note"><span class="dot" data-l="' + wl + '"></span>' + WATER_WORD[wl] + (l.gradient ? '. Surface: ' + esc(l.gradient) + ' water' : '') + '</p></dd></div>' +
+          '<div class="fld w2"><dt>Price</dt><dd>' + priceHtml + '</dd></div>' +
+          '<div class="fld w4"><dt>Infection &amp; inflammation risk</dt><dd><span class="risk-tag r' + l.risk + '">' + (l.risk === 1 ? 'Lowest' : 'Medium') + '</span><p class="note">' + riskNote + '</p></dd></div>' +
+        '</dl>' +
+      '</div>' +
+      '<div class="pass-stub">' +
+        '<div class="pass-band"><span>Score</span></div>' +
+        '<div class="lbl">Overall score</div>' +
+        '<div class="score-big">' + sc + '<small>/ 100</small></div>' +
+        '<div class="ranks">#' + l.oRank + ' of ' + LENSES.length + ' overall' + (l.oTied ? ' (tied)' : '') + '<br>#' + l.oClassRank + ' of ' + l.classCount + ' ' + classWord(l) + '</div>' +
+        '<div class="bars">' + bars + '</div>' +
+        barcode(l.id) +
+        '<div class="cta">' + cta + '</div>' +
+      '</div>';
+    p.querySelector('.x').addEventListener('click', function () {
+      var r = rows.filter(function (o) { return o.lens && o.lens.id === id; })[0];
+      closePass(); if (r) r.btn.focus();
+    });
+    if (!first) p.style.animation = 'none';
+  }
+
+  // ---------- clock ----------
+  var clockCells = chars(4);
+  var clk = document.getElementById('sb-clock');
+  clk.appendChild(grp(clockCells.slice(0, 2), ''));
+  clk.insertAdjacentHTML('beforeend', '<span class="colon">:</span>');
+  clk.appendChild(grp(clockCells.slice(2), ''));
+  clockCells.forEach(function (c) { c.el.classList.add('gold'); });
+  var lastMin = '';
+  function tick() {
+    var d = new Date(), hm = ('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2);
+    if (hm === lastMin) return;
+    lastMin = hm;
+    clockCells.forEach(function (c, i) { setFlap(c, { t: hm[i], b: hm[i], c: '' }, i * 40); });
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ---------- options from the address (#embed&lens=ultra1d&wear=daily&type=sihy&sort=dkt) ----------
+  var opts = {};
+  location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) opts[p[0]] = decodeURIComponent(p[1] || ''); });
+  if (opts.lens && LENSES.some(function (l) { return l.id === opts.lens; })) state.mine = opts.lens;
+  var W = { daily: 'Daily', week: 'week', monthly: 'Monthly' }, T = { sihy: 'SiHy', hydrogel: 'Hydrogel' };
+  if (W[opts.wear]) state.sched = W[opts.wear];
+  if (T[opts.type]) state.type = T[opts.type];
+  if (SORTS[opts.sort]) { state.sort = opts.sort; state.dir = SORTS[opts.sort].def; }
+
+  // ---------- start: blank board, then everything flips in once it is on screen ----------
+  syncWeights();
+  syncHeads();
+  computeOverall();
+  document.getElementById('sb-sub').textContent = subtitle(list().length);
+  rows.forEach(function (r) {
+    r.cols.forEach(function (col) { col.forEach(function (c) { show(c, c.kind === 'c' ? { t: ' ', b: ' ', c: '' } : BLANK); }); });
+  });
+  var started = false;
+  function start() { if (started) return; started = true; render(); }
+  var board = document.querySelector('.board');
+  if (!REDUCED && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); } }, { threshold: 0.12 });
+    io.observe(board);
+    setTimeout(start, 6000);
+  } else start();
+
+  // ---------- in a frame: report height so the host sizes the frame (see embed/lens-scorecard.html) ----------
+  if (window.parent !== window) {
+    var lastH = 0, sb = document.getElementById('sb');
+    var report = function () {
+      var h = Math.ceil(sb.getBoundingClientRect().height);
+      if (h === lastH) return;
+      lastH = h;
+      try { window.parent.postMessage({ lensscore: 'height', height: h }, '*'); } catch (e) {}
+    };
+    if (window.ResizeObserver) new ResizeObserver(report).observe(sb);
+    window.addEventListener('load', report);
+    report();
+  }
+  window.__scorecard = { state: state, render: render, lenses: LENSES };
+})();
+</script>
+</body>
+</html>

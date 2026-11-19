@@ -1,0 +1,57 @@
+<!-- Lens Scorecard (split-flap departures board), for a Squarespace Code Block.
+     Paste this whole file into the block. The board tells this page
+     how tall it is, and the script below sizes the frame to fit (no
+     inner scrollbar); when a visitor opens a lens's boarding pass,
+     the page scrolls so the pass is in view. If scripts cannot run,
+     the heights in the style rules below are used instead.
+     Options go after #embed in the src, joined with &:
+       lens=ultra1d       light up one lens's row (ids are in lens-explorer/lens-data.js)
+       wear=daily | week | monthly      start filtered to one wear schedule
+       type=sihy | hydrogel             start filtered to one material
+       sort=dkt | water | risk | price | name | sched   start sorted by a column
+     e.g. src=".../lens-scorecard/?v=1#embed&lens=ultra1d&wear=daily"
+     To force browsers to fetch a new version, change ?v=1 to ?v=2. -->
+<div class="lensscore-embed">
+  <iframe
+    id="lensscore-frame"
+    src="https://drburke-droid.github.io/VSL/lens-scorecard/?v=1#embed"
+    title="Lens Scorecard: contact lenses compared"
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<style>
+.lensscore-embed {
+  margin: 24px 0;
+}
+.lensscore-embed iframe {
+  display: block;
+  width: 100%;
+  height: 2400px;
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 760px) {
+  .lensscore-embed iframe {
+    height: 3200px;
+  }
+}
+</style>
+<script>
+(function () {
+  var f = document.getElementById('lensscore-frame');
+  var box = f.closest ? f.closest('.embed-block-wrapper') : null;
+  if (box) { box.style.paddingBottom = '0'; box.style.height = 'auto'; }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || e.source !== f.contentWindow) return;
+    if (d.lensscore === 'height') f.style.height = d.height + 'px';
+    if (d.lensscore === 'reveal') {
+      var top = f.getBoundingClientRect().top + d.top;
+      if (top < 0 || top > window.innerHeight * 0.45) {
+        window.scrollTo({ top: window.pageYOffset + top - 80, behavior: 'smooth' });
+      }
+    }
+  });
+})();
+</script>
