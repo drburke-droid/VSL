@@ -2,21 +2,23 @@
    Lens Scorecard (lens-scorecard/). Edit lenses, prices and notes here; both pages
    read this file. Fields: id, name, brand, sched ('Daily' | '1-week' | '2-week' | 'Monthly'),
    type ('SiHy' | 'Hydrogel'), dkt, water, cost (tier 1-4 or null), day (CAD per day, or null),
-   optional gradient (surface water text) and aka. */
+   optional gradient (surface water text), aka, and ourPrice (set when the price is our own store's). */
 // ---- Lens data: manufacturer-published Dk/t at -3.00 D and water content (%) ----
 // To add or remove a lens, edit this list. "gradient" marks water-gradient lenses (core value plotted).
 // "cost" is a rough online price tier within the lens's replacement class (1 = $ ... 4 = $$$$; null = not compared).
 // Basis: cost per day of wear per eye (CAD), regular pre-sale box prices at Clearly.ca, November 2026
-// (Ultra One Day from FYidoctors.com; Avaira Vitality and Proclear estimated, as Clearly.ca doesn't sell them).
+// (Avaira Vitality and Proclear estimated, as Clearly.ca doesn't sell them). Exception: Ultra One Day uses
+// our own online store's price, $90 for a box of 90 (November 2026); "ourPrice" marks it so both pages say so.
 // Tier = ratio to the median of the class: $ < 0.90, $$ 0.90-1.15, $$$ 1.15-1.35, $$$$ >= 1.35.
 // "day" is that cost per day of wear (CAD, one eye); the overall score compares it across all lenses.
-// Daily (median $1.22/day): AquaComfort Plus 0.78, Biotrue 0.92, Proclear 1 day 0.99, Moist 1.03, SofLens DD 1.13,
-//   clariti 1.16, Precision1 1.22, Ultra One Day 1.26, Oasys 1-Day 1.29, Total1 1.32, MyDay 1.50, Oasys MAX 1.82, MyDay Energys 2.02
+// Daily (median $1.16/day): AquaComfort Plus 0.78, Biotrue 0.92, Proclear 1 day 0.99, Ultra One Day 1.00 (our store),
+//   Moist 1.03, SofLens DD 1.13, clariti 1.16, Precision1 1.22, Oasys 1-Day 1.29, Total1 1.32, MyDay 1.50, Oasys MAX 1.82,
+//   MyDay Energys 2.02
 // 1-2 week (median $0.47/day): Avaira Vitality ~0.43, Acuvue Oasys 0.43, Acuvue 2 0.51, Precision7 0.63
 // Monthly (median $0.40/day): Air Optix plus HydraGlyde 0.25, Biofinity 0.35, Proclear ~0.39, Ultra 0.39, Vita 0.40,
 //   Biofinity Energys 0.44, Total30 0.49, PureVision2 0.56, Air Optix Night & Day Aqua 0.58
 window.LENS_DATA = [
-  { id: 'ultra1d',     name: 'Ultra One Day',              brand: 'Bausch + Lomb',     sched: 'Daily',   type: 'SiHy',     dkt: 134,  water: 55, cost: 2, day: 1.26, aka: 'Sold as INFUSE in the US' },
+  { id: 'ultra1d',     name: 'Ultra One Day',              brand: 'Bausch + Lomb',     sched: 'Daily',   type: 'SiHy',     dkt: 134,  water: 55, cost: 1, day: 1.00, ourPrice: '$90 for a box of 90', aka: 'Sold as INFUSE in the US' },
   { id: 'total1',      name: 'Dailies Total1',             brand: 'Alcon',             sched: 'Daily',   type: 'SiHy',     dkt: 156,  water: 33, cost: 2, day: 1.32, gradient: 'over 80%' },
   { id: 'oasys1d',     name: 'Acuvue Oasys 1-Day',         brand: 'Johnson & Johnson', sched: 'Daily',   type: 'SiHy',     dkt: 121,  water: 38, cost: 2, day: 1.29 },
   { id: 'oasysmax',    name: 'Acuvue Oasys MAX 1-Day',     brand: 'Johnson & Johnson', sched: 'Daily',   type: 'SiHy',     dkt: 121,  water: 38, cost: 4, day: 1.82 },
