@@ -1,0 +1,60 @@
+<!-- Waiting-room TV (YouTube videos as video tapes), for a Squarespace Code Block.
+     Paste this whole file into one Code block (Display Source off) in a light
+     section below the magazine rack. The heading and link are plain page text, so
+     they take the site's own fonts; everything else (TV, tapes, video list) lives
+     in the frame and is changed in the VSL repo, not here.
+     The TV tells this page how tall it is and the script below sizes the frame to
+     fit; on a phone, picking a tape scrolls the page back up to the TV. If scripts
+     cannot run, the heights in the style rules below are used instead.
+     To force browsers to fetch a new version of the page, change ?v=1 to ?v=2. -->
+<div id="cvc-tv">
+  <div class="cvct-head">
+    <div>
+      <p class="cvct-eyebrow">DR. BURKE'S YOUTUBE CHANNEL</p>
+      <h2>Better than the waiting-room TV</h2>
+    </div>
+    <a class="cvct-all" href="https://www.youtube.com/@WhatIfData" target="_blank" rel="noopener">All videos on YouTube →</a>
+  </div>
+  <iframe
+    id="cvc-tv-frame"
+    src="https://drburke-droid.github.io/VSL/tv/?v=1"
+    title="Videos from our YouTube channel: pick a tape and it plays on the TV"
+    loading="lazy"
+    allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<style>
+#cvc-tv { --ink: #1A1A1F; --teal: #1F6B69; max-width: 1180px; margin: 0 auto; color: var(--ink); }
+/* themes often restyle links and paragraphs; this block sets its own */
+#cvc-tv a, #cvc-tv a:hover, #cvc-tv a:visited { color: inherit; text-decoration: none; border: 0; background-image: none; opacity: 1; }
+#cvc-tv p { margin: 0; max-width: none; }
+#cvc-tv .cvct-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; margin-bottom: 20px; }
+#cvc-tv .cvct-eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .14em; color: var(--teal); margin-bottom: 10px; }
+#cvc-tv h2 { margin: 0; }
+#cvc-tv a.cvct-all { font-weight: 600; border-bottom: 2px solid var(--teal); padding: 10px 0 4px; }
+#cvc-tv iframe { display: block; width: 100%; height: 640px; border: 0; background: transparent; }
+/* phones: the frame runs to both edges of the screen, so the TV bleeds off the left edge and the shelves span it */
+@media (max-width: 760px) {
+  #cvc-tv iframe { height: 880px; width: 100vw; max-width: none; margin-left: calc(50% - 50vw); }
+}
+</style>
+<script>
+(function () {
+  var f = document.getElementById('cvc-tv-frame');
+  var box = f.closest ? f.closest('.embed-block-wrapper') : null;
+  if (box) { box.style.paddingBottom = '0'; box.style.height = 'auto'; }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || e.source !== f.contentWindow) return;
+    if (d.cvctv === 'height') f.style.height = d.height + 'px';
+    if (d.cvctv === 'reveal') {
+      var top = f.getBoundingClientRect().top + d.top;
+      if (top < 80 || top > window.innerHeight * 0.3) {
+        window.scrollTo({ top: window.pageYOffset + top - 90, behavior: 'smooth' });
+      }
+    }
+  });
+})();
+</script>

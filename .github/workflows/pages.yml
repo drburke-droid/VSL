@@ -1,10 +1,14 @@
-# Publishes vsl-retro/ to GitHub Pages on every push to main.
-# No build step: the folder is uploaded as-is and served at the site root.
+# Publishes vsl-retro/ to GitHub Pages on every push to main, and every four hours.
+# No build step: the folder is uploaded as-is and served at the site root. The one thing
+# made at publish time is tv/videos.json (the waiting-room TV's tape list), refreshed from
+# the YouTube channel's feed; the timer is there so new uploads appear without a push.
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '17 */4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +28,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      # If YouTube cannot be reached the script keeps the list that is already live; it never blocks a deploy.
+      - name: Refresh the TV's tape list from YouTube
+        run: python3 scripts/update_videos.py
+        continue-on-error: true
       - uses: actions/configure-pages@v5
         with:
           enablement: true
