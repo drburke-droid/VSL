@@ -82,9 +82,18 @@ embed/eye-risk.html         Squarespace snippet for it (replaces the old inline 
 lens-explorer/              Contact Lens Explorer: 27 popular spherical lenses plotted by oxygen (Dk/t) and water content, up to
                             three compared side by side, plus infection & inflammation risk by wear schedule and a rough online
                             price tier, combined into an overall score with user-set weights (one HTML file, no libraries). Lens
-                            data, prices and evidence sit in the LENSES / RISK arrays in its script; sources in its footer.
                             #embed hides its title
+lens-explorer/lens-data.js  the lens list (Dk/t, water, price tier, cost per day, notes) shared by the explorer and the
+                            scorecard, plus LENS_STORE: our Otto online store's product numbers (prodid) and the booking link.
+                            Edit lenses and prices here once; both pages read it
 embed/lens-explorer.html    Squarespace snippet for it (iframe sized by postMessage, like embed/eye-risk.html)
+lens-scorecard/             Lens Scorecard: the same 27 lenses as a split-flap departures board (rows flip when you sort,
+                            filter or move the score faders; indicator lamps colour each value; optional clack sound on a
+                            switch). Tapping a lens prints a boarding pass with its numbers, score breakdown and, where our
+                            online store carries it, an Order online button (else Book a fitting). Same scoring as the
+                            explorer. Barlow Condensed (OFL) subset in fonts/. #embed makes the page transparent; more hash
+                            options (lens=, wear=, type=, sort=) are listed in its embed snippet
+embed/lens-scorecard.html   Squarespace snippet for it (auto height; scrolls the host page to an opened boarding pass)
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)
