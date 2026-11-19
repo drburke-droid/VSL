@@ -1,0 +1,46 @@
+<!-- Contact Lens Explorer, for a Squarespace Code Block.
+     Paste this whole file into the block. The page's own title
+     comes from Squarespace, so the explorer hides its title here.
+     The explorer tells this page how tall it is, and the script
+     below sizes the frame to fit (no inner scrollbar). If scripts
+     cannot run, the heights in the style rules below are used.
+     To force browsers to fetch a new version, change ?v=1 to ?v=2. -->
+<div class="lensx-embed">
+  <iframe
+    id="lensx-frame"
+    src="https://drburke-droid.github.io/VSL/lens-explorer/?v=1#embed"
+    title="Contact Lens Explorer: oxygen vs. moisture"
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<style>
+.lensx-embed {
+  margin: 24px 0;
+}
+.lensx-embed iframe {
+  display: block;
+  width: 100%;
+  height: 5200px;
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 760px) {
+  .lensx-embed iframe {
+    height: 7800px;
+  }
+}
+</style>
+<script>
+(function () {
+  var f = document.getElementById('lensx-frame');
+  var box = f.closest ? f.closest('.embed-block-wrapper') : null;
+  if (box) { box.style.paddingBottom = '0'; box.style.height = 'auto'; }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.lensx !== 'height') return;
+    if (e.source !== f.contentWindow) return;
+    f.style.height = d.height + 'px';
+  });
+})();
+</script>
