@@ -1,0 +1,462 @@
+<!doctype html>
+<!-- Waiting-room TV: a TV and VCR beside a shelf of video tapes. Each tape is one video from the YouTube
+     channel; pick one and it goes in the VCR and plays on the TV. Embedded on the homepage by
+     embed/tv.html. The tape list is videos.json, written by scripts/update_videos.py (see config.json).
+     One file, no libraries. Everything traced from tv.webp is in the GEOMETRY block of the script. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calgary Vision Centre — Waiting-room TV</title>
+<meta name="description" content="Videos from our YouTube channel, on video tape. Pick one and it plays on the TV.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Poppins:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #1A1A1F; --teal: #1F6B69; --muted: #5E5E68; --focus: #E2A72E;
+    --steel: #3A4149; --steel-lo: #23282E; --wood: #DCAE78; --wood-lo: #BC8853;
+    --osd: #7CFF8E; --vfd: #94D32C; --pen: #1C2C7A; --paper: #F4EEDD;
+    --tw: clamp(140px, 15.2vw, 182px); }                 /* width of one tape on the shelf */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body { font-family: Poppins, system-ui, sans-serif; color: var(--ink); overflow-x: hidden; }
+  button { font: inherit; color: inherit; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  .scene { position: relative; max-width: 1180px; margin: 0 auto; padding: 8px 0 6px;
+    display: grid; grid-template-columns: minmax(0, 43fr) minmax(0, 57fr); align-items: end; }
+
+  /* ---- the set: screen under the photo, live clock and button hotspots over it ---- */
+  .setcol { padding: 0 4% 0 3%; }
+  .set { position: relative; width: 100%; aspect-ratio: 1312 / 1199; }
+  .tvimg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 2; pointer-events: none; user-select: none; }
+  /* the screen: a 4:3 box mapped onto the tube's four corners by a matrix3d set in fitScreen() */
+  .screen { position: absolute; left: 0; top: 0; z-index: 1; transform-origin: 0 0; overflow: hidden; background: #000; container-type: inline-size; }
+  .screen > * { position: absolute; inset: 0; }
+  .blue { background: radial-gradient(120% 120% at 50% 45%, #2433E0, #0A16A8 70%, #060C70); color: #F3F5FF;
+    font-family: VT323, ui-monospace, monospace; display: grid; place-content: center; text-align: center; gap: 1.5cqw;
+    text-shadow: .25cqw 0 0 rgba(255, 60, 60, .55), -.25cqw 0 0 rgba(60, 220, 255, .55); }
+  .blue::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .blue .ch { position: absolute; left: 8cqw; top: 6cqw; font-size: 6cqw; }
+  .blue .insert { font-size: 11cqw; line-height: 1; animation: blink 1.2s steps(1) infinite; }
+  .blue .hint { font-size: 5.4cqw; opacity: .9; }
+  .snow { width: 100%; height: 100%; image-rendering: pixelated; display: none; }
+  /* the picture: 16:9 inside the 4:3 tube. data-fit on <body> picks how much of it is cropped */
+  .pic { display: none; background: #000; inset: auto; left: 0; width: 100%; top: 12.5%; height: 75%;
+    -webkit-clip-path: url(#bow); clip-path: url(#bow); }                       /* top and bottom edges bow like a tube's picture */
+  body[data-fit="mid"] .pic { left: -8.333%; width: 116.667%; top: 6.25%; height: 87.5%; }
+  body[data-fit="zoom"] .pic { left: -16.667%; width: 133.333%; top: 0; height: 100%; -webkit-clip-path: none; clip-path: none; }
+  .pic iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .glass { pointer-events: none; background: radial-gradient(90% 60% at 26% 0%, rgba(255, 255, 255, .12), transparent 60%);
+    box-shadow: inset 0 0 7cqw rgba(0, 0, 0, .6), inset 0 0 1.6cqw rgba(0, 0, 0, .75); }
+  .osd { pointer-events: none; font-family: VT323, ui-monospace, monospace; color: var(--osd); font-size: 8cqw; line-height: 1;
+    padding: 6cqw 9cqw; text-shadow: 0 0 1.4cqw rgba(124, 255, 142, .7); opacity: 0; transition: opacity .25s; }
+  .osd.on { opacity: 1; transition: none; }
+  body[data-state="loading"] .snow { display: block; }
+  body[data-state="loading"] .pic { display: block; background: transparent; }
+  body[data-state="playing"] .pic { display: block; }
+  body[data-state="playing"] .glass { background: radial-gradient(90% 60% at 26% 0%, rgba(255, 255, 255, .05), transparent 60%);
+    box-shadow: inset 0 0 5cqw rgba(0, 0, 0, .38), inset 0 0 1.2cqw rgba(0, 0, 0, .6); }
+  body:not([data-state="idle"]) .blue, body[data-power="off"] .blue, body[data-power="off"] .snow { display: none; }
+
+  .clock { position: absolute; z-index: 3; pointer-events: none; overflow: visible; filter: drop-shadow(0 0 1.5px rgba(148, 211, 44, .75)); }
+  .clock polygon, .clock circle { fill: var(--vfd); }
+  .hot { position: absolute; z-index: 4; appearance: none; border: 0; padding: 0; margin: 0; background: transparent; border-radius: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .hot:hover { background: rgba(255, 255, 255, .07); }
+  .hot:active { background: rgba(255, 255, 255, .16); }
+  .hot:focus-visible, .tape:focus-visible, .nav:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+  /* ---- the shelf ---- */
+  .board { height: 18px; background: linear-gradient(var(--wood), var(--wood-lo));
+    box-shadow: 0 6px 0 var(--steel), 0 7px 0 var(--steel-lo), 0 24px 18px -12px rgba(30, 25, 20, .38); }
+  .setcol + .shelfcol { min-width: 0; }
+  .setcol .board { margin: 0 -4.5% 0 -3.5%; border-radius: 3px 0 0 3px; }
+  .shelfcol .board { border-radius: 0 3px 3px 0; }
+  .shelf { position: relative; }
+  .tapes { display: flex; align-items: flex-end; gap: 16px; overflow-x: auto; overflow-y: hidden; padding: 30px 26px 0 14px;
+    scroll-snap-type: x proximity; scroll-padding: 0 26px; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .tapes::-webkit-scrollbar { display: none; }
+  .slot { position: relative; flex: 0 0 var(--tw); scroll-snap-align: start; }
+  .slot[data-out]::after { content: "IN THE VCR"; position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none;
+    font-size: 11px; font-weight: 700; letter-spacing: .2em; color: var(--muted); }
+  .tape { position: relative; display: block; width: 100%; aspect-ratio: 443 / 812; appearance: none; border: 0; padding: 0; margin: 0; cursor: pointer;
+    background: url(tape.webp) center / 100% 100% no-repeat; container-type: inline-size; text-align: left; border-radius: 4%;
+    transform-origin: 50% 100%; transform: rotate(var(--lean, 0deg)); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35));
+    transition: transform .28s cubic-bezier(.2, .7, .3, 1), filter .28s; -webkit-tap-highlight-color: transparent; }
+  /* the sticker between the two reel windows: picture on top, title written underneath */
+  .label { position: absolute; left: 16.9%; top: 33%; width: 66.8%; height: 29.4%; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--paper); border-radius: 1.2cqw; box-shadow: 0 0 0 .3cqw rgba(0, 0, 0, .35), 0 .6cqw 1cqw rgba(0, 0, 0, .5); transform: rotate(var(--tilt, 0deg)); }
+  .label img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #0D0D10; }
+  .label span { flex: 1; display: flex; align-items: center; padding: 0 3cqw; border-top: 1.4cqw solid var(--stripe, #C8312B); }
+  .label b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+    font-family: Caveat, "Segoe Script", "Bradley Hand", cursive; font-weight: 700; font-size: 7.2cqw; line-height: 1.04; color: var(--pen); }
+  .stk { position: absolute; z-index: 1; right: -5%; top: -3%; width: 30%; aspect-ratio: 1; border-radius: 50%; display: grid; place-content: center; text-align: center;
+    font-size: 5.2cqw; font-weight: 700; line-height: 1.05; letter-spacing: .05em; transform: rotate(11deg); box-shadow: 0 2px 4px rgba(0, 0, 0, .4); }
+  .stk-pick { background: #E2A72E; color: #2B1633; }
+  .stk-new { background: #C8312B; color: #F5EEDF; }
+  @media (hover: hover) {
+    .tape:hover { transform: translateY(-12px) rotate(0deg); filter: drop-shadow(0 14px 8px rgba(0, 0, 0, .35)) brightness(1.07); }
+  }
+  .tape[aria-pressed="true"] { visibility: hidden; }
+  .ghost { position: absolute; z-index: 20; pointer-events: none; transform-origin: center; }
+  .nav { position: absolute; z-index: 5; top: 50%; width: 42px; height: 42px; margin-top: -21px; border-radius: 50%; border: 0; cursor: pointer;
+    background: #fff; color: var(--ink); font-size: 20px; line-height: 42px; padding: 0; box-shadow: 0 2px 10px rgba(30, 25, 20, .3); transition: opacity .2s; }
+  .nav.prev { left: 6px; }
+  .nav.next { right: 6px; }
+  .nav[disabled] { opacity: 0; pointer-events: none; }
+
+  .cap { grid-column: 1 / -1; margin: 34px auto 0; min-height: 3.6em; max-width: 860px; padding: 0 12px; text-align: center; font-size: 16px; line-height: 1.5; color: var(--muted); text-wrap: balance; }
+  .cap b { font-weight: 700; color: var(--teal); letter-spacing: .04em; margin-right: 8px; font-size: 13px; }
+  .cap strong { font-weight: 600; color: var(--ink); }
+  .cap a { font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--teal); white-space: nowrap; }
+  .cap .meta { display: block; font-size: 14px; margin-top: 4px; }
+  @keyframes blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: .08; } }
+
+  /* phones: the TV on its own shelf (bleeding off the left so the screen is as big as it can be), tapes on a second one */
+  @media (max-width: 760px) {
+    :root { --tw: 46vw; }
+    .scene { grid-template-columns: minmax(0, 1fr); }
+    .setcol { padding: 0; }
+    .set { width: 128%; margin-left: -28%; }
+    .setcol .board, .shelfcol .board { margin: 0; border-radius: 0; }
+    .shelfcol { margin-top: 18px; }
+    .tapes { padding: 26px 16px 0; gap: 14px; scroll-snap-type: x mandatory; scroll-padding: 0 16px; }
+    .nav { display: none; }
+    .cap { margin-top: 28px; min-height: 5.6em; font-size: 15px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blue .insert { animation: none; }
+    .tape { transition: none; }
+  }
+</style>
+</head>
+<body data-state="idle" data-fit="wide" data-power="on">
+
+<!-- the picture's bowed top and bottom edges (fractions of the picture's own box) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <clipPath id="bow" clipPathUnits="objectBoundingBox"><path d="M0,.022 Q.5,-.022 1,.022 L1,.978 Q.5,1.022 0,.978 Z"/></clipPath>
+</svg>
+
+<main class="scene" id="scene">
+  <div class="setcol">
+    <div class="set" id="set">
+      <div class="screen" id="screen">
+        <div class="blue" aria-hidden="true">
+          <span class="ch">VIDEO 1</span>
+          <span class="insert">INSERT TAPE</span>
+          <span class="hint">pick one from the shelf</span>
+        </div>
+        <canvas class="snow" width="160" height="120" aria-hidden="true"></canvas>
+        <div class="pic" id="pic"></div>
+        <div class="glass"></div>
+        <div class="osd" id="osd" aria-hidden="true"></div>
+      </div>
+      <img class="tvimg" src="tv.webp" width="1312" height="1199" alt="A black 1990s television sitting on a video cassette recorder">
+      <svg class="clock" id="clock" viewBox="0 0 230 80" aria-hidden="true" focusable="false"></svg>
+      <!-- button hotspots are added here by the script -->
+    </div>
+    <div class="board" aria-hidden="true"></div>
+  </div>
+
+  <div class="shelfcol">
+    <div class="shelf">
+      <button class="nav prev" type="button" aria-label="Earlier tapes" disabled>‹</button>
+      <div class="tapes" id="tapes" role="list" aria-label="Video tapes"></div>
+      <button class="nav next" type="button" aria-label="More tapes" disabled>›</button>
+    </div>
+    <div class="board" aria-hidden="true"></div>
+  </div>
+
+  <p class="cap" id="cap" aria-live="polite"></p>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= GEOMETRY: everything here is measured on tv.webp (1312 x 1199) =================
+     If the photo is ever replaced, re-measure these and nothing else. */
+  var IMG_W = 1312, IMG_H = 1199;
+  // The tube's four corners: top-left, top-right, bottom-right, bottom-left. The TV is turned slightly, so the
+  // right edge is shorter than the left. These lines touch the opening at the middle of each edge; the corners
+  // of the picture tuck in behind the bezel.
+  var QUAD = [[355.7, 103.2], [1145.3, 125.8], [1140.8, 749.5], [354.3, 756.8]];
+  // The VCR's display window (the painted "2:35 PM" was erased from the photo; the live clock is drawn here)
+  var VFD = { x: 960, y: 1002, w: 230, h: 80 };
+  // The cassette door: where a tape flies to
+  var DOOR = { x: 422, y: 1017, w: 496, h: 70 };
+  // Buttons, as [x, y, width, height] boxes around each one and its printed name
+  var HOTSPOTS = [
+    { key: 'fit',   box: [650, 884, 50, 36],   label: 'Picture size: wide, 14:9 or zoom' },   // TV: MENU
+    { key: 'prev',  box: [809, 880, 44, 36],   label: 'Previous tape' },                      // TV: CH down
+    { key: 'next',  box: [856, 878, 44, 36],   label: 'Next tape' },                          // TV: CH up
+    { key: 'power', box: [950, 870, 42, 42],   label: 'TV power' },                           // TV: power
+    { key: 'eject', box: [486, 1104, 58, 52],  label: 'Eject tape' },                         // VCR: EJECT
+    { key: 'prev',  box: [571, 1100, 58, 52],  label: 'Previous tape' },                      // VCR: REW
+    { key: 'play',  box: [643, 1097, 58, 52],  label: 'Play' },                               // VCR: PLAY
+    { key: 'next',  box: [714, 1094, 58, 52],  label: 'Next tape' },                          // VCR: FF
+    { key: 'eject', box: [783, 1091, 58, 52],  label: 'Stop' }                                // VCR: STOP
+  ];
+  /* ================= end of geometry ================= */
+
+  var STRIPES = ['#C8312B', '#1F6B69', '#E2A72E', '#2B1633', '#2A62B8', '#D9662B'];
+  var LEANS = [-1.1, .7, -.4, 1.3, -.8, .3, 1, -1.4];          // degrees: tapes do not stand perfectly straight
+  var FITS = ['wide', 'mid', 'zoom'], FIT_NAMES = { wide: 'WIDE', mid: '14:9', zoom: 'ZOOM' };
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var body = document.body, scene = $('scene'), set = $('set'), screen = $('screen'), pic = $('pic'), osd = $('osd'),
+      cap = $('cap'), rack = $('tapes'), canvas = document.querySelector('.snow'),
+      prevBtn = document.querySelector('.nav.prev'), nextBtn = document.querySelector('.nav.next');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var embedded = window.parent !== window;
+  var VIDEOS = [], tapes = [], current = -1, timers = [], raf = 0, osdTimer = 0, setInView = true, door = null;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function views(n) { return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.0', '') + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'K' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + 'K' : String(n); }
+  function when(d) { var p = String(d).split('-'); return p.length > 1 ? MONTHS[+p[1] - 1] + ' ' + p[0] : ''; }
+  function tell(msg) { if (embedded) { try { window.parent.postMessage(msg, '*'); } catch (e) {} } }
+
+  /* ---------- the screen: a w x h box mapped onto QUAD (same idea as today.html's tablet) ---------- */
+  function homography(w, h, q) {
+    // solve for the 3x3 matrix that takes (0,0) (w,0) (w,h) (0,h) to the four points of q
+    var src = [[0, 0], [w, 0], [w, h], [0, h]], A = [], i, j, k;
+    for (i = 0; i < 4; i++) {
+      var x = src[i][0], y = src[i][1], X = q[i][0], Y = q[i][1];
+      A.push([x, y, 1, 0, 0, 0, -x * X, -y * X, X]);
+      A.push([0, 0, 0, x, y, 1, -x * Y, -y * Y, Y]);
+    }
+    for (i = 0; i < 8; i++) {
+      var p = i;
+      for (j = i + 1; j < 8; j++) if (Math.abs(A[j][i]) > Math.abs(A[p][i])) p = j;
+      var t = A[i]; A[i] = A[p]; A[p] = t;
+      for (j = 0; j < 8; j++) if (j !== i) { var f = A[j][i] / A[i][i]; for (k = i; k < 9; k++) A[j][k] -= f * A[i][k]; }
+    }
+    var m = A.map(function (r, n) { return r[8] / r[n]; });
+    return 'matrix3d(' + [m[0], m[3], 0, m[6], m[1], m[4], 0, m[7], 0, 0, 1, 0, m[2], m[5], 0, 1].join(',') + ')';
+  }
+  function fitScreen() {
+    var s = set.clientWidth / IMG_W;
+    if (!s) return;
+    // lay the screen out at about the size it is seen, so the YouTube controls come out a normal size
+    var w = Math.max(300, Math.min(720, Math.round((QUAD[1][0] - QUAD[0][0]) * s))), h = Math.round(w * 3 / 4);
+    screen.style.width = w + 'px'; screen.style.height = h + 'px';
+    screen.style.transform = homography(w, h, QUAD.map(function (p) { return [p[0] * s, p[1] * s]; }));
+  }
+  function place(el, x, y, w, h) {
+    el.style.left = (x / IMG_W * 100) + '%'; el.style.top = (y / IMG_H * 100) + '%';
+    el.style.width = (w / IMG_W * 100) + '%'; el.style.height = (h / IMG_H * 100) + '%';
+  }
+
+  /* ---------- the VCR clock: seven-segment digits drawn where the photo's were ---------- */
+  var SEG = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abfgcd', A: 'abcefg', P: 'abefg', M: 'bcefxy' };
+  function bar(x1, y1, x2, y2) {
+    var k = 1.9, g = .7, dx = x2 - x1, dy = y2 - y1, l = Math.sqrt(dx * dx + dy * dy), ux = dx / l, uy = dy / l, nx = -uy, ny = ux;
+    var ax = x1 + ux * g, ay = y1 + uy * g, bx = x2 - ux * g, by = y2 - uy * g;
+    var pts = [[ax, ay], [ax + (ux + nx) * k, ay + (uy + ny) * k], [bx - (ux - nx) * k, by - (uy - ny) * k], [bx, by],
+               [bx - (ux + nx) * k, by - (uy + ny) * k], [ax + (ux - nx) * k, ay + (uy - ny) * k]];
+    return '<polygon points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
+  }
+  function glyph(ch, x, w) {
+    var t = 25.5, m = 41, b = 56.5, l = x + 2, r = x + w - 2, c = (l + r) / 2, out = '';
+    var where = { a: [l, t, r, t], b: [r, t, r, m], c: [r, m, r, b], d: [l, b, r, b], e: [l, m, l, b], f: [l, t, l, m], g: [l, m, r, m], x: [l, t, c, m], y: [r, t, c, m] };
+    (SEG[ch] || '').split('').forEach(function (s) { out += bar.apply(null, where[s]); });
+    return out;
+  }
+  function drawClock() {
+    var d = new Date(), h = d.getHours(), mi = d.getMinutes(), h12 = h % 12 || 12, s = '';
+    if (h12 > 9) s += glyph('1', 37, 16);
+    s += glyph(String(h12 % 10), 61, 16);
+    if (d.getSeconds() % 2 === 0 || reduce) s += '<circle cx="89" cy="34.5" r="1.9"/><circle cx="89" cy="48" r="1.9"/>';
+    s += glyph(String(Math.floor(mi / 10)), 100, 16) + glyph(String(mi % 10), 124, 16);
+    s += glyph(h < 12 ? 'A' : 'P', 156, 21) + glyph('M', 181, 23);
+    // the digits lean like the photo's did, and the VCR's front runs very slightly uphill to the right
+    $('clock').innerHTML = '<g transform="rotate(-1.3 115 41) translate(7.2 0) skewX(-10)">' + s + '</g>';
+  }
+
+  /* ---------- on-screen display, snow ---------- */
+  function say(text, hold) {
+    clearTimeout(osdTimer);
+    osd.textContent = text; osd.classList.add('on');
+    if (hold !== true) osdTimer = setTimeout(function () { osd.classList.remove('on'); }, hold || 1600);
+  }
+  function snow() {
+    var c = canvas.getContext('2d'), img = c.createImageData(160, 120), d = img.data;
+    (function frame() {
+      for (var p = 0; p < d.length; p += 4) { var g = Math.random() * 255 | 0; d[p] = d[p + 1] = d[p + 2] = g; d[p + 3] = 255; }
+      c.putImageData(img, 0, 0);
+      if (body.dataset.state === 'loading' && !reduce) raf = requestAnimationFrame(frame);
+    })();
+  }
+
+  /* ---------- the caption under the shelf ---------- */
+  function caption(i, browsing) {
+    var v = VIDEOS[i];
+    if (!v) { cap.innerHTML = VIDEOS.length ? 'Pick a tape. It plays right here on the TV.' : ''; return; }
+    var shelf = browsing && i !== current;
+    cap.innerHTML = '<b>' + (shelf ? 'ON THE SHELF' : 'NOW PLAYING') + '</b><strong>' + esc(v.title) + '</strong>' +
+      '<span class="meta">' + [when(v.date), v.views ? views(v.views) + ' views' : ''].filter(Boolean).join(' · ') +
+      (shelf ? '' : ' · <a href="https://www.youtube.com/watch?v=' + v.id + '" target="_blank" rel="noopener">Watch on YouTube ↗</a>') + '</span>';
+  }
+
+  /* ---------- tapes ---------- */
+  function build() {
+    var pick = 0, newest = 0;
+    VIDEOS.forEach(function (v, i) { if (v.views > VIDEOS[pick].views) pick = i; if (v.date > VIDEOS[newest].date) newest = i; });
+    tapes = VIDEOS.map(function (v, i) {
+      var slot = document.createElement('div');
+      slot.className = 'slot'; slot.setAttribute('role', 'listitem');
+      var stk = i === pick ? '<span class="stk stk-pick" aria-hidden="true">STAFF<br>PICK</span>'
+              : i === newest ? '<span class="stk stk-new" aria-hidden="true">NEW</span>' : '';
+      slot.innerHTML = '<button class="tape" type="button" aria-pressed="false" style="--lean:' + LEANS[i % LEANS.length] + 'deg;--tilt:' + (LEANS[(i + 3) % LEANS.length] * .6) +
+        'deg;--stripe:' + STRIPES[i % STRIPES.length] + '">' + stk +
+        '<span class="label"><img alt="" loading="lazy" src="https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg"><span><b>' + esc(v.title) + '</b></span></span>' +
+        '<span class="sr">. Play on the TV</span></button>';
+      var b = slot.firstChild;
+      b.addEventListener('click', function () { play(i); });
+      b.addEventListener('mouseenter', function () { caption(i, true); });
+      b.addEventListener('mouseleave', function () { caption(current, false); });
+      b.addEventListener('focus', function () { caption(i, true); });
+      b.addEventListener('blur', function () { caption(current, false); });
+      rack.appendChild(slot);
+      return b;
+    });
+    caption(-1);
+    arrows();
+  }
+  function arrows() {
+    var max = rack.scrollWidth - rack.clientWidth;
+    prevBtn.disabled = rack.scrollLeft < 8;
+    nextBtn.disabled = rack.scrollLeft > max - 8;
+  }
+  function page(dir) { rack.scrollBy({ left: dir * rack.clientWidth * .8, behavior: reduce ? 'auto' : 'smooth' }); }
+
+  // the tape leaves the shelf and goes into the VCR
+  function fly(tape, done) {
+    if (reduce || !tape.animate) return done();
+    var o = scene.getBoundingClientRect(), a = tape.getBoundingClientRect(), b = door.getBoundingClientRect();
+    var g = tape.cloneNode(true);
+    g.className = 'tape ghost'; g.removeAttribute('aria-pressed'); g.setAttribute('aria-hidden', 'true'); g.tabIndex = -1;
+    g.style.left = (a.left - o.left) + 'px'; g.style.top = (a.top - o.top) + 'px'; g.style.width = a.width + 'px';
+    scene.appendChild(g);
+    var dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2);
+    // it turns onto its side, shrinks to the width of the door, and is swallowed
+    var end = 'translate(' + dx + 'px,' + dy + 'px) rotate(-90deg) scale(' + (b.height / a.width * .9) + ',' + (b.width / a.height * .8) + ')';
+    g.animate([{ transform: 'none', opacity: 1 }, { transform: end, opacity: 1, offset: .82 }, { transform: end + ' scale(1,.2)', opacity: 0 }],
+      { duration: 720, easing: 'cubic-bezier(.5,0,.4,1)' }).onfinish = function () { g.remove(); done(); };
+  }
+
+  function clear() {
+    timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+    pic.innerHTML = '';
+    if (current > -1) { tapes[current].setAttribute('aria-pressed', 'false'); tapes[current].parentNode.removeAttribute('data-out'); }
+  }
+
+  function play(i) {
+    var v = VIDEOS[i], tape = tapes[i];
+    if (!v) return;
+    clear();
+    current = i;
+    body.dataset.power = 'on';
+    body.dataset.state = 'loading';
+    caption(i, false);
+    say('PLAY ▶', true);
+    snow();
+    if (!setInView) {      // on a phone the TV may be off the top of the screen
+      if (embedded) tell({ cvctv: 'reveal', top: Math.round(set.getBoundingClientRect().top + window.pageYOffset) });
+      else set.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+    }
+    fly(tape, function () {
+      if (current !== i) return;
+      tape.setAttribute('aria-pressed', 'true'); tape.parentNode.setAttribute('data-out', '');
+      var f = document.createElement('iframe');
+      f.title = v.title;
+      f.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.src = 'https://www.youtube-nocookie.com/embed/' + v.id + '?autoplay=1&rel=0&playsinline=1';
+      f.style.opacity = 0;
+      pic.appendChild(f);
+      var on = function () {
+        if (current !== i || body.dataset.state === 'playing') return;
+        f.style.opacity = 1; body.dataset.state = 'playing'; say('PLAY ▶', 1400);
+      };
+      f.addEventListener('load', function () { timers.push(setTimeout(on, 450)); });
+      timers.push(setTimeout(on, 2600));
+    });
+  }
+
+  function eject(quiet) {
+    var had = current > -1;
+    clear();
+    current = -1;
+    body.dataset.state = 'idle';
+    caption(-1);
+    if (had && !quiet) say('EJECT ⏏');
+    else if (!had) osd.classList.remove('on');
+  }
+
+  function press(key) {
+    var n = VIDEOS.length;
+    if (key === 'eject') eject();
+    else if (key === 'play') { if (current < 0 && n) play(0); }
+    else if (key === 'next') { if (n) play((current + 1) % n); }
+    else if (key === 'prev') { if (n) play((current - 1 + n) % n); }
+    else if (key === 'fit') {
+      var f = FITS[(FITS.indexOf(body.dataset.fit) + 1) % FITS.length];
+      body.dataset.fit = f;
+      if (body.dataset.power === 'on') say(FIT_NAMES[f]);
+    }
+    else if (key === 'power') {
+      if (body.dataset.power === 'on') { eject(true); osd.classList.remove('on'); body.dataset.power = 'off'; }
+      else body.dataset.power = 'on';
+    }
+  }
+
+  /* ---------- set-up ---------- */
+  place($('clock'), VFD.x, VFD.y, VFD.w, VFD.h);
+  HOTSPOTS.forEach(function (h) {
+    var b = document.createElement('button');
+    b.className = 'hot'; b.type = 'button'; b.setAttribute('aria-label', h.label); b.title = h.label;
+    place(b, h.box[0], h.box[1], h.box[2], h.box[3]);
+    b.addEventListener('click', function () { press(h.key); });
+    set.appendChild(b);
+  });
+  door = document.createElement('div');
+  door.style.position = 'absolute'; door.style.pointerEvents = 'none';
+  place(door, DOOR.x, DOOR.y, DOOR.w, DOOR.h);
+  set.appendChild(door);
+
+  fitScreen();
+  drawClock();
+  setInterval(drawClock, 1000);
+  prevBtn.addEventListener('click', function () { page(-1); });
+  nextBtn.addEventListener('click', function () { page(1); });
+  rack.addEventListener('scroll', arrows, { passive: true });
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(function () { fitScreen(); arrows(); }).observe(set);
+    var last = 0;
+    new ResizeObserver(function () {      // tell the host page how tall we are (embed/tv.html sizes the frame)
+      var h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+      if (h !== last) { last = h; tell({ cvctv: 'height', height: h }); }
+    }).observe(document.documentElement);
+  } else {
+    window.addEventListener('resize', function () { fitScreen(); arrows(); });
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { setInView = es[0].intersectionRatio > .6; }, { threshold: [0, .6, 1] }).observe(set);
+  }
+
+  fetch('videos.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) {
+      VIDEOS = (d.videos || []).filter(function (v) { return v && /^[\w-]{11}$/.test(v.id); });
+      build();
+    })
+    .catch(function () {
+      cap.innerHTML = 'The tapes are out on loan. <a href="https://www.youtube.com/@WhatIfData" target="_blank" rel="noopener">Watch on YouTube ↗</a>';
+    });
+})();
+</script>
+</body>
+</html>

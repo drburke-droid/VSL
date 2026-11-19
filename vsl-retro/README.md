@@ -94,6 +94,14 @@ lens-scorecard/             Lens Scorecard: the same 27 lenses as a split-flap d
                             explorer. Barlow Condensed (OFL) subset in fonts/. #embed makes the page transparent; more hash
                             options (lens=, wear=, type=, sort=) are listed in its embed snippet
 embed/lens-scorecard.html   Squarespace snippet for it (auto height; scrolls the host page to an opened boarding pass)
+tv/                         Waiting-room TV for the homepage: a photographed TV on a VCR beside a shelf of video tapes, one tape
+                            per video on the YouTube channel. Picking a tape flies it into the VCR and plays it on the TV
+                            (YouTube embed, loaded only then). One HTML file, no libraries; see "The waiting-room TV" below
+tv/tv.webp                  the TV and VCR (1312x1199, transparent background and screen; the painted clock digits erased)
+tv/tape.webp                one blank cassette (443x812), shortened to real VHS proportions; each tape's label is drawn over it
+tv/config.json              which channel or playlist, how many tapes, pinned and hidden videos (read by the updater, not the page)
+tv/videos.json              the tape list the page loads; rewritten at every deploy by ../scripts/update_videos.py
+embed/tv.html               Squarespace snippet for it: heading, link and an auto-height frame
 sites/cvc1998/              our 1998 website, re-created (index.html + img/*.gif)
 sites/amazon1998/           Amazon.com on May 5, 1998, as a full-page screenshot (index.html + jpg)
 sites/apple1998/            Apple on May 8, 1998, as a full-page screenshot (index.html + jpg)
@@ -121,6 +129,29 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 - Six overlay layers (`.fx.*`) build the glass: beam falloff, bezel shadow, glass
   edge hairline, mirrored room reflection, specular, dust.
 - Bezel: `.power` (button, with `.led`). The old newspaper and PDA hotspots went with the old photo.
+
+## The waiting-room TV (`tv/`)
+
+- The screen is a 4:3 box mapped onto the tube's four corners by a `matrix3d` (the TV is turned slightly, so the
+  right edge is shorter), the same idea as `today.html` but computed in the page from `QUAD`, so it follows the
+  photo at any size. The box is laid out at about the size it is seen, so YouTube's controls stay a normal size.
+  The photo sits on top with its screen cut to transparency; that cut gives the picture its rounded tube outline.
+- A 16:9 video in a 4:3 tube: letterboxed by default, with the picture's top and bottom edges bowed by a
+  `clip-path`. The TV's MENU button steps through wide, 14:9 and zoom (zoom fills the tube and crops the sides,
+  including the ends of YouTube's control bar). The starting mode is `data-fit` on `<body>`.
+- The VCR clock is live: seven-segment digits drawn in SVG over the display, the visitor's local time, colon blinking.
+- Buttons on the photo are hotspots: VCR EJECT/STOP eject, PLAY plays the first tape, REW/FF and the TV's CH
+  buttons step through the tapes, TV power turns the tube off. All of them, the screen corners, the display and
+  the cassette door are listed once in the `GEOMETRY` block of the script, in photo pixels.
+- Tapes: `tape.webp` with a paper label over the middle (thumbnail from `i.ytimg.com`, title in handwriting). The
+  most watched tape gets a STAFF PICK sticker, the most recent a NEW one. The shelf scrolls sideways.
+- The tape list: `scripts/update_videos.py` (repo root, standard library only) reads the channel's public feed and
+  `tv/config.json` and writes `tv/videos.json`. The Pages workflow runs it before every deploy and every four hours.
+  `pinned` ids come first, `hidden` ids never show, Shorts are skipped unless `includeShorts` is true, and setting
+  `playlistId` switches the shelf from the newest uploads to one playlist. The feed only carries 15 videos, so
+  tapes already live are kept until `max` pushes them off.
+- Embedded, the page posts its height (`{cvctv:'height'}`) and, when a tape is picked while the TV is off screen
+  (phones), `{cvctv:'reveal'}` so the host scrolls back up to it. On phones the snippet runs the frame edge to edge.
 
 ## Interactions
 
