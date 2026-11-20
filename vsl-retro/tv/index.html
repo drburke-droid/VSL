@@ -155,7 +155,9 @@
     :root { --tw: 46vw; }
     .scene { grid-template-columns: minmax(0, 1fr); }
     .setcol { padding: 0; }
-    .set { width: 128%; margin-left: -28%; }
+    /* sized so the TV's whole front face (x 212-1250 of tv.webp) and the VCR's right end (x 1279) are on screen:
+       the face starts 3% in from the left, the VCR ends 1.5% from the right; only the cabinet's side bleeds off */
+    .set { width: 117.4%; margin-left: -16%; }
     .setcol .board, .shelfcol .board { margin: 0; }
     .btop { transform: none; }                 /* both boards run off both sides of the screen, so no end is ever seen */
     .setcol .bside { display: none; }
