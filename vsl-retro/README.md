@@ -150,7 +150,8 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
   outline, blurred. Tapes get a few pixels of thickness in the same direction. On phones the boards run edge to
   edge with a plain top face.
 - Tapes: `tape.webp` with a paper label over the middle (thumbnail from `i.ytimg.com`, title in handwriting). The
-  most watched tape gets a STAFF PICK sticker, the most recent a NEW one. The shelf scrolls sideways.
+  most watched tape gets a STAFF PICK sticker, the most recent a NEW one. The shelf scrolls sideways; while more tapes are off to the right,
+  a handwritten tag on its front edge says so ("Swipe" on touch screens, "Scroll" with a mouse).
 - The tape list: `scripts/update_videos.py` (repo root, standard library only) reads the channel's public feed and
   `tv/config.json` and writes `tv/videos.json`. The Pages workflow runs it before every deploy and every four hours.
   `pinned` ids come first, `hidden` ids never show, Shorts are skipped unless `includeShorts` is true, and setting
