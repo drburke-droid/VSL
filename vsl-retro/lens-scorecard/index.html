@@ -169,6 +169,8 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
 .f::before{content:"";position:absolute;top:calc(50% - 3px);left:-1px;right:-1px;height:6px;z-index:3;
   background:linear-gradient(90deg,#55585e 0 2px,transparent 2px calc(100% - 2px),#55585e calc(100% - 2px))}
 .f.gold{--fi:var(--gold)}
+/* score digits sit a little low so the flap's split line clears the waist of an 8 (it falls at 41-55% of the glyph) */
+.c-score .f .h > i{transform:translateY(.11em)}
 
 /* module flaps: two lines of text, one on each half */
 .f.m{width:100%}
@@ -299,7 +301,8 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
   .rows col.c-o2,.rows col.c-water,.rows col.c-risk,.rows col.c-price,
   .rows .c-o2,.rows .c-water,.rows .c-risk,.rows .c-price{display:none}
   .rows col.c-pos{width:calc(var(--cw)*2 + var(--gap) + 14px)}
-  .rows col.c-score{width:calc(var(--cw)*2 + var(--gap) + 34px)}
+  .rows col.c-score{width:calc(24px*2 + var(--gap) + 34px)}
+  .c-score .f{--cw:24px;--ch:40px;--cf:28px}
   .rows tbody td{padding:5px 4px}
   .rows tbody td.c-lens{padding-right:2px}
   .lamp{margin-left:7px}
@@ -318,6 +321,8 @@ table.rows{width:100%;border-collapse:separate;border-spacing:0 5px;table-layout
 }
 @media (max-width:400px){
   :root{--cw:19px;--ch:36px;--cf:21px}
+  .rows col.c-score{width:calc(22px*2 + var(--gap) + 34px)}
+  .c-score .f{--cw:22px;--ch:38px;--cf:26px}
   .sign h1{font-size:22px}
   .f.m .h.b > i{letter-spacing:.04em;padding-right:4px}
 }
