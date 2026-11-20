@@ -184,3 +184,26 @@
   io.observe(h);
 })();
 </script>
+<script>
+/* analytics: the 1998 PC reports what visitors do (programs opened, full-size views, Start menu,
+   buttons, links) as pc_* events; this hands them to the site's own Google Analytics tag. */
+(function () {
+  var frames = document.querySelectorAll('.vsl-pair iframe');
+  // analytics: the frame reports what visitors do ({cvcga: 'tv_play', params}); hand it to this site's own
+  // Google Analytics tag (Squarespace adds gtag). Only short text and numbers are passed on.
+  function relay(d) {
+    if (typeof d.cvcga !== 'string' || !/^(pc|tv)_[a-z_]{1,30}$/.test(d.cvcga) || typeof window.gtag !== 'function') return;
+    var p = {}, s = d.params || {};
+    Object.keys(s).slice(0, 12).forEach(function (k) {
+      var v = s[k];
+      if (/^[a-z_]{1,40}$/.test(k) && (typeof v === 'string' || typeof v === 'number')) p[k] = typeof v === 'string' ? v.slice(0, 100) : v;
+    });
+    window.gtag('event', d.cvcga, p);
+  }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || !d.cvcga || e.origin !== 'https://drburke-droid.github.io') return;
+    for (var i = 0; i < frames.length; i++) if (frames[i].contentWindow === e.source) return relay(d);
+  });
+})();
+</script>
