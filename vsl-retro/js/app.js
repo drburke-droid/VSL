@@ -10,6 +10,17 @@
   const WS = { w: 645, h: 425 };       // desktop size above the taskbar, in desktop px
   const DATA_URL = document.body.dataset.tools || 'js/tools.json';        // which programs to load
   const IDLE_MS = document.body.dataset.idle !== undefined ? Number(document.body.dataset.idle) : 45000;   // 0 = no screensaver
+
+  /* ---------- analytics ----------
+     What visitors do here is sent to the page we are embedded in as a message ({cvcga: 'pc_<event>', params});
+     embed/home-pair.html hands it to the clinic site's own Google Analytics tag. Nothing is sent from here to
+     Google directly, nothing is sent when the page is not embedded, and no personal data is ever included. */
+  const PAGE = /home/.test(DATA_URL) ? 'home' : 'lab';
+  function track(name, params) {
+    if (window.parent === window) return;
+    try { window.parent.postMessage({ cvcga: 'pc_' + name, params: Object.assign({ pc_page: PAGE }, params) }, '*'); } catch (e) {}
+  }
+  const progName = t => t.label.replace('\n', ' ');
   let programCount = 0;
   const statusText = () => `${programCount} PROGRAMS LOADED · 640K OK`;
   const bootLines = () => {
@@ -125,6 +136,7 @@
   let palmFrom = null, palmDestroy = null;
   function palmOpen(t, from) {
     palmFrom = from;
+    track('open', { program: progName(t), via: 'pda' });
     $('.pv-title', palmView).innerHTML = `${t.icon.replace('<svg ', '<svg class="ti" ')} ${esc(t.label.replace('\n', ' ').toUpperCase())}`;
     const f = $('iframe', palmView), app = $('.pv-app', palmView), out = $('.pv-out', palmView);
     out.hidden = !!t.app; f.hidden = !!t.app; app.hidden = !t.app;
@@ -155,6 +167,20 @@
   });
   palmView.addEventListener('click', e => { if (e.target.closest('[data-pv="close"]')) palmClose(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') palmClose(); });
+
+  /* ---------- links, for analytics ----------
+     A link to a program's own address is a "see it full size" (high-res dialog, ↗ on a window, Properties, the
+     PDA's Full size); links to the clinic (booking, phone, blog, scroll down) are counted as links. The program
+     icons themselves are links too, but they are counted when the program opens. */
+  document.addEventListener('click', e => {
+    const a = e.target.closest?.('a[href]'); if (!a || a.matches('.ico')) return;
+    const href = a.getAttribute('href');
+    const t = Object.values(tools).find(x => x.href && x.href === href);
+    if (t) { track('full_size', { program: progName(t) }); return; }
+    if (/^(https:\/\/calgaryvisioncentre\.com|tel:)/.test(href)) {
+      track('link', { link_text: (a.textContent.trim() || a.getAttribute('aria-label') || '').slice(0, 60), link_url: href });
+    }
+  }, true);
 
   /* ---------- window management ---------- */
   function focus(win) {
@@ -229,6 +255,7 @@
   /* ---------- tool windows (iframe on the tube) ---------- */
   function runTool(id) {
     const t = tools[id]; if (!t) return;
+    track('open', { program: progName(t), via: 'desktop' });
     if (t.app) { openRetro(t); return; }
     let win = $(`.win[data-win="tool-${id}"]`, workspace);
     if (!win) {
@@ -410,6 +437,7 @@
   startmenu.addEventListener('click', e => {
     const b = e.target.closest('[data-start]'); if (!b) return;
     startmenu.hidden = true;
+    track('start_menu', { control: b.dataset.start });
     ({ minesweeper: openMinesweeper, solitaire: openSolitaire,
        cascade: () => arrange('cascade'), tile: () => arrange('tile'), home: () => arrange('home'), reopen: () => arrange('reopen'),
        saver: showSaver,
@@ -481,7 +509,7 @@
       }
     }, 260);
   }
-  $('#power').addEventListener('click', () => setPower(power === 'off'));
+  $('#power').addEventListener('click', () => { track('control', { control: power === 'off' ? 'power_on' : 'power_off' }); setPower(power === 'off'); });
 
   /* ---------- screensaver: bouncing logo ----------
      The logo drifts and reflects off the screen edges, changing colour on
@@ -614,6 +642,7 @@
   $$('.mbtn').forEach(b => b.addEventListener('click', () => {
     if (power !== 'on') return;                               // no picture, no menu
     const k = b.dataset.mon;
+    track('control', { control: k });
     if (k === 'bright') { bright = (bright + 1) % BRIGHT.length; picture(); showOsd('BRIGHTNESS', bright + 1); }
     else if (k === 'contrast') { contrast = (contrast + 1) % CONTRAST.length; picture(); showOsd('CONTRAST', contrast + 1); }
     else if (k === 'degauss') { degauss(); showOsd('DEGAUSS'); }
@@ -625,8 +654,8 @@
   document.addEventListener('keydown', e => {
     if (!saver.hidden) { e.preventDefault(); hideSaver(); return; }   // any key wakes the screensaver
     typed = (typed + e.key).slice(-6);
-    if (typed.endsWith('20/20')) $('#scanlines').classList.toggle('hidden');   // type 20/20 → toggle scanlines
-    if (typed.endsWith('dgs')) degauss();                                      // d g s → degauss
+    if (typed.endsWith('20/20')) { $('#scanlines').classList.toggle('hidden'); track('control', { control: 'typed_2020' }); }   // type 20/20 → toggle scanlines
+    if (typed.endsWith('dgs')) { degauss(); track('control', { control: 'typed_dgs' }); }                                      // d g s → degauss
   });
 
   /* ---------- status-line clock ---------- */

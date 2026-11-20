@@ -160,6 +160,30 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 - Embedded, the page posts its height (`{cvctv:'height'}`) and, when a tape is picked while the TV is off screen
   (phones), `{cvctv:'reveal'}` so the host scrolls back up to it. On phones the snippet runs the frame edge to edge.
 
+## Analytics (homepage PC and TV)
+
+Both frames report what visitors do to the page they sit in, as `postMessage({cvcga: '<event>', params})`. The
+Squarespace snippets (`embed/home-pair.html`, `embed/tv.html`) check that the message came from their own frame on
+`https://drburke-droid.github.io`, keep only short text and numbers, and pass it to the clinic site's own Google
+Analytics tag (`gtag`, added by Squarespace; measurement ID `G-TJRMEX4759`). Nothing is sent to Google from the
+frames themselves, so there are no third-party cookies and the events join the visitor's homepage session.
+
+| Event | When | Parameters |
+|---|---|---|
+| `pc_open` | a program opens (desktop icon, README button, PDA) | `program`, `via` (desktop / pda), `pc_page` |
+| `pc_full_size` | a link to a program's own address: See it in high res, ↗ on a window, Properties, PDA Full size | `program`, `pc_page` |
+| `pc_start_menu` | a Start menu item | `control` (minesweeper, solitaire, saver, about, power-off, cascade…), `pc_page` |
+| `pc_control` | power button, monitor buttons, typed eggs | `control` (power_on/off, bright, contrast, degauss, scan, typed_2020, typed_dgs), `pc_page` |
+| `pc_link` | a link to the clinic: booking, phone, blog, Scroll down | `link_text`, `link_url`, `pc_page` |
+| `tv_play` | a tape goes in | `video_title`, `video_url`, `video_provider`, `via` (shelf / tv / vcr) |
+| `tv_control` | eject (with a tape in), picture size, power | `control` (eject, picture_wide/mid/zoom, power_on/off), `via` (tv / vcr) |
+| `tv_youtube_link` | Watch on YouTube under the TV | `video_title`, `video_url`, `video_provider` |
+| `tv_shelf_browse`, `tv_shelf_end` | the shelf is scrolled, and reaches its end (once each per visit) | none |
+
+`video_*` and `link_*` are Google Analytics' own parameters and report without set-up; `program`, `via`,
+`control` and `pc_page` need registering once as event-scoped custom dimensions (Admin > Custom definitions).
+The /lab page (index.html) sends the same `pc_*` events with `pc_page: lab`, but its snippet does not pass them on.
+
 ## Interactions
 
 | Action | How |

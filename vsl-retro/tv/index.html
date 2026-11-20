@@ -234,15 +234,15 @@
   var DOOR = { x: 422, y: 1017, w: 496, h: 70 };
   // Buttons, as [x, y, width, height] boxes around each one and its printed name
   var HOTSPOTS = [
-    { key: 'fit',   box: [650, 884, 50, 36],   label: 'Picture size: wide, 14:9 or zoom' },   // TV: MENU
-    { key: 'prev',  box: [809, 880, 44, 36],   label: 'Previous tape' },                      // TV: CH down
-    { key: 'next',  box: [856, 878, 44, 36],   label: 'Next tape' },                          // TV: CH up
-    { key: 'power', box: [950, 870, 42, 42],   label: 'TV power' },                           // TV: power
-    { key: 'eject', box: [486, 1104, 58, 52],  label: 'Eject tape' },                         // VCR: EJECT
-    { key: 'prev',  box: [571, 1100, 58, 52],  label: 'Previous tape' },                      // VCR: REW
-    { key: 'play',  box: [643, 1097, 58, 52],  label: 'Play' },                               // VCR: PLAY
-    { key: 'next',  box: [714, 1094, 58, 52],  label: 'Next tape' },                          // VCR: FF
-    { key: 'eject', box: [783, 1091, 58, 52],  label: 'Stop' }                                // VCR: STOP
+    { key: 'fit',   box: [650, 884, 50, 36],   dev: 'tv',  label: 'Picture size: wide, 14:9 or zoom' },   // TV: MENU
+    { key: 'prev',  box: [809, 880, 44, 36],   dev: 'tv',  label: 'Previous tape' },                      // TV: CH down
+    { key: 'next',  box: [856, 878, 44, 36],   dev: 'tv',  label: 'Next tape' },                          // TV: CH up
+    { key: 'power', box: [950, 870, 42, 42],   dev: 'tv',  label: 'TV power' },                           // TV: power
+    { key: 'eject', box: [486, 1104, 58, 52],  dev: 'vcr', label: 'Eject tape' },                         // VCR: EJECT
+    { key: 'prev',  box: [571, 1100, 58, 52],  dev: 'vcr', label: 'Previous tape' },                      // VCR: REW
+    { key: 'play',  box: [643, 1097, 58, 52],  dev: 'vcr', label: 'Play' },                               // VCR: PLAY
+    { key: 'next',  box: [714, 1094, 58, 52],  dev: 'vcr', label: 'Next tape' },                          // VCR: FF
+    { key: 'eject', box: [783, 1091, 58, 52],  dev: 'vcr', label: 'Stop' }                                // VCR: STOP
   ];
   /* ================= end of geometry ================= */
 
@@ -263,6 +263,14 @@
   function views(n) { return n >= 1e6 ? (n / 1e6).toFixed(1).replace('.0', '') + 'M' : n >= 1e4 ? Math.round(n / 1e3) + 'K' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + 'K' : String(n); }
   function when(d) { var p = String(d).split('-'); return p.length > 1 ? MONTHS[+p[1] - 1] + ' ' + p[0] : ''; }
   function tell(msg) { if (embedded) { try { window.parent.postMessage(msg, '*'); } catch (e) {} } }
+  // analytics: events go to the host page, which hands them to the clinic site's Google Analytics (see embed/tv.html).
+  // video_title / video_url / video_provider are Google Analytics' own video parameters, so they report without set-up.
+  function track(name, params) { tell({ cvcga: 'tv_' + name, params: params || {} }); }
+  function videoParams(v, via) {
+    var p = { video_title: v.title, video_url: 'https://www.youtube.com/watch?v=' + v.id, video_provider: 'youtube' };
+    if (via) p.via = via;
+    return p;
+  }
 
   /* ---------- the screen: a w x h box mapped onto QUAD (same idea as today.html's tablet) ---------- */
   function homography(w, h, q) {
@@ -360,7 +368,7 @@
         '<span class="label"><img alt="" loading="lazy" src="https://i.ytimg.com/vi/' + v.id + '/mqdefault.jpg"><span><b>' + esc(v.title) + '</b></span></span>' +
         '<span class="sr">. Play on the TV</span></button>';
       var b = slot.firstChild;
-      b.addEventListener('click', function () { play(i); });
+      b.addEventListener('click', function () { play(i, 'shelf'); });
       b.addEventListener('mouseenter', function () { caption(i, true); });
       b.addEventListener('mouseleave', function () { caption(current, false); });
       b.addEventListener('focus', function () { caption(i, true); });
@@ -401,9 +409,10 @@
     if (current > -1) { tapes[current].setAttribute('aria-pressed', 'false'); tapes[current].parentNode.removeAttribute('data-out'); }
   }
 
-  function play(i) {
+  function play(i, via) {
     var v = VIDEOS[i], tape = tapes[i];
     if (!v) return;
+    track('play', videoParams(v, via || 'shelf'));
     clear();
     current = i;
     body.dataset.power = 'on';
@@ -445,18 +454,20 @@
     else if (!had) osd.classList.remove('on');
   }
 
-  function press(key) {
+  function press(key, dev) {
     var n = VIDEOS.length;
-    if (key === 'eject') eject();
-    else if (key === 'play') { if (current < 0 && n) play(0); }
-    else if (key === 'next') { if (n) play((current + 1) % n); }
-    else if (key === 'prev') { if (n) play((current - 1 + n) % n); }
+    if (key === 'eject') { if (current > -1) track('control', { control: 'eject', via: dev }); eject(); }
+    else if (key === 'play') { if (current < 0 && n) play(0, dev); }
+    else if (key === 'next') { if (n) play((current + 1) % n, dev); }
+    else if (key === 'prev') { if (n) play((current - 1 + n) % n, dev); }
     else if (key === 'fit') {
       var f = FITS[(FITS.indexOf(body.dataset.fit) + 1) % FITS.length];
       body.dataset.fit = f;
+      track('control', { control: 'picture_' + f, via: dev });
       if (body.dataset.power === 'on') say(FIT_NAMES[f]);
     }
     else if (key === 'power') {
+      track('control', { control: body.dataset.power === 'on' ? 'power_off' : 'power_on', via: dev });
       if (body.dataset.power === 'on') { eject(true); osd.classList.remove('on'); body.dataset.power = 'off'; }
       else body.dataset.power = 'on';
     }
@@ -468,7 +479,7 @@
     var b = document.createElement('button');
     b.className = 'hot'; b.type = 'button'; b.setAttribute('aria-label', h.label); b.title = h.label;
     place(b, h.box[0], h.box[1], h.box[2], h.box[3]);
-    b.addEventListener('click', function () { press(h.key); });
+    b.addEventListener('click', function () { press(h.key, h.dev); });
     set.appendChild(b);
   });
   door = document.createElement('div');
@@ -482,6 +493,17 @@
   prevBtn.addEventListener('click', function () { page(-1); });
   nextBtn.addEventListener('click', function () { page(1); });
   rack.addEventListener('scroll', arrows, { passive: true });
+  // analytics: the visitor looked along the shelf, and reached its end (once each per visit)
+  var browsed = false, reachedEnd = false;
+  rack.addEventListener('scroll', function () {
+    if (!browsed && rack.scrollLeft > 40) { browsed = true; track('shelf_browse'); }
+    if (!reachedEnd && rack.scrollLeft > rack.scrollWidth - rack.clientWidth - 8) { reachedEnd = true; track('shelf_end'); }
+  }, { passive: true });
+  // analytics: "Watch on YouTube" under the TV
+  cap.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a'); if (!a) return;
+    track('youtube_link', current > -1 ? videoParams(VIDEOS[current]) : { link_url: a.href });
+  });
 
   if ('ResizeObserver' in window) {
     new ResizeObserver(function () { fitScreen(); arrows(); }).observe(set);
