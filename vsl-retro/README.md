@@ -160,6 +160,9 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
 - On desktop the snippet lets the frame run wider than the page's text column (the heading stays in it), centred on
   it: up to 1600px, never under 1180px, at most 160% of the window's height so the TV fits on screen. The page's
   `.scene` is capped at 1600px to match.
+- Subscribe: a red button under the caption links to the channel with `?sub_confirmation=1`, which opens YouTube's own
+  Subscribe prompt; the VCR's REC button is a hidden second way ("record every new video"). The link follows
+  `channelUrl` in videos.json.
 - Embedded, the page posts its height (`{cvctv:'height'}`) and, when a tape is picked while the TV is off screen
   (phones), `{cvctv:'reveal'}` so the host scrolls back up to it. On phones the snippet runs the frame edge to edge.
 
@@ -181,6 +184,7 @@ frames themselves, so there are no third-party cookies and the events join the v
 | `tv_play` | a tape goes in | `video_title`, `video_url`, `video_provider`, `via` (shelf / tv / vcr) |
 | `tv_control` | eject (with a tape in), picture size, power | `control` (eject, picture_wide/mid/zoom, power_on/off), `via` (tv / vcr) |
 | `tv_youtube_link` | Watch on YouTube under the TV | `video_title`, `video_url`, `video_provider` |
+| `tv_subscribe` | the Subscribe button under the TV, or the VCR's REC button | `via` (button / vcr_rec) |
 | `tv_shelf_browse`, `tv_shelf_end` | the shelf is scrolled, and reaches its end (once each per visit) | none |
 
 `video_*` and `link_*` are Google Analytics' own parameters and report without set-up; `program`, `via`,
