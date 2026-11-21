@@ -8,7 +8,7 @@
      cannot run, the heights in the style rules below are used instead.
      It also passes what visitors do on the TV (tapes played, buttons, the shelf, the
      YouTube link) to the site's own Google Analytics tag, as tv_* events.
-     To force browsers to fetch a new version of the page, change ?v=2 to ?v=3. -->
+     To force browsers to fetch a new version of the page, change ?v=3 to ?v=4. -->
 <div id="cvc-tv">
   <div class="cvct-head">
     <div>
@@ -19,7 +19,7 @@
   </div>
   <iframe
     id="cvc-tv-frame"
-    src="https://drburke-droid.github.io/VSL/tv/?v=2"
+    src="https://drburke-droid.github.io/VSL/tv/?v=3"
     title="Videos from our YouTube channel: pick a tape and it plays on the TV"
     loading="lazy"
     allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
@@ -37,6 +37,13 @@
 #cvc-tv h2 { margin: 0; }
 #cvc-tv a.cvct-all { font-weight: 600; border-bottom: 2px solid var(--teal); padding: 10px 0 4px; }
 #cvc-tv iframe { display: block; width: 100%; height: 640px; border: 0; background: transparent; }
+/* desktop: the heading keeps to the page's column, but the TV and shelf run wider than it, centred on it:
+   up to 1600px, never narrower than 1180px, at most 160% of the screen's height (so the TV fits on screen),
+   and 24px clear of each edge of the window */
+@media (min-width: 761px) {
+  #cvc-tv iframe { --cvct-w: min(100vw - 48px, max(1180px, min(1600px, 160vh)));
+    width: var(--cvct-w); max-width: none; margin-left: calc(50% - var(--cvct-w) / 2); height: 820px; }
+}
 /* phones: the frame runs to both edges of the screen, so the TV bleeds off the left edge and the shelves span it */
 @media (max-width: 760px) {
   #cvc-tv iframe { height: 880px; width: 100vw; max-width: none; margin-left: calc(50% - 50vw); }
