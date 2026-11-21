@@ -157,6 +157,9 @@ design-canvas-sources/      the Claude Design artboards this was built from (.dc
   `pinned` ids come first, `hidden` ids never show, Shorts are skipped unless `includeShorts` is true, and setting
   `playlistId` switches the shelf from the newest uploads to one playlist. The feed only carries 15 videos, so
   tapes already live are kept until `max` pushes them off.
+- On desktop the snippet lets the frame run wider than the page's text column (the heading stays in it), centred on
+  it: up to 1600px, never under 1180px, at most 160% of the window's height so the TV fits on screen. The page's
+  `.scene` is capped at 1600px to match.
 - Embedded, the page posts its height (`{cvctv:'height'}`) and, when a tape is picked while the TV is off screen
   (phones), `{cvctv:'reveal'}` so the host scrolls back up to it. On phones the snippet runs the frame edge to edge.
 
