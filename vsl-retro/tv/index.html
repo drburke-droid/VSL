@@ -148,6 +148,14 @@
   .cap strong { font-weight: 600; color: var(--ink); }
   .cap a { font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--teal); white-space: nowrap; }
   .cap .meta { display: block; font-size: 14px; margin-top: 4px; }
+  /* Subscribe: a plain red pill under the caption (no YouTube logo), opening the channel with YouTube's own
+     "Subscribe?" prompt (?sub_confirmation=1). The VCR's REC button is a second, hidden way to the same link. */
+  .sub { grid-column: 1 / -1; margin: 6px 0 4px; text-align: center; }
+  .subbtn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px 9px 16px; border-radius: 999px; background: #CC0000; color: #fff;
+    font-weight: 600; font-size: 15px; line-height: 1.2; text-decoration: none; box-shadow: 0 2px 6px rgba(120, 0, 0, .25); transition: background .15s, transform .15s; }
+  .subbtn:hover { background: #A80000; transform: translateY(-1px); }
+  .subbtn svg { width: 17px; height: 17px; flex: none; }
+  .subbtn span { font-weight: 400; opacity: .9; }
   @keyframes blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: .08; } }
 
   /* phones: the TV on its own shelf (bleeding off the left so the screen is as big as it can be), tapes on a second one */
@@ -167,6 +175,7 @@
     .nav { display: none; }
     .swipe { right: 16px; }
     .cap { margin-top: 40px; min-height: 5.6em; font-size: 15px; }
+    .sub { margin-top: 2px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .blue .insert { animation: none; }
@@ -215,6 +224,7 @@
   </div>
 
   <p class="cap" id="cap" aria-live="polite"></p>
+  <p class="sub"><a class="subbtn" id="subbtn" href="https://www.youtube.com/@WhatIfData?sub_confirmation=1" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 22a2.4 2.4 0 0 0 2.4-2.4H9.6A2.4 2.4 0 0 0 12 22zm7.2-6V11c0-3.3-1.8-6-5-6.7V3.6a2.2 2.2 0 0 0-4.4 0v.7C6.6 5 4.8 7.7 4.8 11v5L3 17.8v.9h18v-.9L19.2 16z"/></svg>Subscribe<span>on YouTube</span></a></p>
 </main>
 
 <script>
@@ -242,6 +252,7 @@
     { key: 'prev',  box: [571, 1100, 58, 52],  dev: 'vcr', label: 'Previous tape' },                      // VCR: REW
     { key: 'play',  box: [643, 1097, 58, 52],  dev: 'vcr', label: 'Play' },                               // VCR: PLAY
     { key: 'next',  box: [714, 1094, 58, 52],  dev: 'vcr', label: 'Next tape' },                          // VCR: FF
+    { key: 'rec',   box: [853, 1088, 58, 52],  dev: 'vcr', label: 'Record: subscribe to the channel on YouTube' },  // VCR: REC
     { key: 'eject', box: [783, 1091, 58, 52],  dev: 'vcr', label: 'Stop' }                                // VCR: STOP
   ];
   /* ================= end of geometry ================= */
@@ -475,13 +486,20 @@
 
   /* ---------- set-up ---------- */
   place($('clock'), VFD.x, VFD.y, VFD.w, VFD.h);
+  var subLinks = [$('subbtn')];
   HOTSPOTS.forEach(function (h) {
-    var b = document.createElement('button');
-    b.className = 'hot'; b.type = 'button'; b.setAttribute('aria-label', h.label); b.title = h.label;
+    var rec = h.key === 'rec', b = document.createElement(rec ? 'a' : 'button');
+    b.className = 'hot'; b.setAttribute('aria-label', h.label); b.title = h.label;
+    if (rec) { b.href = $('subbtn').href; b.target = '_blank'; b.rel = 'noopener'; subLinks.push(b); }    // REC records every new video: subscribe
+    else b.type = 'button';
     place(b, h.box[0], h.box[1], h.box[2], h.box[3]);
-    b.addEventListener('click', function () { press(h.key, h.dev); });
+    b.addEventListener('click', function () {
+      if (rec) { track('subscribe', { via: 'vcr_rec' }); if (body.dataset.power === 'on') say('● REC'); }
+      else press(h.key, h.dev);
+    });
     set.appendChild(b);
   });
+  $('subbtn').addEventListener('click', function () { track('subscribe', { via: 'button' }); });
   door = document.createElement('div');
   door.style.position = 'absolute'; door.style.pointerEvents = 'none';
   place(door, DOOR.x, DOOR.y, DOOR.w, DOOR.h);
@@ -523,6 +541,7 @@
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (d) {
       VIDEOS = (d.videos || []).filter(function (v) { return v && /^[\w-]{11}$/.test(v.id); });
+      if (/^https:\/\/www\.youtube\.com\/[@\w./-]+$/.test(d.channelUrl || '')) subLinks.forEach(function (a) { a.href = d.channelUrl + '?sub_confirmation=1'; });
       build();
     })
     .catch(function () {
